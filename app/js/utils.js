@@ -406,6 +406,13 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         tipo = 'editar_pdc';
     }
 
+    /*
+    if(globais.pag === "criar_cotacao_DP" || globais.pag === "editar_cotacao_DP")
+    {
+        tipo = globais.pag;
+    }
+    */
+
     // Criação da estrutura base
     const overlay = createEl('div', 'customConfirm-overlay-div');
     const popup = createEl('div', 'customConfirm-div');
@@ -534,6 +541,14 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
         // Mapeia os tipos de ação para os payloads correspondentes
         const payloadMap = {
+            'criar_cotacao_DP':
+            {
+                Status_geral: 'Propostas criadas DP'
+            },
+            'editar_cotacao_DP':
+            {
+                Status_geral: 'Propostas criadas DP'
+            },
             'solicitar_aprovacao_sindico': {
                 Status_geral: 'Aguardando aprovação de uma proposta'
             },
@@ -580,9 +595,13 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             }
         };
 
+        console.log("ESTÁ EXECUTANDO A CUSTOM MODAL");
         // Verifica se o tipo está no mapa e cria o payload
         if (payloadMap[tipo]) {
+            
             const tiposValidos = [
+                "criar_cotacao_DP",
+                "editar_cotacao_DP",
                 "solicitar_aprovacao_sindico",
                 "finalizar_provisionamento",
                 "enviar_p_checagem_final",
@@ -590,15 +609,21 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             ];
             if (tiposValidos.includes(tipo)) 
             {
+                console.log("O TIPO É VÁLIDO");
                 await saveTableData({ tipo });
             }
+            console.log("PASSOU DO SAVEDATATABLE");
 
             payload = { data: [payloadMap[tipo]] };
 
-        } else if (tipo === 'salvar_cot' || tipo === 'editar_pdc') {
+            console.log("payload => ", payload);
 
+        } else if (tipo === 'salvar_cot' || tipo === 'editar_pdc') {
+            console.log("TENTANDO SALVAR COTAÇÃO");
             toggleElements(false);
+            console.log("PASSOU DO TOGGLEELEMENTS");
             try {
+                console.log("TENTANDO SALVAR COTAÇÃO 2");
                 await saveTableData({ tipo });
 
                 window.open(`${url}#Script:page.refresh`, '_top');
@@ -615,13 +640,16 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         }
 
         try {
+            console.log("ATUALIZANDO REGISTROS");
+            console.log(payload);
             const resposta = await executar_apiZoho({ 
                 tipo: "atualizar_reg", 
                 ID: globais.idPDC, 
                 corpo: payload,
                 nomeR: globais.nomeRelPDC
             });
-
+            console.log(JSON.stringify(resposta));
+            
             // Fecha o modal após sucesso
             if (resposta && resposta.code === 3000) {
                 overlay.remove();
@@ -705,10 +733,16 @@ export function desabilitarCampos() {
     let formsParaManterVisiveis;
     if(globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")
     {
-        camposParaManterVisiveis = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];
-        botoesParaManterVisiveis = ["add-parcela", "remover-parcela"];
-        formsParaManterVisiveis =  ["form-pagamento", "dados-nf"];
-    }else
+        camposParaManterVisiveis = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
+        botoesParaManterVisiveis = ["add-parcela", "remover-parcela"];//classe
+        formsParaManterVisiveis =  ["form-pagamento", "dados-nf"];//forms
+    }else if(globais.pag === "criar_numero_de_PDC")
+    {
+        camposParaManterVisiveis = ["Num_PDC_parcela"];
+        botoesParaManterVisiveis = [];
+        formsParaManterVisiveis =  [];
+    }
+    else
     {
         camposParaManterVisiveis = [];
         botoesParaManterVisiveis = [];

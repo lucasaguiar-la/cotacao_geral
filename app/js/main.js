@@ -112,7 +112,7 @@ async function setupListenersAndInit() {
             type: 'click'
         },
         "formas-pagamento": { handler: (elemento) => mostrarCamposPagamento(), type: 'click' },
-        "add-parcela": { handler: () => adicionarCampoVenc(), type: 'click' },
+        "add-parcela": { handler: () => adicionarCampoVenc(null, null, globais.numPDC), type: 'click' },
         "remover-parcela": { handler: (elemento) => removerCampoVenc(elemento), type: 'click' },
         "add-classificacao": { handler: () => adicionarLinhaClassificacao(), type: 'click' },
         "remover-classificacao": { handler: (elemento) => removerLinhaClassificacao(elemento), type: 'click' },
@@ -164,7 +164,7 @@ async function setupListenersAndInit() {
 
 async function executarProcessosParalelos() {
 
-    if (globais.pag != "criar_cotacao") {
+    if (globais.pag != "criar_cotacao" && globais.pag != "criar_cotacao_DP") {
         await ZOHO.CREATOR.init();
 
         // Executa processos em paralelo
@@ -176,7 +176,7 @@ async function executarProcessosParalelos() {
         await Promise.all(tarefas);
         console.log("[PÁGINA] => ", globais.pag);
         const saveBtnContainer = document.querySelector('.save-btn-container');
-        if(globais.pag != "editar_cotacao") {
+        if(globais.pag != "editar_cotacao" && globais.pag != "editar_cotacao_DP") {
 
             //desabilitarTodosElementosEditaveis();
             desabilitarCampos()
@@ -239,17 +239,18 @@ async function executarProcessosParalelos() {
         }
         else 
         {
-            criarBotao({page:"editar_cotacao"});
+            criarBotao({page:globais.pag});
         }
     }else
     {
-        criarBotao({page: "criar_cotacao"});
+        criarBotao({page: globais.pag});
     }
     document.body.classList.remove('hidden');
     atualizarOuvintesTabCot();
 }
 
 async function processarDadosPDC() {
+    console.log("[======PROCESSANDO PDC======]");
     //const cPDC = "(" + (globais.numPDC ? `numero_de_PDC=="${globais.numPDC}"` : (globais.numPDC_temp ? `id_temp=="${globais.numPDC_temp}"` : "ID==0")) + ")";
     const cPDC = "(" + globais.numPDC_temp?`id_temp=="${globais.numPDC_temp}")`:"ID==0)";
     const respPDC = await executar_apiZoho({ 
@@ -261,6 +262,7 @@ async function processarDadosPDC() {
     if (respPDC.code == 3000) {
         
         globais.tipo = 'editar_pdc';
+        console.log(JSON.stringify(respPDC));
         preencherDadosPDC(respPDC);
     } else {
         console.log("Não tem PDC");

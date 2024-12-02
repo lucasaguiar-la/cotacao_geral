@@ -238,7 +238,13 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
         novoInputNumPDC.type = 'text';
         novoInputNumPDC.name = 'Num_PDC_parcela';
         novoInputNumPDC.classList.add('campo-datas', "num-pdc");
-        if(numPDC) novoInputNumPDC.value = numPDC;
+        // Verifica se numPDC já possui a parte /NN
+
+        if (!numPDC.includes('/')) {
+            novoInputNumPDC.value = `${numPDC}/${String(numeroParcela).padStart(2, '0')}`;
+        } else {
+            novoInputNumPDC.value = numPDC; // Mantém o valor original se já tiver a parte /NN
+        }
     }
     
     //====================CRIA O BOTÃO DE REMOVER====================//
@@ -258,9 +264,9 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
     novoCampo.appendChild(novoLabel);
     novoCampo.appendChild(novoInput);
     novoCampo.appendChild(novoInputValor);
-    novoCampo.appendChild(removerButton);
     if(novoInputNumPDC) novoCampo.appendChild(novoInputNumPDC);
-
+    novoCampo.appendChild(removerButton);
+    
     //====================ADICIONA O NOVO CAMPO AO CONTAINER DE CAMPOS====================//
     document.getElementById('camposData').appendChild(novoCampo);
 
@@ -308,6 +314,14 @@ function atualizarLabels() {
     const parcelas = document.querySelectorAll('#camposData .parcela');
     parcelas.forEach((parcela, index) => {
         parcela.querySelector('label').innerText = `Parcela nº ${index + 1}:`;
+        /*
+        // Atualiza o campo de número do PDC
+        const inputNumPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
+        if (inputNumPDC) {
+            const numPDC = globais.numPDC; // Supondo que globais.numPDC contém o número do PDC
+            inputNumPDC.value = `${numPDC}/${String(index + 1).padStart(2, '0')}`;
+        }
+            */
     });
 }
 

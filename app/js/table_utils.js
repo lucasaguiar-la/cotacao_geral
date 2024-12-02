@@ -1461,7 +1461,7 @@ async function pegarDadosNF() {
         if (elemento.classList.contains('input-number')) {
             dadosNF[elemento.name] = converterStringParaDecimal(elemento.value);
 
-        } else if(elemento.type == "date"){
+        } else if(elemento.type == "date" && elemento.value) { // Verifica se o campo não está vazio
             const [ano, mes, dia] = elemento.value.split('-');
             dadosNF[elemento.name] = `${dia}/${mes}/${ano}`;
 
