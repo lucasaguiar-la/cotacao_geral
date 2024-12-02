@@ -699,8 +699,6 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
  *   let forms = ["form-pagamento", "dados-nf"];
  */
 export function desabilitarCampos() {
-    console.log("[DESABILITANDO CAMPOS]");
-    console.log("Página => ", globais.page);
 
     let camposParaManterVisiveis;
     let botoesParaManterVisiveis;
@@ -725,15 +723,8 @@ export function desabilitarCampos() {
             elemento.disabled = true;
             elemento.readOnly = true; // Adiciona o atributo readonly
             elemento.style.cursor = 'not-allowed';
-
-            // Adiciona um listener para reverter alterações
-            elemento.addEventListener('input', (event) => {
-                event.target.value = event.target.defaultValue; // Reverte para o valor original
-            });
         }
     });
-
-    console.log("Botoes vizíveis => ", botoesParaManterVisiveis);
     const botoes = document.querySelectorAll('button');
     botoes.forEach(botao => {
         if (!botao.closest('.save-btn-container') && !botao.classList.contains('toggle-section')) { 
@@ -764,15 +755,14 @@ export function desabilitarCampos() {
     // Seleciona todos os elementos com contenteditable
     const elementosEditaveis = document.querySelectorAll('[contenteditable="true"], [contenteditable="false"]');
     elementosEditaveis.forEach(elemento => {
-        console.log("Classe => ", elemento.className);
         // Verifica se o elemento deve ser mantido visível
         const temClasseVisivel = camposParaManterVisiveis.some(classe => elemento.classList.contains(classe));
         if (temClasseVisivel) {
-            console.log("tem classe vizivel");
+
             elemento.contentEditable = true; // Habilita para edição
             elemento.style.cursor = 'text'; // Altera o cursor para indicar que é editável
+
         } else {
-            console.log("NÃO tem classe vizivel");
             elemento.contentEditable = false; // Desabilita para edição
             elemento.style.cursor = 'not-allowed'; // Altera o cursor para indicar que não é editável
         }
@@ -784,27 +774,12 @@ export function desabilitarCampos() {
         if (formulario) {
             const camposFormulario = formulario.querySelectorAll('input, textarea, select');
             camposFormulario.forEach(campo => {
+                console.log("CAMPO => ", campo.classList);
                 campo.disabled = false; // Habilita o campo
                 campo.readOnly = false; // Remove o atributo readonly
-                
                 // Altera o cursor dependendo do tipo de campo
                 campo.style.cursor = campo.tagName.toLowerCase() === 'select' ? 'pointer' : 'text';
             });
         }
     });
-
-    /*
-    // Seleciona todos os formulários
-    const formularios = document.querySelectorAll('form');
-    formularios.forEach(form => {
-        // Desabilita todos os campos dentro do formulário
-        const campos = form.querySelectorAll('input, textarea, select, [contenteditable], [type="date"], [type="text"], [type="number"], [type="email"], [type="url"], [type="tel"]');
-        campos.forEach(campo => {
-            campo.disabled = true;
-            campo.style.cursor = 'not-allowed';
-        });
-    });
-    */
 }
-
-

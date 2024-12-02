@@ -7,6 +7,7 @@ let selectedCheckbox = null; //Flag para seleção de fornecedor aprovado
 const qlt = 4; //Total de linhas de totalizadores, considerando linha com botão de adicionar produto
 const ipcv = 3; //Indice da primeira coluna de valores (Valor unitário do primeiro fornecedor)
 const mpcv = ipcv%2 === 0? false: true; // Verifica se o indice da primeira coluna de valores é par ou impar, para definir o tipo de dados de cada célula criada
+const vlrTolerancia = 1;
 
 //====================================================================================================//
 //===========================FUNÇÕES AUXILIARES PARA MANIPULAÇÃO DAS LINHAS===========================//
@@ -539,6 +540,7 @@ function criarPopupBase(conteudo) {
  * - Formata o valor total em BRL e exibe na célula correspondente
  */
 export function calculateTotalPrices(rowIndex) {
+    console.log("====================> Calculando valor total => ");
     const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
     const row = table.rows[rowIndex];
     const quantityCell = row.cells[1]; //Quantidade do item
@@ -551,8 +553,11 @@ export function calculateTotalPrices(rowIndex) {
         if (unitPriceCell && totalPriceCell) {
             const unitPrice = converterStringParaDecimal(unitPriceCell.innerText); //Converte o valor unitário para um número decimal
             totalPriceCell.innerText = formatToBRL((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
+            console.log("====================> Valor total calculado => ", formatToBRL((quantity * unitPrice)));
         }
+        
     }
+    
 }
 
 /**
@@ -773,19 +778,61 @@ export function atualizarOuvintesTabCot() {
             } else {
                 // Tratamento para linhas normais de produtos
                 if (j === 1) { // Coluna de quantidade
-                    celula.addEventListener('blur', () => {
+                    celula.addEventListener('blur', (event) => {
                         formatToBRL(celula);
+
+                        if(globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")
+                        {
+                            console.log(event.target);
+                            const valorAtual = converterStringParaDecimal(event.target.dataset.valorOriginal) || 0; // Obtém o valor original
+                            const novoValor = converterStringParaDecimal(event.target.innerText) || 0; // Obtém o novo valor
+                            if (novoValor > valorAtual) {
+                                event.target.innerText = event.target.dataset.valorOriginal; // Reverte para o valor original
+                                // Exibe modal de aviso com apenas um botão de OK
+                                showAlertModal('Quantidade de itens não pode ser aumentada!');
+                            }
+                        }
+
                         calculateTotalPrices(i);
                     });
+
+                    celula.addEventListener('focus', (event) => {
+                        // Armazena o valor atual quando a célula é focada, se ainda não estiver armazenado
+                        if (!event.target.dataset.valorOriginal) {
+                            event.target.dataset.valorOriginal = event.target.innerText;
+                        }
+                    });
+
                 } else if (j === 2) { // Coluna de unidade - apenas texto
                     continue;
                 } else if (j > 2) { // Colunas de valores após a unidade
-                    celula.addEventListener('blur', () => {
+                    celula.addEventListener('focus', (event) => {
+                        // Armazena o valor atual quando a célula é focada, se ainda não estiver armazenado
+                        if (!event.target.dataset.valorOriginal) {
+                            event.target.dataset.valorOriginal = event.target.innerText;
+                        }
+                    });
+
+                    celula.addEventListener('blur', (event) => {
                         formatToBRL(celula);
+
+                        // Verifica se a célula possui a classe "valor-unit"
+                        if (celula.classList.contains('valor-unit') && (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")) {
+                            // Adiciona um listener para reverter alterações
+
+                            const valorAtual = converterStringParaDecimal(event.target.dataset.valorOriginal) || 0; // Obtém o valor original
+                            const novoValor = converterStringParaDecimal(event.target.innerText) || 0; // Obtém o novo valor
+                            if (novoValor > valorAtual + vlrTolerancia) {
+                                event.target.innerText = event.target.dataset.valorOriginal; // Reverte para o valor original
+                                // Exibe modal de aviso com apenas um botão de OK
+                                showAlertModal(`Este valor não pode ser maior que o valor atual + tolerância de ${formatToBRL(vlrTolerancia)}!`);
+                            }
+                        }
+
                         calculateTotalPrices(i);
                     });
                 }
-                
+
                 // Adiciona cálculo de totais para todas as células exceto a unidade
                 if (j !== 2) {
                     celula.addEventListener('blur', () => calcularTotais());
@@ -856,7 +903,7 @@ export function atualizarOuvintesTabDetlhesForn()
  *   - Descontos  
  *   - Total por fornecedor
  * - Preenche tab de detalhes com:
- *   - Condições de pagamento
+ *   - Condi��ões de pagamento
  *   - Observações
  */
 export async function prenchTabCot(resp) {
@@ -1568,4 +1615,41 @@ export async function saveTableData({tipo = null}) {
         
         globais.cotacaoExiste = true;
     }
+}
+
+// Função para exibir um modal de alerta com um botão de OK
+function showAlertModal(message) {
+    const modal = document.createElement('div');
+    modal.classList.add('popup-overlay'); // Usando a classe de overlay da customModal
+
+    const popupFornecedor = document.createElement('div');
+    popupFornecedor.classList.add('popup-fornecedor'); // Usando a classe do popup
+
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('popup-content');
+
+    const messageText = document.createElement('p');
+    messageText.innerText = message;
+    messageText.style.color = 'red'; // Define a cor do texto como vermelho
+
+    // Botão de fechar no topo
+    const closeButton = document.createElement('button');
+    closeButton.classList.add('btn-fechar', 'close-icon'); // Adiciona classes para estilo
+    closeButton.onclick = () => {
+        document.body.removeChild(modal);
+    };
+
+    // Estilizando o botão de fechar para ficar mais próximo da borda
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '0px'; // Distância do topo
+    closeButton.style.right = '0px'; // Distância da direita
+    closeButton.style.border = 'none'; // Remove borda
+    closeButton.style.background = 'transparent'; // Fundo transparente
+    closeButton.style.cursor = 'pointer'; // Cursor de ponteiro
+
+    modalContent.appendChild(closeButton); // Adiciona o botão de fechar ao conteúdo do modal
+    modalContent.appendChild(messageText);
+    popupFornecedor.appendChild(modalContent);
+    modal.appendChild(popupFornecedor);
+    document.body.appendChild(modal);
 }
