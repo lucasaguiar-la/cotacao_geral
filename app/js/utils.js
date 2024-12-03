@@ -75,15 +75,15 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
             let baseApoio = new Map();
             let paginaAtual = 1;
 
-            try {  
+            try {
                 while (true) {
                     const resp = await busc_reg(nomeR, criterio, paginaAtual);
-                    
+
                     // Verifica se é a resposta de "nenhum registro encontrado" (código 3100)
                     if (resp && resp.code === 3100) {
                         break;
                     }
-                    
+
                     // Verifica outras condições de parada
                     if (!resp || resp.code !== 3000 || !Array.isArray(resp.data) || resp.data.length === 0) {
                         break;
@@ -147,7 +147,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
  * formatToBRL(elementoHTML) // atualiza o texto do elemento
  */
 export function formatToBRL(v) {
-    if(!v) return "0,00";
+    if (!v) return "0,00";
 
     let av; //Apoio ao valor
     let int = false; //Flag para inteiro
@@ -177,7 +177,7 @@ export function formatToBRL(v) {
     let pd = avc.slice(-2);
 
     let vf = int ? `${pi}${pd}` : `${pi},${pd}`;
-    
+
     // Adiciona o sinal negativo de volta se necessário
     if (isNeg) {
         vf = `-${vf}`;
@@ -208,27 +208,27 @@ export function converterStringParaDecimal(valor) {
     // Verifica se é um elemento HTML
     const isElement = valor && typeof valor === 'object' && 'innerText' in valor;
     const valorOriginal = isElement ? valor.innerText : valor;
-    
+
     if (!valorOriginal) return 0.00;
-    
+
     // Remove todos os caracteres não numéricos exceto ponto e vírgula
     let numeroLimpo = valorOriginal.toString().replace(/[^\d.,\-]/g, '');
-    
+
     // Trata números negativos
     const isNegative = numeroLimpo.startsWith('-');
     numeroLimpo = numeroLimpo.replace('-', '');
-    
+
     // Conta quantos pontos e vírgulas existem
     const qtdPontos = (numeroLimpo.match(/\./g) || []).length;
     const qtdVirgulas = (numeroLimpo.match(/,/g) || []).length;
-    
+
     // Se tiver mais de um separador do mesmo tipo, considera como separador de milhar
     if (qtdPontos > 1 || qtdVirgulas > 1) {
         numeroLimpo = numeroLimpo.replace(/[.,]/g, '');
     } else if (qtdPontos === 1 && qtdVirgulas === 1) {
         const posicaoPonto = numeroLimpo.lastIndexOf('.');
         const posicaoVirgula = numeroLimpo.lastIndexOf(',');
-        
+
         if (posicaoPonto > posicaoVirgula) {
             numeroLimpo = numeroLimpo.replace(',', '');
         } else {
@@ -237,16 +237,16 @@ export function converterStringParaDecimal(valor) {
     } else if (qtdVirgulas === 1) {
         numeroLimpo = numeroLimpo.replace(',', '.');
     }
-    
+
     // Converte para número e fixa em 2 casas decimais
     let numeroFinal = parseFloat(numeroLimpo);
     numeroFinal = isNaN(numeroFinal) ? 0.00 : Number(numeroFinal.toFixed(2));
-    
+
     // Aplica o sinal negativo se necessário
     if (isNegative) {
         numeroFinal = -numeroFinal;
     }
-    
+
     // Se for um elemento HTML, atualiza o innerText com o valor formatado
     if (isElement) {
         valor.innerText = numeroFinal.toLocaleString('pt-BR', {
@@ -254,7 +254,7 @@ export function converterStringParaDecimal(valor) {
             maximumFractionDigits: 2
         });
     }
-    
+
     return numeroFinal;
 }
 
@@ -299,12 +299,12 @@ export function restrictNumericInput(obj) {
 export function restrictIntegerInput(event) {
     // Verifica se recebeu um evento ou um elemento direto
     const element = event.target || event;
-    
+
     if (!element || !element.innerText) return;
-    
+
     const input = element.innerText;
     const filteredInput = input.replace(/[^0-9]/g, '');
-    
+
     if (input !== filteredInput) {
         element.innerText = filteredInput;
     }
@@ -711,6 +711,284 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     });
 }
 
+export async function customModal2({action = '', saveContentType = '',alertModal = false, title = null, message}) {
+
+    /**
+     * POSSÍVEIS AÇÕES
+     * - alert
+     * - confirm
+     * 
+     */
+    //==========VARIÁVEIS DE APOIO E ELEMNTOS INICIAIS==========//
+    const confirmText = "Ok";
+    const cancelText = "Não";
+
+    const overlay = createEl('div', 'customConfirm-overlay-div');
+    const popup = createEl('div', 'customConfirm-div');
+    const messageElement = createEl('p', 'customConfirm-message', message);
+
+    //==========CRIA O TÍTULO, CASO EXISTA==========//
+    let titleElement;
+    if (title) {
+        titleElement = createEl('h3', 'customConfirm-title', title)
+    }
+
+    //==========CRIA INPUTS DE VALORES EM CASOS ESPECÍFICOS==========//
+    const inputConfigs = {
+        'ajustar_cot': {
+            placeholder: 'Ex.: Gostaria que o valor de frete fosse alterado...',
+            buttonClass: 'customAdjust-confirmButton'
+        },
+        'arquivar_cot': {
+            placeholder: 'Ex.: Arquivo devido a não resposta do fornecedor...',
+            buttonClass: 'customArchive-confirmButton'
+        },
+        'solicitar_ajuste_ao_compras': {
+            placeholder: 'Ex.: Produto veio quebrado, não recebido...',
+            buttonClass: 'customAdjust-confirmButton'
+        }
+    }
+
+    let inputElement;
+    if (inputConfigs[tipo]) {
+        inputElement = createEl('textarea', 'customAdjust-textarea');
+        inputElement.placeholder = inputConfigs[tipo].placeholder;
+        Object.assign(inputElement.style, {
+            width: '300px',
+            height: '100px',
+            resize: 'none',
+        });
+    }
+
+    
+    //==========CRIA OS BOTÕES BASEADO NA AÇÃO (ALERT OU CONFIRM)==========//
+    const buttonContainer = createEl('div', 'customConfirm-button-container');
+    const confirmButton = createEl('button', `customConfirm-confirmButton ${inputConfigs[tipo]?.buttonClass || ''}`, confirmText);
+    buttonContainer.append(confirmButton);
+
+    if (!alertModal === true) {
+        confirmButton.innerHTML = "Sim";
+        confirmButton.addEventListener('click', () => {clickConfirm().then((resp)=>{return resp;});});
+
+        const cancelButton = createEl('button', 'customConfirm-cancelButton', cancelText);
+        cancelButton.addEventListener('click', () => {clickCancel()});
+
+        buttonContainer.append(cancelButton);
+    }
+
+    Object.assign(buttonContainer.style, {
+        display: 'flex',
+        gap: '10px',
+        justifyContent: 'center',
+        marginTop: '20px'
+    });
+
+    //==========CRIA UM MODAL DE LOADING==========//
+    const loadingElement = createEl('div', 'customConfirm-loading',
+        `<div class="customConfirm-loading-spinner"></div> Carregando...`);
+
+    //==========ADICIONANDO ELEMENTOS NO POPUP==========//
+    popup.append(
+        ...(titleElement ? [titleElement] : []),
+        messageElement,
+        ...(inputElement ? [inputElement] : []),
+        buttonContainer,
+        loadingElement
+    );
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    async function clickConfirm()
+    {
+        if(alertModal === true)
+        {
+            overlay.remove();
+            return;
+        }
+
+        return new Promise((resolve) => {
+            executePageActions({action: action, saveContentType:saveContentType, inputElValue:inputElement?inputElement.value:null}).then(result => {
+                resolve(result);
+            });
+        });
+
+    }
+
+    function clickCancel()
+    {
+        overlay.remove();
+        return false;
+    }
+
+    function createEl(tag, className = '', innerHTML = '') {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (innerHTML) element.innerHTML = innerHTML;
+        return element;
+    }
+
+    function toggleElements(show = false)
+    {
+        // Alterna visibilidade do título, caso exista
+        if (titleElement) titleElement.style.display = show ? 'block' : 'none';
+
+        // Alterna visibilidade da mensagem
+        messageElement.style.display = show ? 'block' : 'none';
+
+        // Alterna visibilidade do campo de input, caso exista
+        if (inputElement) {
+            inputElement.style.display = show ? 'block' : 'none';
+        }
+
+        // Alterana visibilidade dos botões
+        buttonContainer.style.display = show ? 'flex' : 'none';
+
+        // Alterana a visibilidade do modal de loading...
+        loadingElement.style.display = show ? 'none' : 'flex';
+    }
+}
+
+async function executePageActions({action = null, saveContentType = null, inputElValue = null})
+{   
+    const initUrl = 'https://guillaumon.zohocreatorportal.com/';
+    console.log("Chegou aqui!");
+
+    let Status_geral = '';
+    let inputValue = {};
+    let urlToOpen = `${initUrl}#Script:page.refresh`;
+    //==========SWITCH QUE VALIDA O STATU GERAL==========//
+    switch (action)
+    {
+        case 'criar_cotacao':
+        case 'editar_cotacao':
+            Status_geral = 'Propostas criadas';
+            break;
+        
+        case 'criar_cotacao_DP':
+        case 'editar_cotacao_DP':
+            Status_geral = 'Propostas criadas DP';
+            break;
+
+        case 'solicitar_aprovacao_sindico':
+            Status_geral = 'Aguardando aprovação de uma proposta';
+            break;
+        
+        case 'ajustar_cot':
+            Status_geral = 'Ajuste solicitado';
+            inputValue = {"Solicitacao_de_ajuste": inputElValue};
+            break;
+        
+        case 'aprov_cot':
+            Status_geral = 'Proposta aprovada';
+            break;
+
+        case 'arquivar_cot':
+            Status_geral = 'Proposta arquivada';
+            inputValue = {"motivo_arquivamento": inputElValue};
+            break;
+
+        case 'finalizar_provisionamento':
+            Status_geral = 'Lançado no orçamento';
+            break;
+
+        case 'confirmar_compra':
+            Status_geral = 'Compra realizada';
+            break;
+        
+        case 'confirmar_recebimento':
+            Status_geral = 'Recebimento confirmado';
+            break;
+
+        case 'solicitar_ajuste_ao_compras':
+            Status_geral = 'Ajuste Solicitado Pelo Almoxarifado';
+            inputValue = {"Solicitacao_de_ajuste": inputElValue};
+            break;
+
+        case 'enviar_p_checagem_final':
+            Status_geral = 'Enviado para checagem final';
+            break;
+
+        case 'enviar_p_assinatura':
+            Status_geral = 'Assinatura Confirmada Controladoria';
+            break;
+        
+        case 'autorizar_pagamento_sindico':
+            Status_geral = 'Assinatura Confirmada Sindico';
+            break;
+
+        case 'autorizar_pagamento_subsindico':
+            Status_geral = 'Assinatura Confirmada Sub Sindico';
+            break;
+        
+        case 'confirmar_todas_as_assinaturas':
+            Status_geral = 'Autorizado para pagamento';
+            break;
+        
+        case 'remover_fornecedor':
+            return true;
+        
+        case 'remover_produto':
+            console.log("Removendo linha de produto");
+            return true;
+
+        default:
+            break;
+    }
+
+    try
+    {
+        //==========CASO EXISTA UM SAVECONTENTTYPE, ACIONA A SAVETABLEDATA==========//
+        if(saveContentType !== '')
+        {
+            await saveTableData(saveContentType);
+        }
+    
+        if(Status_geral != '')
+        {
+            payload = {
+                Status_geral: Status_geral,
+                ...inputValue
+            };
+    
+            const resposta = await executar_apiZoho({
+                tipo: "atualizar_reg",
+                ID: globais.idPDC,
+                corpo: payload,
+                nomeR: globais.nomeRelPDC
+            });
+    
+            if(resposta && resposta.code === 3000)
+            {
+                if (action == "confirmar_compra") {
+    
+                    // Obtém o valor da entidade selecionada
+                    const entidadeSelecionada = document.getElementById('entidade').value;
+                    let link_layout;
+                    // [LAYOUT]
+                    if (entidadeSelecionada == "3938561000066182591") {
+                        link_layout = `${initUrl}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/Laranj_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Laranjeiras`;
+                    }
+                    else if (entidadeSelecionada == "3938561000066182595") {
+                        link_layout = `${initUrl}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/AssociacaoServir_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Ass_Servir`;
+                    }
+                    
+                    window.open(`${link_layout}`, '_blank', 'noopener,noreferrer');
+                }
+                window.open(urlToOpen, '_top');
+    
+            }else
+            {
+                return `Ocorreu um erro ao tentar alterar o status, contate o administrador do sistema!\nErro: `;
+            }
+        }
+    }catch(err)
+    {
+        /*APRESNTA A MENSAGEM DE OCORREU UM ERRO INESPERADO*/
+        return `Ocorreu um erro inesperado, contate o administrador do sistema!\nErro: ${err}`;
+    }
+}
+
 /**
  * Oculta todos os campos da página, exceto os especificados
  * 
@@ -731,22 +1009,19 @@ export function desabilitarCampos() {
     let camposParaManterVisiveis;
     let botoesParaManterVisiveis;
     let formsParaManterVisiveis;
-    if(globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")
-    {
+    if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
         camposParaManterVisiveis = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
         botoesParaManterVisiveis = ["add-parcela", "remover-parcela"];//classe
-        formsParaManterVisiveis =  ["form-pagamento", "dados-nf"];//forms
-    }else if(globais.pag === "criar_numero_de_PDC")
-    {
+        formsParaManterVisiveis = ["form-pagamento", "dados-nf"];//forms
+    } else if (globais.pag === "criar_numero_de_PDC") {
         camposParaManterVisiveis = ["Num_PDC_parcela"];
         botoesParaManterVisiveis = [];
-        formsParaManterVisiveis =  [];
+        formsParaManterVisiveis = [];
     }
-    else
-    {
+    else {
         camposParaManterVisiveis = [];
         botoesParaManterVisiveis = [];
-        formsParaManterVisiveis =  [];
+        formsParaManterVisiveis = [];
     }
 
     // Seleciona todos os elementos de input, textarea e select
@@ -761,29 +1036,29 @@ export function desabilitarCampos() {
     });
     const botoes = document.querySelectorAll('button');
     botoes.forEach(botao => {
-        if (!botao.closest('.save-btn-container') && !botao.classList.contains('toggle-section')) { 
+        if (!botao.closest('.save-btn-container') && !botao.classList.contains('toggle-section')) {
 
             // Verifica se o botão deve ser mantido visível
             const deveManterVisivel = botoesParaManterVisiveis.some(classe => botao.classList.contains(classe));
             if (!deveManterVisivel) {
                 const computedStyle = getComputedStyle(botao);
                 const placeholder = document.createElement('div'); // Cria um elemento vazio
-                
+
                 // Verifica o tamanho do before
                 const beforeWidth = parseFloat(computedStyle.getPropertyValue('width')) + parseFloat(computedStyle.getPropertyValue('padding-left')) + parseFloat(computedStyle.getPropertyValue('padding-right'));
                 const beforeHeight = parseFloat(computedStyle.getPropertyValue('height')) + parseFloat(computedStyle.getPropertyValue('padding-top')) + parseFloat(computedStyle.getPropertyValue('padding-bottom'));
-                
+
                 // Verifica o tamanho do after
                 const afterWidth = parseFloat(computedStyle.getPropertyValue('width')) + parseFloat(computedStyle.getPropertyValue('padding-left')) + parseFloat(computedStyle.getPropertyValue('padding-right'));
                 const afterHeight = parseFloat(computedStyle.getPropertyValue('height')) + parseFloat(computedStyle.getPropertyValue('padding-top')) + parseFloat(computedStyle.getPropertyValue('padding-bottom'));
-    
+
                 // Define o tamanho do placeholder com base nos tamanhos verificados
                 placeholder.style.width = `${Math.max(beforeWidth, afterWidth, botao.offsetWidth)}px`;
                 placeholder.style.height = `${Math.max(beforeHeight, afterHeight, botao.offsetHeight)}px`;
                 placeholder.style.display = 'inline-block'; // Mantém o layout
                 botao.parentNode.replaceChild(placeholder, botao); // Substitui o botão pelo placeholder
             }
-        }   
+        }
     });
 
     // Seleciona todos os elementos com contenteditable

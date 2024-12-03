@@ -27,8 +27,7 @@ import {
     atualizarValorTotalParcelas,
     atualizarValorTotalClassificacoes,
     atualizarValorOriginal,
-    calcularValorTotalPagar,
-    preencherListaAnexos
+    calcularValorTotalPagar
 } from './forms_utils.js';
 import { CONFIG } from './config.js';
 import { criarBotao } from './metodos_filtragem.js';
@@ -113,7 +112,7 @@ async function setupListenersAndInit() {
             type: 'click'
         },
         "formas-pagamento": { handler: (elemento) => mostrarCamposPagamento(), type: 'click' },
-        "add-parcela": { handler: () => adicionarCampoVenc(null, null, globais.numPDC), type: 'click' },
+        "add-parcela": { handler: () => adicionarCampoVenc(), type: 'click' },
         "remover-parcela": { handler: (elemento) => removerCampoVenc(elemento), type: 'click' },
         "add-classificacao": { handler: () => adicionarLinhaClassificacao(), type: 'click' },
         "remover-classificacao": { handler: (elemento) => removerLinhaClassificacao(elemento), type: 'click' },
@@ -165,7 +164,7 @@ async function setupListenersAndInit() {
 
 async function executarProcessosParalelos() {
 
-    if (globais.pag != "criar_cotacao" && globais.pag != "criar_cotacao_DP") {
+    if (globais.pag != "criar_cotacao") {
         await ZOHO.CREATOR.init();
 
         // Executa processos em paralelo
@@ -177,7 +176,7 @@ async function executarProcessosParalelos() {
         await Promise.all(tarefas);
         console.log("[PÁGINA] => ", globais.pag);
         const saveBtnContainer = document.querySelector('.save-btn-container');
-        if(globais.pag != "editar_cotacao" && globais.pag != "editar_cotacao_DP") {
+        if(globais.pag != "editar_cotacao") {
 
             //desabilitarTodosElementosEditaveis();
             desabilitarCampos()
@@ -223,8 +222,7 @@ async function executarProcessosParalelos() {
 
                 if(globais.pag === "checagem_final")
                 {
-                    console.log("Deixando campos de anexos visiveis");
-                    document.querySelector('.form-anexos').style.display = 'block';
+                    //MOSTRA OS CAMPOS DE ARQUIVO//
                 }
 
             }else if (globais.pag == "autorizar_pagamento_subsindico" || globais.pag == "autorizar_pagamento_sindico" || globais.pag == "confirmar_todas_as_assinaturas") {
@@ -241,18 +239,17 @@ async function executarProcessosParalelos() {
         }
         else 
         {
-            criarBotao({page:globais.pag});
+            criarBotao({page:"editar_cotacao"});
         }
     }else
     {
-        criarBotao({page: globais.pag});
+        criarBotao({page: "criar_cotacao"});
     }
     document.body.classList.remove('hidden');
     atualizarOuvintesTabCot();
 }
 
 async function processarDadosPDC() {
-    console.log("[======PROCESSANDO PDC======]");
     //const cPDC = "(" + (globais.numPDC ? `numero_de_PDC=="${globais.numPDC}"` : (globais.numPDC_temp ? `id_temp=="${globais.numPDC_temp}"` : "ID==0")) + ")";
     const cPDC = "(" + globais.numPDC_temp?`id_temp=="${globais.numPDC_temp}")`:"ID==0)";
     const respPDC = await executar_apiZoho({ 
@@ -264,7 +261,6 @@ async function processarDadosPDC() {
     if (respPDC.code == 3000) {
         
         globais.tipo = 'editar_pdc';
-        console.log(JSON.stringify(respPDC));
         preencherDadosPDC(respPDC);
     } else {
         console.log("Não tem PDC");
