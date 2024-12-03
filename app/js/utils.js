@@ -635,6 +635,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 return;
             }
         } else if (tipo === 'remover_fornecedor' || tipo === 'remover_produto') {
+            console.log("REMOVENDO PRODUTO");
             overlay.remove();
             return Promise.resolve(true);
         }

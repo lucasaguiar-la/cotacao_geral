@@ -82,10 +82,31 @@ export function preencherDadosPDC(resp)
         selectEntidade.value = data.Entidade.ID;
     }
 
-    // Select da Entidade
+    // Select do tipo
     const selectTipo = formDadosPDC.querySelector('#tipo');
-    if (data.Tipo_de_solicitacao?.ID) {
-        selectTipo.value = data.Tipo_de_solicitacao.ID;
+    if(globais.pag === "editar_cotacao_DP")
+    {
+        selectTipo.innerHTML = '';
+    }
+
+    // Acessando as propriedades corretamente
+    const tipoSolicitacaoID = data["Tipo_de_solicitacao.ID"];
+    const tipoSolicitacaoDescr = data["Tipo_de_solicitacao.descr_tipo_compra"];
+
+    if (tipoSolicitacaoID) {
+        // Verifica se o tipo já existe no select
+        const optionExistente = Array.from(selectTipo.options).some(option => option.value === tipoSolicitacaoID);
+        
+        // Se não existir, cria uma nova opção
+        if (!optionExistente) {
+            const novaOpcao = document.createElement('option');
+            novaOpcao.value = tipoSolicitacaoID;
+            novaOpcao.textContent = tipoSolicitacaoDescr.toUpperCase();
+            selectTipo.appendChild(novaOpcao);
+        }
+        
+        // Seleciona a opção
+        selectTipo.value = tipoSolicitacaoID;
     }
 
     // Descrição da Compra
@@ -155,7 +176,6 @@ export function preencherDadosPDC(resp)
     }
 
     // =====[SESSÃO DE RETENÇÕES]=====//
-    console.log(JSON.stringify(data));
     const inputDataEmissaoNF = document.querySelector('#data-emissao-nf');
     const inputNumeroNF = document.querySelector('#numero-nf');
     const inputInss = document.querySelector('#inss');
@@ -851,16 +871,13 @@ function calcularTotalFornecedorAprovado() {
 
 // Função para calcular o valor total a pagar com base nos descontos
 export function calcularValorTotalPagar() {
-    console.log("[CALCULANDO VALOR TOTAL A PAGAR]");
     const valorOriginal = converterStringParaDecimal(document.getElementById('valor-original').innerText) || 0;
-    console.log("[Valor original] => ", valorOriginal);
     const descontoCells = document.querySelectorAll('.campos-ret-desc'); // Selecione os inputs de desconto
     let totalDescontos = 0;
 
     descontoCells.forEach(cell => {
         totalDescontos += converterStringParaDecimal(cell.value) || 0; // Acesse o valor do input
     });
-    console.log("[Total descontos] => ", totalDescontos);
 
     // Atualiza o valor total de descontos no campo "campos-ret-total-desc"
     const totalDescElements = document.getElementsByClassName('campos-ret-total-desc');
@@ -878,10 +895,8 @@ export function calcularValorTotalPagar() {
     acrescimoCells.forEach(cell => {
         totalAcrescimos += converterStringParaDecimal(cell.value) || 0; // Acesse o valor do input
     });
-    console.log("[Total acréscimos] => ", totalAcrescimos);
 
     // Atualiza o valor total a pagar com os acréscimos
     const valorTotalFinal = valorTotalPagar + totalAcrescimos;
-    console.log("[Total a pagar com acréscimos] => ", valorTotalFinal);
     document.getElementById('valor-total-pagar').innerText = formatToBRL(valorTotalFinal);
 }

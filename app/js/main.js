@@ -39,6 +39,7 @@ class Globais {
             baseFornecedores: new Map(),
             baseCentrosCusto: new Map(),
             idFornAprovado: null,
+            selectedCheckbox: null,
             ...CONFIG.INITIAL_STATE,
             ...CONFIG.APPS
         };
@@ -54,12 +55,14 @@ class Globais {
 }
 export const globais = new Globais();
 
+const qlt = 4;
 // Inicia o processo
 initGenericItems().catch(error => {
     console.error('Erro na inicialização:', error);
 });
 
 async function initGenericItems() {
+
     try {
         // 1. Cria a Promise do allSettled
         const basesPromise = Promise.allSettled([
@@ -101,7 +104,7 @@ async function setupListenersAndInit() {
                 botao: elemento, 
                 tipo: 'remover_produto', 
                 mensagem: 'Deseja realmente remover este produto?' 
-            }).then(() => { removeProductRow(elemento) }),
+            }).then(() => { removeProductRow(elemento);}),
             type: 'click'
         },
         "save-btn": { 
@@ -112,7 +115,7 @@ async function setupListenersAndInit() {
             type: 'click'
         },
         "formas-pagamento": { handler: (elemento) => mostrarCamposPagamento(), type: 'click' },
-        "add-parcela": { handler: () => adicionarCampoVenc(), type: 'click' },
+        "add-parcela": { handler: () => adicionarCampoVenc(null, null, globais.numPDC), type: 'click' },
         "remover-parcela": { handler: (elemento) => removerCampoVenc(elemento), type: 'click' },
         "add-classificacao": { handler: () => adicionarLinhaClassificacao(), type: 'click' },
         "remover-classificacao": { handler: (elemento) => removerLinhaClassificacao(elemento), type: 'click' },
@@ -164,7 +167,7 @@ async function setupListenersAndInit() {
 
 async function executarProcessosParalelos() {
 
-    if (globais.pag != "criar_cotacao") {
+    if (globais.pag != "criar_cotacao" && globais.pag != "criar_cotacao_DP") {
         await ZOHO.CREATOR.init();
 
         // Executa processos em paralelo
@@ -174,9 +177,7 @@ async function executarProcessosParalelos() {
         ];
 
         await Promise.all(tarefas);
-        console.log("[PÁGINA] => ", globais.pag);
-        const saveBtnContainer = document.querySelector('.save-btn-container');
-        if(globais.pag != "editar_cotacao") {
+        if(globais.pag != "editar_cotacao" && globais.pag != "editar_cotacao_DP") {
 
             //desabilitarTodosElementosEditaveis();
             desabilitarCampos()
@@ -201,7 +202,6 @@ async function executarProcessosParalelos() {
 
                 // Remove a classe 'hidden' da section-header que está acima de section5
                 const sectionHeader = camposNF.previousElementSibling;
-                console.log(sectionHeader);
                 if (sectionHeader && sectionHeader.classList.contains('section-header')) {
                     sectionHeader.classList.remove("hidden");
                 }
@@ -239,14 +239,167 @@ async function executarProcessosParalelos() {
         }
         else 
         {
-            criarBotao({page:"editar_cotacao"});
+            criarBotao({page:globais.pag});
         }
     }else
     {
-        criarBotao({page: "criar_cotacao"});
+        criarBotao({page: globais.pag});
+
+        if(globais.pag === "criar_cotacao_DP")
+        {
+            // Remove todos os event listeners do botão com a classe save-btn
+            const saveButton = document.querySelector('.save-btn');
+            const newSaveButton = saveButton.cloneNode(true); // Clona o botão para preservar o estado
+            saveButton.parentNode.replaceChild(newSaveButton, saveButton); // Substitui o botão original
+
+            // Adiciona um novo evento de clique
+            newSaveButton.addEventListener('click', () => {
+                customModal({botao:newSaveButton, tipo: "criar_cotacao_DP", mensagem:"Deseja realmente salvar este registro?"});
+            });
+
+            const entidadeSelect = document.getElementById('tipo');
+            const opcoes = [
+                { value: '', text: 'Selecione...', disabled: true, selected: true, id_forn: null },
+                { value: '3938561000087230717', text: 'FOLHA DE PAGAMENTO', id_forn: 1206 }
+                // Adicione mais opções aqui conforme necessário
+            ];
+
+            // Armazena a opção selecionada, se houver
+            const opcaoSelecionada = entidadeSelect.value;
+
+            // Limpa as opções existentes
+            entidadeSelect.innerHTML = '';
+
+            // Adiciona as novas opções da coleção
+            opcoes.forEach(opcao => {
+                const optionElement = document.createElement('option');
+                optionElement.value = opcao.value;
+                optionElement.textContent = opcao.text;
+                optionElement.disabled = opcao.disabled;
+                optionElement.selected = opcao.selected;
+                entidadeSelect.appendChild(optionElement);
+            });
+
+            // Restaura a opção selecionada, se houver
+            if (opcaoSelecionada) {
+                entidadeSelect.value = opcaoSelecionada;
+            }
+
+            // Adicionar evento para executar ação ao selecionar uma opção
+            entidadeSelect.addEventListener('change', (event) => {
+                const valorSelecionado = event.target.value;
+                const fornecedor = opcoes.find(opcao => opcao.value === valorSelecionado);
+
+                if (fornecedor) {
+                    
+                    globais.idFornAprovado = fornecedor.value;
+
+                    const nomeCompletoFornecedor = fornecedor.text;
+                    const nome_forn = nomeCompletoFornecedor;
+                    const idForn = fornecedor.id_forn; // Obtém o id_forn
+
+                    const tab = document.getElementById('priceTable');
+                    const cabecalhoLinha1 = tab.rows[0];
+                    const cabecalhoLinha2 = tab.rows[1];
+
+                    //==========Criação das Colunas do Fornecedor==========//
+                    const celulaCabecalho = document.createElement('th');
+                    celulaCabecalho.colSpan = 2;
+                    celulaCabecalho.dataset.id_forn = idForn; // Usa o id_forn aqui
+                    celulaCabecalho.title = `${nomeCompletoFornecedor}`;
+
+                    const nomeFornText = document.createElement('div');
+                    nomeFornText.innerText = nome_forn;
+                    nomeFornText.style.margin = '0px auto';
+
+                    // Montagem do container do fornecedor
+                    const container = document.createElement('div');
+                    container.classList.add('container-fornecedor');
+                    container.style.display = 'flex';
+                    container.style.alignItems = 'center';
+                    container.style.justifyContent = 'space-between';
+                    container.style.gap = '5px';
+
+                    // Checkbox de seleção do fornecedor
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.classList.add('supplier-checkbox');
+                    checkbox.checked = true;
+                    checkbox.disabled = true;
+                    globais.selectedCheckbox = checkbox;
+
+                    container.appendChild(checkbox);
+                    container.appendChild(nomeFornText);
+                    celulaCabecalho.appendChild(container);
+                    celulaCabecalho.style.position = 'relative';
+
+                    // Inserção das colunas no cabeçalho
+                    cabecalhoLinha1.insertBefore(celulaCabecalho, cabecalhoLinha1.cells[cabecalhoLinha1.cells.length -1]);
+
+                    const celulaPrecoUnitario = document.createElement('th');
+                    celulaPrecoUnitario.innerText = 'Valor Unitário';
+                    cabecalhoLinha2.insertBefore(celulaPrecoUnitario, cabecalhoLinha2.cells[cabecalhoLinha2.cells.length -1]);
+
+                    const celulaPrecoTotal = document.createElement('th');
+                    celulaPrecoTotal.innerText = 'Valor Total';
+                    cabecalhoLinha2.insertBefore(celulaPrecoTotal, cabecalhoLinha2.cells[cabecalhoLinha2.cells.length -1]);
+
+                    //==========Adição das Células nas Linhas==========//
+                    const linhas = tab.getElementsByTagName('tbody')[0].rows;
+                    for (let i = 0; i < linhas.length - 1; i++) {
+                        if(i < linhas.length - qlt) {
+                            // Células para produtos
+                            const celulaPrecoUnitarioLinha = linhas[i].insertCell(linhas[i].cells.length - 1);
+                            celulaPrecoUnitarioLinha.contentEditable = "true";
+                            celulaPrecoUnitarioLinha.classList.add('numeric-cell', 'valor-unit');
+
+                            const celulaPrecoTotalLinha = linhas[i].insertCell(linhas[i].cells.length - 1);
+                            celulaPrecoTotalLinha.classList.add('numeric-cell');
+                        } else {
+                            // Células para totalizadores
+                            const celulaTotalizadora = linhas[i].insertCell(linhas[i].cells.length - 1);
+
+                            if(i >= (linhas.length-4) && i < (linhas.length-2)) {
+                                celulaTotalizadora.contentEditable = "true";
+                            } else if(i == (linhas.length-2)) {
+                                celulaTotalizadora.classList.add("total-fornecedor");
+                                celulaTotalizadora.contentEditable = "false";
+                            }
+                            celulaTotalizadora.classList.add('numeric-cell');
+                            celulaTotalizadora.colSpan = 2;
+                        }
+                    }
+
+                    //==========Atualização da tab de Dados Adicionais==========//
+                    const otherTableBody = document.getElementById('otherDataTable').getElementsByTagName('tbody')[0];
+
+                    if (otherTableBody.rows.length === 1 && !otherTableBody.rows[0].cells[0].textContent.trim()) {
+                        otherTableBody.deleteRow(0);
+                    }
+
+                    const newRow = otherTableBody.insertRow();
+                    const fornecedorCell = newRow.insertCell(0);
+                    fornecedorCell.innerText = nome_forn;
+                    fornecedorCell.dataset.id_forn = idForn;
+
+                    const condicoesPagamentoCell = newRow.insertCell(1);
+                    const observacoesCell = newRow.insertCell(2);
+
+                    [condicoesPagamentoCell, observacoesCell].forEach(cell => {
+                        cell.contentEditable = "true";
+                        cell.classList.add('editable-cell');
+                    });
+
+                    atualizarOuvintesTabCot();
+                }
+            });
+        }
     }
     document.body.classList.remove('hidden');
     atualizarOuvintesTabCot();
+    atualizarValorTotalParcelas();
+    atualizarValorTotalClassificacoes();
+
 }
 
 async function processarDadosPDC() {
@@ -262,27 +415,24 @@ async function processarDadosPDC() {
         
         globais.tipo = 'editar_pdc';
         preencherDadosPDC(respPDC);
-    } else {
-        console.log("Não tem PDC");
     }
 }
 
 async function processarDadosCotacao() {
     //const idCriterio = globais.numPDC ? `numero_de_PDC=="${globais.numPDC}"` : (globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}"` :"ID==0");
-    const idCriterio = "(" + globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}")` :"ID==0)";
+    const idCriterio =  globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}"` :"ID==0";
 
-    const aprovadoCriterio = !["editar_cotacao", "aprovar_cotacao", "ver_cotacao"].includes(globais.pag) ? 
+    const aprovadoCriterio = !["editar_cotacao", "aprovar_cotacao", "ver_cotacao", "editar_cotacao_DP"].includes(globais.pag) ? 
         " && Aprovado==true" : "";
-    console.log("pag => ", globais.pag);
     
     let cCot = `(${idCriterio} && Ativo==true${aprovadoCriterio})`;
-    console.log("Criterio => ", cCot);
     const respCot = await executar_apiZoho({ 
         tipo: "busc_reg", 
         criterios: cCot, 
         nomeR: globais.nomeRelCot 
     });
-
+    console.log("cCot => ", cCot);
+    console.log(JSON.stringify(respCot));
     if (respCot.code == 3000) {
 
         await prenchTabCot(respCot);

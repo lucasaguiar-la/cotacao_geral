@@ -2,7 +2,6 @@ import{formatToBRL, converterStringParaDecimal, convertToNegative,restrictNumeri
 import{globais} from './main.js'
 import { atualizarValorTotalClassificacoes, atualizarValorTotalParcelas } from './forms_utils.js';
 let idsCotacao = new Array(); //Array para armazenar os ids das cotações
-let selectedCheckbox = null; //Flag para seleção de fornecedor aprovado
 
 const qlt = 4; //Total de linhas de totalizadores, considerando linha com botão de adicionar produto
 const ipcv = 3; //Indice da primeira coluna de valores (Valor unitário do primeiro fornecedor)
@@ -55,7 +54,7 @@ export function addProductRow() {
             // Última coluna - botão de remoção
             const removeButton = document.createElement('button');
             removeButton.classList.add('remove-btn', 'remove-product-btn');
-
+            
             removeButton.addEventListener('click', () => {
                 customModal({
                     botao: removeButton, 
@@ -101,10 +100,11 @@ export function addProductRow() {
  * - Exibe alerta se tentar remover a última linha da tab
  */
 export function removeProductRow(button) {
+    console.log("[REMOVENDO LINHA DE PRODUTO");
     // Obtém referência ao corpo da tab de preços
     const table = document.getElementById('priceTable');
     const tbody = table.getElementsByTagName('tbody')[0];
-    const corpoTab = Array.from(tbody.rows).slice(0, -qlt);
+    const corpoTab = Array.from(tbody.rows).slice(0, - qlt);
 
     // Verifica se há mais de uma linha antes de remover
     if (corpoTab.length > 1) {
@@ -116,6 +116,8 @@ export function removeProductRow(button) {
         return "Não é possível remover a última linha."
     }
     calcularTotais();
+    atualizarValorTotalParcelas();
+    atualizarValorTotalClassificacoes();
 }
 
 //====================================================================================================================//
@@ -275,10 +277,10 @@ export async function addSupplierColumn() {
                     });
 
                     if (checkbox.checked) {
-                        if (selectedCheckbox && selectedCheckbox !== checkbox) {
-                            selectedCheckbox.checked = false;
+                        if (globais.selectedCheckbox && globais.selectedCheckbox !== checkbox) {
+                            globais.selectedCheckbox.checked = false;
                         }
-                        selectedCheckbox = checkbox;
+                        globais.selectedCheckbox = checkbox;
                         globais.idFornAprovado = dadosFornecedor[0];
 
                         // Adiciona a classe 'forn-aprovado' às células do fornecedor selecionado
@@ -293,7 +295,7 @@ export async function addSupplierColumn() {
                         totalPriceHeader.classList.add('forn-aprovado'); // Adiciona a classe ao valor total
                     
                     } else {
-                        selectedCheckbox = null;
+                        globais.selectedCheckbox = null;
                         globais.idFornAprovado = null;
                     }
                     atualizarValorTotalParcelas();
@@ -540,7 +542,6 @@ function criarPopupBase(conteudo) {
  * - Formata o valor total em BRL e exibe na célula correspondente
  */
 export function calculateTotalPrices(rowIndex) {
-    console.log("====================> Calculando valor total => ");
     const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
     const row = table.rows[rowIndex];
     const quantityCell = row.cells[1]; //Quantidade do item
@@ -553,7 +554,6 @@ export function calculateTotalPrices(rowIndex) {
         if (unitPriceCell && totalPriceCell) {
             const unitPrice = converterStringParaDecimal(unitPriceCell.innerText); //Converte o valor unitário para um número decimal
             totalPriceCell.innerText = formatToBRL((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
-            console.log("====================> Valor total calculado => ", formatToBRL((quantity * unitPrice)));
         }
         
     }
@@ -739,7 +739,11 @@ export function atualizarOuvintesTabCot() {
 
     // Adiciona listeners para células numéricas
     tab.querySelectorAll('.numeric-cell').forEach(celula => {
-        celula.addEventListener('input', () => restrictNumericInput(celula));
+        celula.addEventListener('input', () => {
+            restrictNumericInput(celula); 
+            atualizarValorTotalParcelas();
+            atualizarValorTotalClassificacoes();
+        });
     });
 
     // Adiciona listener para converter valores negativos na antepenúltima linha
@@ -773,6 +777,8 @@ export function atualizarOuvintesTabCot() {
                     celula.addEventListener('blur', () => {
                         formatToBRL(celula);
                         calcularTotais();
+                        atualizarValorTotalParcelas();
+                        atualizarValorTotalClassificacoes();
                     });
                 }
             } else {
@@ -783,7 +789,6 @@ export function atualizarOuvintesTabCot() {
 
                         if(globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")
                         {
-                            console.log(event.target);
                             const valorAtual = converterStringParaDecimal(event.target.dataset.valorOriginal) || 0; // Obtém o valor original
                             const novoValor = converterStringParaDecimal(event.target.innerText) || 0; // Obtém o novo valor
                             if (novoValor > valorAtual) {
@@ -794,6 +799,8 @@ export function atualizarOuvintesTabCot() {
                         }
 
                         calculateTotalPrices(i);
+                        atualizarValorTotalParcelas();
+                        atualizarValorTotalClassificacoes();
                     });
 
                     celula.addEventListener('focus', (event) => {
@@ -830,12 +837,18 @@ export function atualizarOuvintesTabCot() {
                         }
 
                         calculateTotalPrices(i);
+                        atualizarValorTotalParcelas();
+                        atualizarValorTotalClassificacoes();
                     });
                 }
 
                 // Adiciona cálculo de totais para todas as células exceto a unidade
                 if (j !== 2) {
-                    celula.addEventListener('blur', () => calcularTotais());
+                    celula.addEventListener('blur', () => {
+                        calcularTotais(); 
+                        atualizarValorTotalParcelas();
+                        atualizarValorTotalClassificacoes();
+                    });
                 }
             }
         }
@@ -907,8 +920,8 @@ export function atualizarOuvintesTabDetlhesForn()
  *   - Observações
  */
 export async function prenchTabCot(resp) {
+    console.log("[ENTROU NO PREENCHER TABELA DE COTAÇÃO");
     if (resp && resp.code === 3000 && Array.isArray(resp.data) && resp.data.length > 0) {
-        console.log(JSON.stringify(resp));
 
         globais.cotacaoExiste = true;
         const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
@@ -999,14 +1012,16 @@ export async function prenchTabCot(resp) {
                 
                 // Cria o botão//
                 const removeButton = document.createElement('button');
-                removeButton.classList.add('remove-btn', 'remove-product-btn');
 
+                removeButton.classList.add('remove-btn', 'remove-product-btn');
+                
                 // Adiciona o evento de clique ao botão//
                 removeButton.addEventListener('click', () => {
-                    customModal({
+                    customModal({ 
                         botao: removeButton, 
                         tipo: 'remover_produto', 
-                        mensagem: 'Deseja realmente remover este produto?<br>Todos os valores deste produto serão removidos.'});
+                        mensagem: 'Deseja realmente remover este produto?' 
+                    }).then(() => { removeProductRow(removeButton);})
                 });
 
                 // Cria o ícone dentro do botão//
@@ -1058,80 +1073,87 @@ export async function prenchTabCot(resp) {
             fornecedores.forEach((fornecedorObj, index) => {
                 //Cria a célula com o nome do fornecedor//
                 const celulaCabecalho = document.createElement('th');
+                celulaCabecalho.dataset.id_forn = fornecedorObj.id_fornecedor;
+                celulaCabecalho.colSpan = 2;
+
+                //Cria a checkbox//
                 const checkbox = document.createElement('input');
-    
                 checkbox.type = 'checkbox';
                 checkbox.classList.add('supplier-checkbox');
+
+                let removeButton;
 
                 if (valoresAprovado[index] == 'true') {
                     if (!foundChecked) {
                         checkbox.checked = true;
-                        selectedCheckbox = checkbox;
+                        globais.selectedCheckbox = checkbox;
                         globais.idFornAprovado = fornecedorObj.id_fornecedor;
                         foundChecked = true;
                     }
                 }
 
-                checkbox.addEventListener('change', function () {
-                    // Obtém as linhas de cabeçalho diretamente
-                    const headerRow1 = checkbox.closest('table').querySelector('thead tr:nth-child(1)');
-                    const headerRow2 = checkbox.closest('table').querySelector('thead tr:nth-child(2)');
+                if(globais.pag !== "editar_cotacao_DP")
+                {
+                    // Cria o botão de remover fornecedor//
+                    removeButton = document.createElement('button');
+                    removeButton.classList.add('remove-btn', 'remove-forn-btn', 'close-icon');
 
-                    // Remove a classe 'forn-aprovado' de todas as células de cabeçalho
-                    const allHeaderCells = headerRow1.querySelectorAll('th, td'); // Seleciona todas as células do cabeçalho
-                    allHeaderCells.forEach(cell => {
-                        cell.classList.remove('forn-aprovado'); // Remove a classe de todas as células
-                    });
-
-                    // Remove a classe 'forn-aprovado' de todas as células de cabeçalho
-                    const allHeaderCells2 = headerRow2.querySelectorAll('th, td'); // Seleciona todas as células do cabeçalho
-                    allHeaderCells2.forEach(cell => {
-                        cell.classList.remove('forn-aprovado'); // Remove a classe de todas as células
-                    });
-
-                    //
-                    if (checkbox.checked) {
-                        if (selectedCheckbox && selectedCheckbox !== checkbox) {
-                            selectedCheckbox.checked = false;
-                        }
-                        selectedCheckbox = checkbox;
-                        globais.idFornAprovado = fornecedorObj.id_fornecedor;
+                    checkbox.addEventListener('change', function () {
+                        // Obtém as linhas de cabeçalho diretamente
+                        const headerRow1 = checkbox.closest('table').querySelector('thead tr:nth-child(1)');
+                        const headerRow2 = checkbox.closest('table').querySelector('thead tr:nth-child(2)');
+    
+                        // Remove a classe 'forn-aprovado' de todas as células de cabeçalho
+                        const allHeaderCells = headerRow1.querySelectorAll('th, td'); // Seleciona todas as células do cabeçalho
+                        allHeaderCells.forEach(cell => {
+                            cell.classList.remove('forn-aprovado'); // Remove a classe de todas as células
+                        });
+    
+                        // Remove a classe 'forn-aprovado' de todas as células de cabeçalho
+                        const allHeaderCells2 = headerRow2.querySelectorAll('th, td'); // Seleciona todas as células do cabeçalho
+                        allHeaderCells2.forEach(cell => {
+                            cell.classList.remove('forn-aprovado'); // Remove a classe de todas as células
+                        });
+    
+                        //
+                        if (checkbox.checked) {
+                            if (globais.selectedCheckbox && globais.selectedCheckbox !== checkbox) {
+                                globais.selectedCheckbox.checked = false;
+                            }
+                            globais.selectedCheckbox = checkbox;
+                            globais.idFornAprovado = fornecedorObj.id_fornecedor;
+                            
+                            // Adiciona a classe 'forn-aprovado' às células do fornecedor selecionado
+                            const headerCell = checkbox.closest('th'); // Célula do cabeçalho correspondente
+                            headerCell.classList.add('forn-aprovado'); // Adiciona a classe ao cabeçalho do fornecedor
+    
+                            // Adiciona a classe 'forn-aprovado' às células de valor unitário e total
+                            const colIndex = Array.from(headerRow1.cells).indexOf(headerCell); // Índice da célula do cabeçalho
+                            const unitPriceHeader = headerRow2.cells[colIndex * 2 - ipcv]; // Célula de valor unitário
+                            const totalPriceHeader = headerRow2.cells[colIndex * 2 - (ipcv - 1)]; // Célula de valor total
+                            unitPriceHeader.classList.add('forn-aprovado'); // Adiciona a classe ao valor unitário
+                            totalPriceHeader.classList.add('forn-aprovado'); // Adiciona a classe ao valor total
                         
-                        // Adiciona a classe 'forn-aprovado' às células do fornecedor selecionado
-                        const headerCell = checkbox.closest('th'); // Célula do cabeçalho correspondente
-                        headerCell.classList.add('forn-aprovado'); // Adiciona a classe ao cabeçalho do fornecedor
-
-                        // Adiciona a classe 'forn-aprovado' às células de valor unitário e total
-                        const colIndex = Array.from(headerRow1.cells).indexOf(headerCell); // Índice da célula do cabeçalho
-                        const unitPriceHeader = headerRow2.cells[colIndex * 2 - ipcv]; // Célula de valor unitário
-                        const totalPriceHeader = headerRow2.cells[colIndex * 2 - (ipcv - 1)]; // Célula de valor total
-                        unitPriceHeader.classList.add('forn-aprovado'); // Adiciona a classe ao valor unitário
-                        totalPriceHeader.classList.add('forn-aprovado'); // Adiciona a classe ao valor total
-                    
-                    } else {
-                        selectedCheckbox = null;
-                        globais.idFornAprovado = null;
-                    }
-                    atualizarValorTotalParcelas();
-                    atualizarValorTotalClassificacoes();
-                    
-                });
-
-                celulaCabecalho.dataset.id_forn = fornecedorObj.id_fornecedor;
-                celulaCabecalho.colSpan = 2;
-                
-                // Cria o botão de remover fornecedor//
-                const removeButton = document.createElement('button');
-                removeButton.classList.add('remove-btn', 'remove-forn-btn', 'close-icon');
-
-                
-                removeButton.addEventListener('click', () => {
-                    customModal({
-                        botao: removeButton, 
-                        tipo: 'remover_fornecedor', 
-                        mensagem: `Deseja realmente remover o fornecedor ${fornecedorObj.Fornecedor}?\nTodos os valores deste fornecedor serão removidos.`
+                        } else {
+                            globais.selectedCheckbox = null;
+                            globais.idFornAprovado = null;
+                        }
+                        atualizarValorTotalParcelas();
+                        atualizarValorTotalClassificacoes();
+                        
                     });
-                });
+                    
+                    removeButton.addEventListener('click', () => {
+                        customModal({
+                            botao: removeButton, 
+                            tipo: 'remover_fornecedor', 
+                            mensagem: `Deseja realmente remover o fornecedor ${fornecedorObj.Fornecedor}?\nTodos os valores deste fornecedor serão removidos.`
+                        });
+                    });
+                }else
+                {
+                    checkbox.disabled = true;
+                }
                 
                 // Cria um container para o nome do fornecedor//
                 const container = document.createElement('div');
@@ -1145,7 +1167,10 @@ export async function prenchTabCot(resp) {
                 // Adiciona o texto ao container//
                 container.appendChild(checkbox);
                 container.appendChild(fornecedorText);
-                container.appendChild(removeButton);
+                if(removeButton)
+                {
+                    container.appendChild(removeButton);
+                }
                 celulaCabecalho.appendChild(container);
                 celulaCabecalho.style.position = 'relative';
 
@@ -1161,7 +1186,6 @@ export async function prenchTabCot(resp) {
 
                 //=====ADICIONA A CELULA DE FRETE=====//
                 const cellFrete = document.createElement('td');
-                console.log("valores frete => ", valoresFrete[index]);
                 cellFrete.innerText = formatToBRL(valoresFrete[index] || '0,00');
                 cellFrete.classList.add('numeric-cell');
                 cellFrete.colSpan = 2;
@@ -1230,6 +1254,7 @@ export async function prenchTabCot(resp) {
         addHeaderForn(fornecedores);
         // Calcula os totais
         calcularTotais();
+        atualizarOuvintesTabCot();
     }
 }
 
@@ -1486,7 +1511,6 @@ async function pegarDadosNF() {
         dadosNF[valorTotalPagar.getAttribute('name')] = converterStringParaDecimal(valorTotalPagar.textContent || '');
     }
 
-    console.log("dadosNF => ", dadosNF);
     return dadosNF;
 }
 
@@ -1566,10 +1590,7 @@ async function pegarDadosClassificacao() {
  * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
  */
 export async function saveTableData({tipo = null}) {
-    console.log("[SAVE TABLE DATA]");
     if (globais.cotacaoExiste) {
-        console.log("--Cotacao existe--")
-
         for (const id of idsCotacao) {
             let payload = {
                 data: {
@@ -1580,15 +1601,15 @@ export async function saveTableData({tipo = null}) {
         }
         globais.cotacaoExiste = false;
         await saveTableData(globais.tipo);
+
     } else {
-        console.log("--Cotacao NÃO existe--")
         const {dadostabPrecos, dadosExtrasPDC} = await pegarDadostabPrecos();
 
         const dadosIniciaisPdc = await pegarDadosPDC();
         const dadosClassificacao = await pegarDadosClassificacao();
         const dadosNF = await pegarDadosNF();
         const dadosPDC = {...dadosIniciaisPdc, ...dadosExtrasPDC, ...dadosClassificacao, ...dadosNF};
-        console.log("dados PDC => ", JSON.stringify(dadosPDC))
+
         //====================CRIA O REGISTRO DO PDC====================//
         let respPDC;
         if(globais.tipo === 'editar_pdc'){
@@ -1607,7 +1628,6 @@ export async function saveTableData({tipo = null}) {
                 globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
             }
         }
-        console.log("resp PDC => ", JSON.stringify(respPDC));
         
         //====================CRIA O REGISTRO DA COTAÇÃO====================//
         const json = JSON.stringify(dadostabPrecos, null, 2);
