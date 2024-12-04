@@ -265,6 +265,9 @@ button:hover {
 
 .remove-btn,
 .add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     align-items: center;
     justify-content: center;
     border: none;
@@ -272,10 +275,11 @@ button:hover {
     padding: 0;
     margin: 0;
     transition: color 0.3s ease;
+    font-size: 30px;
 }
-
-.close-icon::before {
-    content: "⨯";
+.add-btn{
+    color: #187124;
+    margin: 0px 0px 0px 10px;
 }
 
 .add-product-btn
@@ -481,7 +485,6 @@ button:hover {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     border-radius: 10px;
-    min-width: 30vw;
     width: fit-content;
     height: fit-content;
     text-align: center;
@@ -723,8 +726,6 @@ button:hover {
 .add-parcela {
     background: none;
     border: none;
-    color: #187124;
-    font-size: 30px;
     cursor: pointer;
     padding: 0;
     margin-top: 8px;
@@ -742,8 +743,6 @@ button:hover {
 .add-product-btn {
     background: none;
     border: none;
-    color: #187124;
-    font-size: 30px;
     cursor: pointer;
     padding: 0;
     margin: 0;
@@ -832,12 +831,10 @@ button:hover {
     align-items: center;
     justify-content: center;
     transition: color 0.2s ease;
-    font-size: 30px;
     height: 35px;
 }
 
 .add-classificacao {
-    color: #187124;
     margin-top: 8px;
 }
 
@@ -853,7 +850,6 @@ button:hover {
     background: none;
     border: none;
     color: #921414;
-    font-size: 30px;
     cursor: pointer;
     padding: 0;
     margin: 0;
@@ -881,6 +877,9 @@ button:hover {
 
 .popup-content {
     margin: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .cabecalho-popup {
@@ -1196,4 +1195,72 @@ button:hover {
     color: white;
     font-size: 40px;
     font-weight: bold;
+}
+
+.popup-cadastrar-fornecedor {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 400px; /* Ajuste conforme necessário */
+}
+
+.cabecalho-popup {
+    font-size: 20px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.modal-cadastro-fornecedor {
+    background-color: #fff; /* Cor de fundo */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+    padding: 20px; /* Espaçamento interno */
+    width: 650px; /* Largura do modal aumentada */
+    max-width: 90%; /* Largura máxima */
+    text-align: left; /* Alinhamento do texto à esquerda */
+}
+
+.cadastro-fornecedor-titulo
+{
+    text-align: center;
+    margin-top: 0px;
+}
+
+.modal-cadastro-fornecedor .campo {
+    display: flex; /* Usar flexbox para alinhar label e input */
+    align-items: center; /* Alinha verticalmente ao centro */
+    margin-bottom: 15px; /* Margem inferior entre os campos */
+}
+
+.modal-cadastro-fornecedor label {
+    margin-right: 10px; /* Margem à direita da label */
+    font-weight: bold; /* Negrito */
+    color: #333; /* Cor do texto */
+    flex: 0 0 80px; /* Largura fixa para a label */
+}
+
+.modal-cadastro-fornecedor input,
+.modal-cadastro-fornecedor select {
+    flex: 1; /* Faz o input ocupar o restante do espaço */
+    padding: 8px; /* Espaçamento interno */
+    border: 1px solid #ccc; /* Borda */
+    border-radius: 4px; /* Bordas arredondadas */
+    font-size: 90%; /* Tamanho da fonte */
+}
+.modal-cadastro-fornecedor button:hover {
+    background-color: #45a049; /* Cor ao passar o mouse */
+}
+
+.modal-cadastro-fornecedor .botao-salvar {
+    display: block; /* Exibe o botão como bloco */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-colunas {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Cria 2 colunas de igual largura */
+    gap: 15px; /* Espaçamento entre os campos */
 }

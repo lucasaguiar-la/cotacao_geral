@@ -275,7 +275,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
     //====================CRIA O BOTÃO DE REMOVER====================//
     const removerButton = document.createElement('button');
     removerButton.type = 'button';
-    removerButton.classList.add('remover-parcela', 'close-icon');
+    removerButton.classList.add('remover-parcela', 'close-icon', 'remove-btn');
 
     //====================ADICIONA A FUNÇÃO DE REMOVER AO BOTÃO DE REMOVER====================//
     removerButton.addEventListener('click', function () {
@@ -444,7 +444,7 @@ export function adicionarLinhaClassificacao() {
     // Cria o botão de remoção
     const botaoRemover = document.createElement('button');
     botaoRemover.type = 'button';
-    botaoRemover.classList.add('remover-classificacao', 'close-icon');
+    botaoRemover.classList.add('remover-classificacao', 'close-icon', 'remove-btn');
     botaoRemover.addEventListener('click', () => removerLinhaClassificacao(botaoRemover));
     
     // Adiciona todos os elementos à nova linha

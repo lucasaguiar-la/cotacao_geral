@@ -214,11 +214,17 @@ export async function addSupplierColumn() {
         const containerOpcoes = document.createElement('div');
         containerOpcoes.classList.add('opcoes-container');
 
+        const botaoCadastrarFornecedor = document.createElement('button');
+        botaoCadastrarFornecedor.classList.add('criar-fornecedor-btn', 'add-btn', 'add-icon');
+        botaoCadastrarFornecedor.addEventListener('click', ()=>{abrirModalCadastroFornecedor()});
+        
+        
+
         // Popula o dropdown com os fornecedores
         globais.baseFornecedores.forEach((dadosFornecedor, idFornecedor) => {
             const opcao = document.createElement('div');
             opcao.classList.add('dropdown-opcao');
-            
+
             opcao.dataset.fornecedor = dadosFornecedor[0]; // Número do fornecedor como dataset
             let nomeFornecedor = dadosFornecedor[1];
             if (nomeFornecedor.length > qtdCaract) {
@@ -363,7 +369,7 @@ export async function addSupplierColumn() {
                 const newRow = otherTableBody.insertRow();
                 const fornecedorCell = newRow.insertCell(0);
                 fornecedorCell.innerText = nome_forn;
-                fornecedorCell.dataset.id_forn = idFornecedor;
+                fornecedorCell.dataset.id_forn = dadosFornecedor[0];
     
                 const condicoesPagamentoCell = newRow.insertCell(1);
                 const observacoesCell = newRow.insertCell(2);
@@ -386,6 +392,7 @@ export async function addSupplierColumn() {
 
         // Adiciona o containerFornecedor ao conteúdo do popup
         conteudoPopup.appendChild(containerFornecedor);
+        conteudoPopup.appendChild(botaoCadastrarFornecedor);
 
         // Adiciona os eventos do dropdown
         botaoAbrirDropdown.onclick = () => {
@@ -430,6 +437,7 @@ export async function addSupplierColumn() {
  * - Usa o ID do fornecedor armazenado no dataset para garantir remoção correta
  */
 export function removeSupplierColumn(button) {
+    console.log("[REMOVENDO COLUNA DE FORNECEDOR");
     const table = document.getElementById('priceTable');
     const headerRow1 = table.rows[0];
     const headerRow2 = table.rows[1];
@@ -439,6 +447,8 @@ export function removeSupplierColumn(button) {
     const headerCell = button.closest('th');
     const colIndex = Array.from(headerRow1.cells).indexOf(headerCell);
     const supplierId = headerCell.dataset.id_forn;
+
+    console.log("Header cell => ", headerCell);
 
     // Função auxiliar para remover célula com verificação de índice válido
     const safeDeleteCell = (row, index) => {
@@ -459,13 +469,13 @@ export function removeSupplierColumn(button) {
             safeDeleteCell(row, baseIndex); // Valor total
         } else {
             // Remove células de totalizadores (células mescladas)
-            safeDeleteCell(row, colIndex - 1);
+            safeDeleteCell(row, colIndex - (ipcv - 1));
         }
     }
 
     // Remove células do cabeçalho
     if (colIndex + 1 < headerRow2.cells.length) {
-        const headerBaseIndex = colIndex * 2 - 2;
+        const headerBaseIndex = colIndex * 2 - ipcv;
         safeDeleteCell(headerRow2, headerBaseIndex); // Valor Total
         safeDeleteCell(headerRow2, headerBaseIndex); // Valor Unitário
     }
@@ -477,6 +487,7 @@ export function removeSupplierColumn(button) {
     
     for (let i = 0; i < otherRows.length; i++) {
         const fornecedorCell = otherRows[i].cells[0];
+        console.log(fornecedorCell.dataset.id_forn);
         if (fornecedorCell?.dataset.id_forn === supplierId) {
             otherTable.getElementsByTagName('tbody')[0].deleteRow(i);
             break;
@@ -506,7 +517,7 @@ function criarPopupBase(conteudo) {
     popupFornecedor.classList.add('popup-fornecedor');
 
     const botaoFechar = document.createElement('button');
-    botaoFechar.classList.add('btn-fechar', 'close-icon');
+    botaoFechar.classList.add('btn-fechar', 'close-icon', 'remove-btn');
     botaoFechar.onclick = () => document.body.removeChild(botaoFechar.closest('.popup-overlay'));
 
     const conteudoPopup = document.createElement('div');
@@ -1072,6 +1083,7 @@ export async function prenchTabCot(resp) {
             let foundChecked = false;
             fornecedores.forEach((fornecedorObj, index) => {
                 //Cria a célula com o nome do fornecedor//
+                console.log("[FORNECEDOR OBJECT] => ", JSON.stringify(fornecedorObj));
                 const celulaCabecalho = document.createElement('th');
                 celulaCabecalho.dataset.id_forn = fornecedorObj.id_fornecedor;
                 celulaCabecalho.colSpan = 2;
@@ -1146,8 +1158,12 @@ export async function prenchTabCot(resp) {
                     removeButton.addEventListener('click', () => {
                         customModal({
                             botao: removeButton, 
-                            tipo: 'remover_fornecedor', 
-                            mensagem: `Deseja realmente remover o fornecedor ${fornecedorObj.Fornecedor}?\nTodos os valores deste fornecedor serão removidos.`
+                            tipo: 'remover_fornecedor',
+                            mensagem: `Deseja realmente remover o fornecedor <b>${fornecedorObj.Fornecedor}</b>?<br>Todos os valores deste fornecedor serão removidos.`
+                        }).then((confirmacao)=>{
+                            if (confirmacao===true) {
+                                removeSupplierColumn(removeButton);
+                            }
                         });
                     });
                 }else
@@ -1232,6 +1248,7 @@ export async function prenchTabCot(resp) {
 
                 const fornCell = detailRow.insertCell();
                 fornCell.textContent = fornecedorObj.Fornecedor;
+                fornCell.dataset.id_forn = fornecedorObj.id_fornecedor;
 
                 const condPagCell = detailRow.insertCell();
                 const dadosFornecedor = data.find(item => item.id_fornecedor === fornecedorObj.id_fornecedor);
@@ -1370,6 +1387,8 @@ async function pegarDadostabPrecos(){
      const descontos = [];
      const totalGeral = [];
      const idsFornecedores = [];
+
+
 
 
      // Captura os fornecedores da tab
@@ -1673,3 +1692,110 @@ function showAlertModal(message) {
     modal.appendChild(popupFornecedor);
     document.body.appendChild(modal);
 }
+
+function abrirModalCadastroFornecedor() {
+    // Criação do overlay do modal
+    const overlay = document.createElement('div');
+    overlay.classList.add('popup-overlay');
+
+    // Criação do modal
+    const modal = document.createElement('div');
+    modal.classList.add('modal-cadastro-fornecedor'); // Classe para estilização
+
+    // Cabeçalho do modal
+    const cabecalho = document.createElement('h2');
+    cabecalho.classList.add('cadastro-fornecedor-titulo');
+    cabecalho.innerText = 'Cadastro de Fornecedor';
+    modal.appendChild(cabecalho);
+
+    // Formulário de cadastro
+    const formulario = document.createElement('form');
+    formulario.classList.add('form-colunas'); // Adiciona classe para colunas
+
+    // Campos do formulário
+    const campos = [
+        { label: 'Nome:', name: 'Nome_do_fornecedor' },
+        { label: 'Cpf/Cnpj:', name: 'Cpf_Cnpj_do_fornecedor' },
+        { label: 'Serviços prestados:', name: 'Servicos_prestados' },
+        { label: 'Dados bancários:', name: 'Dados_bancarios' },
+        { label: 'E-mail:', name: 'E_mail' },
+        { label: 'Telefone:', name: 'Telefone' },
+    ];
+
+    campos.forEach(campo => {
+        const divCampo = document.createElement('div');
+        divCampo.classList.add('campo'); // Adiciona a classe 'campo' para o layout flexível
+
+        const label = document.createElement('label');
+        label.innerText = campo.label;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = campo.name;
+
+        // Adiciona ouvintes de eventos para validação
+        input.addEventListener('input', () => {
+            switch (campo.name) {
+                case 'Telefone:':
+                    
+                    break;
+                case 'Cpf_Cnpj_do_fornecedor:':
+                    // Permite apenas números e formata CPF ou CNPJ
+                    input.value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+                    if (input.value.length > 14) {
+                        input.value = input.value.slice(0, 14); // Limita a 14 dígitos
+                    }
+                    if (input.value.length === 11) {
+                        input.value = input.value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{2})$/, '$1-$2'); // Formata CPF
+                    } else if (input.value.length === 14) {
+                        input.value = input.value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5'); // Formata CNPJ
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        // Adicionando evento blur para o campo de e-mail
+        input.addEventListener('blur', () => {
+            if (campo.name === 'E_mail:' && !input.value.includes('@')) {
+                alert('Por favor, insira um e-mail válido que contenha "@"');
+            }
+        });
+
+        divCampo.appendChild(label);
+        divCampo.appendChild(input);
+        formulario.appendChild(divCampo);
+    });
+
+    // Checkbox para fornecedor online
+    const divCheckbox = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'Fornecedor_online';
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.innerText = 'Fornecedor online';
+    divCheckbox.appendChild(checkbox);
+    divCheckbox.appendChild(checkboxLabel);
+    formulario.appendChild(divCheckbox);
+
+    // Botão de salvar
+    const botaoSalvar = document.createElement('button');
+    botaoSalvar.type = 'button'; // Mantenha como 'button' para evitar envio do formulário
+    botaoSalvar.innerText = 'Salvar';
+    botaoSalvar.classList.add('botao-salvar', 'save-btn'); // Adiciona a classe para estilização
+    botaoSalvar.onclick = () => {
+        // Aqui você pode adicionar a lógica para salvar os dados
+        console.log('Dados salvos!'); // Exemplo de ação
+        document.body.removeChild(overlay); // Fecha o modal
+    };
+
+    // Adiciona o formulário ao modal
+    modal.appendChild(formulario);
+    modal.appendChild(botaoSalvar);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
+
+// Chame a função para abrir o modal quando necessário
+// abrirModalCadastroFornecedor();
