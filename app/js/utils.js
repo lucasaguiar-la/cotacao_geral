@@ -50,8 +50,10 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 
         // Função de criar registro
         async function criar_reg(ddsCriacao) {
+            console.log("ENTROU NA FUNÇÂO CRIAR REGISTROS")
 
             ddsCriacao = { "data": ddsCriacao };
+            console.log("Dados criação => ", ddsCriacao);
             const config = {
                 appName: globais.nomeApp,
                 formName: nomeF,
@@ -109,7 +111,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 
         // Funções solicitadas conforme tipo
         if (tipo === "add_reg") {
-
+            
             return await criar_reg(corpo);
         } else if (tipo === "atualizar_reg") {
 
@@ -118,6 +120,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 
             return await busc_reg(nomeR, criterios, 1);
         } else if (tipo === "busc_reg_recursivo") {
+
             return await buscarRecursivamente(nomeR, criterios);
         }
     } catch (err) {

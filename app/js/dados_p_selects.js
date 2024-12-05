@@ -51,7 +51,7 @@ export async function buscarFornecedores() {
                 item["Dados_bancarios"]
             ]);
         });
-        
+        console.log("============BASE FORNECEDORES || ", JSON.stringify(baseFornecedores));
         return baseFornecedores;
     } catch (error) {
         console.error("Erro ao buscar fornecedores:", error);
