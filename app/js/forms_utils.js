@@ -913,26 +913,22 @@ export async function preencherListaAnexosV2(anexos) {
         return;
     }
 
-    // Limpa a galeria antes de adicionar novos elementos
     galleryElement.innerHTML = '';
     
     if (anexos && anexos.length > 0) {
         async function adicionarImagem(img) {
             return new Promise((resolve) => {
                 const newImgEl = document.createElement('img');
-                
-                // Copia os dados da imagem original
                 newImgEl.src = img.src;
                 newImgEl.href = img.src;
                 
-                // Espera a nova imagem carregar
                 newImgEl.onload = () => {
                     const imgContainer = document.createElement('div');
                     imgContainer.classList.add('gallery-item');
                     
-                    // Configura o Fancybox
                     newImgEl.setAttribute('data-fancybox', 'gallery');
                     newImgEl.setAttribute('data-src', img.src);
+                    newImgEl.setAttribute('data-download-src', img.src);
                     
                     imgContainer.appendChild(newImgEl);
                     galleryElement.appendChild(imgContainer);
@@ -941,20 +937,7 @@ export async function preencherListaAnexosV2(anexos) {
             });
         }
 
-        // Inicializa o Fancybox uma única vez para toda a galeria
-        $.fancybox.defaults.hash = false; // Desativa mudanças na URL
-        $('[data-fancybox="gallery"]').fancybox({
-            buttons: [
-                "zoom",
-                "download",
-                "close"
-            ],
-            zoom: true,
-            protect: true,
-            backFocus: false,
-            destroy: false
-        });
-
+        // Carrega todas as imagens primeiro
         for (const anexo of anexos) {
             const newAnexo = anexo.display_value;
             const fileType = newAnexo.split('.').pop().toLowerCase();
@@ -984,6 +967,25 @@ export async function preencherListaAnexosV2(anexos) {
                 const fileID = matchSegundoID ? matchSegundoID[1] : null;
             }
         }
+
+        // Inicializa o Fancybox DEPOIS que todas as imagens foram carregadas
+        setTimeout(() => {
+            $.fancybox.defaults.hash = false;
+            $('[data-fancybox="gallery"]').fancybox({
+                buttons: [
+                    "zoom",
+                    "download",
+                    "close"
+                ],
+                modal: false,
+                touch: false,
+                download: true,
+                afterClose: function() {
+                    galleryElement.style.display = 'block';
+                }
+            });
+        }, 500); // Pequeno delay para garantir que todas as imagens foram processadas
+
     } else {
         const p = document.createElement('p');
         p.classList.add('mensagem-anexos');
