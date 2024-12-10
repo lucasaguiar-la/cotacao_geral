@@ -1,46 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualizador de PDF Blob</title>
-</head>
-<body>
-  <h1>Visualizador de PDF</h1>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancybox Gallery</title>
+    
+    <!-- Incluindo o jQuery e o Fancybox -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.js"></script>
 
-  <h2>Pré-visualização:</h2>
-  <iframe id="pdfViewer" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
-
-  <script>
-    // Função para buscar e exibir o PDF
-    async function fetchAndDisplayPDF(url) {
-      try {
-        // Faz a requisição do PDF com modo 'no-cors'
-        const response = await fetch(url, { mode: 'no-cors' });
-
-        // Verifica se a resposta é válida
-        if (!response.ok) {
-          throw new Error(`Erro ao baixar o PDF: ${response.status} ${response.statusText}`);
+    <!-- Incluindo o CSS do Fancybox -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.css" />
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
         }
 
-        // Converte a resposta para um Blob
-        const blob = await response.blob();
+        .gallery img {
+            width: 200px;
+            height: 150px;
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
 
-        // Cria uma URL temporária para o Blob
-        const blobUrl = URL.createObjectURL(blob);
+        .gallery img:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
 
-        // Exibe o PDF no iframe
-        const pdfViewer = document.getElementById('pdfViewer');
-        pdfViewer.src = blobUrl;
+    <h1>Galeria de Imagens</h1>
+    <div class="gallery">
+        <a href="https://via.placeholder.com/800x600?text=Imagem+1" data-fancybox="gallery">
+            <img src="https://via.placeholder.com/200x150?text=Imagem+1" alt="Imagem 1">
+        </a>
+        <a href="https://via.placeholder.com/800x600?text=Imagem+2" data-fancybox="gallery">
+            <img src="https://via.placeholder.com/200x150?text=Imagem+2" alt="Imagem 2">
+        </a>
+        <a href="https://via.placeholder.com/800x600?text=Imagem+3" data-fancybox="gallery">
+            <img src="https://via.placeholder.com/200x150?text=Imagem+3" alt="Imagem 3">
+        </a>
+        <a href="https://via.placeholder.com/800x600?text=Imagem+4" data-fancybox="gallery">
+            <img src="https://via.placeholder.com/200x150?text=Imagem+4" alt="Imagem 4">
+        </a>
+        <a href="https://via.placeholder.com/800x600?text=Imagem+5" data-fancybox="gallery">
+            <img src="https://via.placeholder.com/200x150?text=Imagem+5" alt="Imagem 5">
+        </a>
+    </div>
 
-        console.log('PDF carregado com sucesso.');
-      } catch (error) {
-        console.error('Erro ao carregar o PDF:', error);
-        alert('Não foi possível carregar o PDF. Verifique o link ou a conexão.');
-      }
-    }
-
-    fetchAndDisplayPDF("https://creatorexport.zoho.com/file/guillaumon/teste-superflui/Documentos_Anexados_Report/3938561000087175133/File_upload/download/A68wRXD25q5603Cs27kgF9B0nQ89R6jWEnR6VkRJ0hqajuWSOtuk2FgVXx0brJgExGeF0EXO6wRFjuEHz3hrmkv4qWpxkM6Zt4AV?filepath=/1733138363579_VLQ_SINDICO_PROFISSIONAL__CONSULTORIA_E_ASSESSORIA_EMPRESARIAL_LTDA..pdf");
-  </script>
+    <script>
+        // Inicializando o Fancybox
+        $(document).ready(function() {
+            $('[data-fancybox="gallery"]').fancybox({
+                buttons: [
+                    "zoom",
+                    "slideShow",
+                    "fullScreen",
+                    "download",
+                    "share",
+                    "close"
+                ]
+            });
+        });
+    </script>
 </body>
 </html>

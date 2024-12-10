@@ -5,10 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Levantamento de Preços</title>
-    <link rel="stylesheet" href="./styles/main_styles.css">
+
+    <!-- Incluindo o jQuery e o Fancybox -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.js"></script>
+
+    <!-- Incluindo o CSS do Fancybox -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.css" />
     
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script type="text/javascript" src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+
+    <link rel="stylesheet" href="./styles/main_styles.css">
+    <script type="text/javascript"
+        src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
     <script type="module" src="./js/main.js"></script>
 </head>
 
@@ -53,7 +61,7 @@
                             <input type="text" name="Justificativa" id="justificativa" class="justificativa"></input>
                         </div>
                     </div>
-                    
+
                 </form>
             </div>
         </div>
@@ -102,7 +110,7 @@
                         <td class="action-buttons">
                         </td>
                     </tr>
-                    <tr id="linha-valor-total" class="linhas-totalizadoras"> 
+                    <tr id="linha-valor-total" class="linhas-totalizadoras">
                         <td contenteditable="false" colspan="3">Valor total</td>
                         <td class="action-buttons">
 
@@ -144,13 +152,17 @@
                 <form action="#" id="form-pagamento">
                     <label>Forma de Pagamento:</label>
                     <div class="radio-group" name="tipo-pag">
-                        <input type="radio" id="boleto" name="Forma_de_pagamento" value="Boleto" class="formas-pagamento">
+                        <input type="radio" id="boleto" name="Forma_de_pagamento" value="Boleto"
+                            class="formas-pagamento">
                         <label for="boleto">Boleto</label>
-                        <input type="radio" id="dep_cc" name="Forma_de_pagamento" value="Dep. em CC" class="formas-pagamento">
+                        <input type="radio" id="dep_cc" name="Forma_de_pagamento" value="Dep. em CC"
+                            class="formas-pagamento">
                         <label for="dep_cc">Dep. em CC</label>
-                        <input type="radio" id="dep_cp" name="Forma_de_pagamento" value="Dep. em CP" class="formas-pagamento">
+                        <input type="radio" id="dep_cp" name="Forma_de_pagamento" value="Dep. em CP"
+                            class="formas-pagamento">
                         <label for="dep_cp">Dep. em CP</label>
-                        <input type="radio" id="cheque" name="Forma_de_pagamento" value="Emissão de Cheque" class="formas-pagamento">
+                        <input type="radio" id="cheque" name="Forma_de_pagamento" value="Emissão de Cheque"
+                            class="formas-pagamento">
                         <label for="cheque">Emissão de Cheque</label>
                         <!--
                         <input type="radio" id="pix" name="Forma_de_pagamento" value="Pix" class="formas-pagamento">
@@ -202,8 +214,9 @@
                     <div id="camposData">
                         <div class="parcela">
                             <label>Parcela nº 1:</label>
-                            <input type="date" name="Datas" placeholder="dd/mm/aaaa" class="campo-datas"/>
-                            <input type="text" name="Valor" class="input-number valor-parcela campo-datas" placeholder="R$ 0,00"/>
+                            <input type="date" name="Datas" placeholder="dd/mm/aaaa" class="campo-datas" />
+                            <input type="text" name="Valor" class="input-number valor-parcela campo-datas"
+                                placeholder="R$ 0,00" />
                             <button type="button" class="remover-parcela close-icon remove-btn"></button>
                         </div>
                     </div>
@@ -245,7 +258,8 @@
                         <tbody>
                             <tr style="font-weight: bold;">
                                 <td>Valor original:</td>
-                                <td id="valor-original" class="numeric-cell" style="text-align: right;" name="Valor_original">0,00</td>
+                                <td id="valor-original" class="numeric-cell" style="text-align: right;"
+                                    name="Valor_original">0,00</td>
                             </tr>
                             <tr>
                                 <td>INSS:</td>
@@ -257,23 +271,28 @@
                             </tr>
                             <tr>
                                 <td>PIS, CONFINS, CSSL:</td>
-                                <td><input type="text" id="pis-confins-cssl" class="input-number campos-ret-desc" name="PIS_COFINS_CSSL"></td>
+                                <td><input type="text" id="pis-confins-cssl" class="input-number campos-ret-desc"
+                                        name="PIS_COFINS_CSSL"></td>
                             </tr>
                             <tr>
                                 <td>Desconto comercial ou parcela:</td>
-                                <td><input type="text" id="desconto-comercial" class="input-number campos-ret-desc" name="Desconto_comercial_ou_parcela"></td>
+                                <td><input type="text" id="desconto-comercial" class="input-number campos-ret-desc"
+                                        name="Desconto_comercial_ou_parcela"></td>
                             </tr>
                             <tr style="font-weight: bold;">
                                 <td>DESCONTOS (total):</td>
-                                <td id="descontos-total" class="numeric-cell campos-ret-total-desc" style="text-align: right;" name="Total_de_descontos">0,00</td>
+                                <td id="descontos-total" class="numeric-cell campos-ret-total-desc"
+                                    style="text-align: right;" name="Total_de_descontos">0,00</td>
                             </tr>
                             <tr>
                                 <td>ACRESCIMO (tarifa bancária):</td>
-                                <td><input type="text" id="acrescimo" class="input-number campos-ret-acr" name="Acrescimo_tarifa_bancaria"></td>
+                                <td><input type="text" id="acrescimo" class="input-number campos-ret-acr"
+                                        name="Acrescimo_tarifa_bancaria"></td>
                             </tr>
                             <tr style="font-weight: bold;">
                                 <td>VALOR TOTAL A PAGAR:</td>
-                                <td id="valor-total-pagar" class="numeric-cell" style="text-align: right;" name="Valor_total_a_pagar">0,00</td>
+                                <td id="valor-total-pagar" class="numeric-cell" style="text-align: right;"
+                                    name="Valor_total_a_pagar">0,00</td>
                             </tr>
                         </tbody>
                     </table>
@@ -298,36 +317,20 @@
                         </div>
                     </div>
                     <div id="botoes-e-totalizadores-classificacoes">
-                        <button type="button" id="adicionarClassificacao" class="add-classificacao add-btn add-icon"></button>
+                        <button type="button" id="adicionarClassificacao"
+                            class="add-classificacao add-btn add-icon"></button>
                         <div id="totalizadores-classificacoes">
                             <label>Total restante:</label>
                             <label id="valor-total-classificacoes">0,00</label>
                         </div>
-                    </div> 
+                    </div>
                 </form>
             </div>
         </div>
         <!--FORM DE ANEXOS-->
-        <!--
-        <div class="form-anexos">
-            <div class="section-header">
-                <h2 class="titulos">ARQUIVOS E ANEXOS DO PDC</h2>
-                <button class="toggle-section"></button>
-            </div>
-            <div class="section" id="section-anexos">
-                <div class="form-container">
-                    <ul id="lista-anexos">
-                        <p style="text-align: center; list-style: none;">Não há anexos...</p>
-                    </ul>
-                </div>
-            </div>
-            <div id="modal" class="modal" onclick="closeModal()">
-                <span class="close">&times;</span>
-                <img class="modal-content" id="modal-img">
-                <div id="caption"></div>
-            </div>
+        <div id="gallery" class="gallery">
+            <!-- As imagens serão inseridas dinamicamente aqui -->
         </div>
-        -->
         <!--BOTÃO SALVAR-->
         <div class="section section-buttons" id="section-final">
             <div class="save-btn-container">
@@ -341,7 +344,7 @@
         <div class="dot" data-section="1"></div>
         <div class="dot" data-section="2"></div>
     </div>
-    -->  
+    -->
 </body>
 
 </html>

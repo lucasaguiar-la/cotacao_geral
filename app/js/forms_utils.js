@@ -1,6 +1,6 @@
-import {globais} from './main.js';
-import {formatToBRL, converterStringParaDecimal} from './utils.js';
-import { 
+import { globais } from './main.js';
+import { formatToBRL, converterStringParaDecimal } from './utils.js';
+import {
     GlobalWorkerOptions,
     getDocument
 } from '../jsPDF/pdf.js';
@@ -38,7 +38,7 @@ export function mostrarCamposPagamento() {
 
         camposBoleto.forEach(campo => campo.classList.remove("hidden"));
     } else if (formaPagamento === "Dep. em CC" || formaPagamento === "Dep. em CP") {
-        
+
         camposDeposito.forEach(campo => campo.classList.remove("hidden"));
     } else if (formaPagamento === "Pix") {
         camposPix.forEach(campo => campo.classList.remove("hidden"));
@@ -66,8 +66,7 @@ export function mostrarCamposPagamento() {
  * - Preenche as datas de vencimento, recriando os campos necessários
  * - Ajusta a visibilidade dos campos conforme a forma de pagamento
  */
-export function preencherDadosPDC(resp)
-{
+export function preencherDadosPDC(resp) {
     globais.cotacaoExiste = true;
     const data = resp.data[0];
     globais.idPDC = data.ID;
@@ -75,7 +74,7 @@ export function preencherDadosPDC(resp)
 
     //==========SESSÃO 1==========//
     const formDadosPDC = document.querySelector('#dados-PDC');
-    
+
     // Select da Entidade
     const selectEntidade = formDadosPDC.querySelector('#entidade');
     if (data.Entidade?.ID) {
@@ -84,8 +83,7 @@ export function preencherDadosPDC(resp)
 
     // Select do tipo
     const selectTipo = formDadosPDC.querySelector('#tipo');
-    if(globais.pag === "editar_cotacao_DP")
-    {
+    if (globais.pag === "editar_cotacao_DP") {
         selectTipo.innerHTML = '';
     }
 
@@ -96,7 +94,7 @@ export function preencherDadosPDC(resp)
     if (tipoSolicitacaoID) {
         // Verifica se o tipo já existe no select
         const optionExistente = Array.from(selectTipo.options).some(option => option.value === tipoSolicitacaoID);
-        
+
         // Se não existir, cria uma nova opção
         if (!optionExistente) {
             const novaOpcao = document.createElement('option');
@@ -104,7 +102,7 @@ export function preencherDadosPDC(resp)
             novaOpcao.textContent = tipoSolicitacaoDescr.toUpperCase();
             selectTipo.appendChild(novaOpcao);
         }
-        
+
         // Seleciona a opção
         selectTipo.value = tipoSolicitacaoID;
     }
@@ -142,7 +140,7 @@ export function preencherDadosPDC(resp)
     // Campos específicos para Depósito
     if (data.Forma_de_pagamento === 'Dep. em CC' || data.Forma_de_pagamento === 'Dep. em CP') {
         const inputBanco = formPagamento.querySelector('#banco');
-        const inputAgencia = formPagamento.querySelector('#agencia'); 
+        const inputAgencia = formPagamento.querySelector('#agencia');
         const inputConta = formPagamento.querySelector('#conta');
         const inputFavorecidoDeposito = formPagamento.querySelector('#favorecido-deposito');
 
@@ -155,7 +153,7 @@ export function preencherDadosPDC(resp)
     // Preenche as datas de vencimento
     if (data.Datas && Array.isArray(data.Datas)) {
         const camposData = document.getElementById('camposData');
-        
+
         // Remove campos existentes
         while (camposData.firstChild) {
             camposData.removeChild(camposData.firstChild);
@@ -166,7 +164,7 @@ export function preencherDadosPDC(resp)
             if (!dataObj.display_value) {
                 return;
             }
-            
+
             const [dataStr, valor, numPDC] = dataObj.display_value.split('|SPLITKEY|');
             const [dia, mes, ano] = dataStr.split('/');
             const dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
@@ -185,14 +183,13 @@ export function preencherDadosPDC(resp)
     const inputAcrescimo = document.querySelector('#acrescimo');
 
     // Preenche os campos de retenção com os dados da resposta
-    if(data.Data_emissao_N_Fiscal)
-    {
+    if (data.Data_emissao_N_Fiscal) {
         const [dia, mes, ano] = data.Data_emissao_N_Fiscal.split('/');
         inputDataEmissaoNF.value = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 
     }
 
-    if(data.Numero_N_Fiscal) inputNumeroNF.value = data.Numero_N_Fiscal;
+    if (data.Numero_N_Fiscal) inputNumeroNF.value = data.Numero_N_Fiscal;
     if (data.INSS) inputInss.value = formatToBRL(data.INSS);
     if (data.ISS) inputIss.value = formatToBRL(data.ISS);
     if (data.PIS_COFINS_CSSL) inputPisConfinsCssl.value = formatToBRL(data.PIS_COFINS_CSSL);
@@ -204,6 +201,13 @@ export function preencherDadosPDC(resp)
     if (formaPagamentoSelecionada) {
         mostrarCamposPagamento();
     }
+
+    if (data.anexo_arquivos && data.anexo_arquivos.length > 0) {
+        console.log("ANEXOS EXISTENTES, CARREGANDO...")
+        console.log(data.anexo_arquivos);
+        preencherListaAnexosV2(data.anexo_arquivos);
+    }
+
 
     preencherDadosClassificacao(data.Classificacao_contabil);
 
@@ -225,8 +229,8 @@ export function preencherDadosPDC(resp)
  * @description
  * - Cria um novo campo de data para parcelas de pagamento
  */
-export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
-    
+export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
+
     numeroParcela++;
 
     //====================CRIA UM NOVO CONTAINER PARA O CAMPO DE DATA E O BOTÃO DE REMOVER====================//
@@ -254,11 +258,10 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
         formatToBRL(novoInputValor);
         atualizarValorTotalParcelas();
     });
-    
+
     //====================CRIA UM CAMPO DE NÚMERO DO PDC====================//
     let novoInputNumPDC;
-    if(numPDC)
-    {
+    if (numPDC) {
         novoInputNumPDC = document.createElement('input');
         novoInputNumPDC.type = 'text';
         novoInputNumPDC.name = 'Num_PDC_parcela';
@@ -271,7 +274,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
             novoInputNumPDC.value = numPDC; // Mantém o valor original se já tiver a parte /NN
         }
     }
-    
+
     //====================CRIA O BOTÃO DE REMOVER====================//
     const removerButton = document.createElement('button');
     removerButton.type = 'button';
@@ -289,9 +292,9 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null){
     novoCampo.appendChild(novoLabel);
     novoCampo.appendChild(novoInput);
     novoCampo.appendChild(novoInputValor);
-    if(novoInputNumPDC) novoCampo.appendChild(novoInputNumPDC);
+    if (novoInputNumPDC) novoCampo.appendChild(novoInputNumPDC);
     novoCampo.appendChild(removerButton);
-    
+
     //====================ADICIONA O NOVO CAMPO AO CONTAINER DE CAMPOS====================//
     document.getElementById('camposData').appendChild(novoCampo);
 
@@ -317,7 +320,7 @@ export function removerCampoVenc(elemento) {
 
         parentElement.remove();
         numeroParcela--;
-        
+
         atualizarLabels();
         atualizarValorTotalParcelas();
     }
@@ -366,7 +369,7 @@ function atualizarLabels() {
  */
 export function adicionarLinhaClassificacao() {
     const camposClassificacao = document.getElementById('camposClassificacao');
-    
+
     // Verifica se o container está oculto e o torna visível
     if (camposClassificacao.classList.contains('hidden')) {
         camposClassificacao.classList.remove('hidden');
@@ -375,13 +378,13 @@ export function adicionarLinhaClassificacao() {
     // Cria a nova linha
     const novaLinha = document.createElement('div');
     novaLinha.classList.add('linha-classificacao');
-    
+
     // Função auxiliar para criar campos
-    const criarCampo = ({inputType, inputName, id = null, options = null}) => {
+    const criarCampo = ({ inputType, inputName, id = null, options = null }) => {
         const campo = document.createElement('div');
         campo.id = id;
         campo.classList.add('campo');
-        
+
         let input;
         if (inputType === 'select') {
             input = document.createElement('select');
@@ -407,11 +410,11 @@ export function adicionarLinhaClassificacao() {
             if (inputType === 'number') {
                 input.classList.add('input-number');
                 input.type = 'text';
-                input.addEventListener('blur', () => {formatToBRL(input); atualizarValorTotalClassificacoes();});
+                input.addEventListener('blur', () => { formatToBRL(input); atualizarValorTotalClassificacoes(); });
             }
         }
         input.name = inputName;
-        
+
         campo.appendChild(input);
         return campo;
     };
@@ -435,10 +438,10 @@ export function adicionarLinhaClassificacao() {
     ]);
 
     // Cria os campos
-    const campoConta = criarCampo({inputType:'select', inputName:'Conta_a_debitar', id:'conta', options:opcoesConta});
-    const campoCentro = criarCampo({inputType:'select', inputName:'Centro_de_custo', id:'centro', options:opcoesCentro});
-    const campoClasse = criarCampo({inputType:'select', inputName:'Classe_operacional', id:'classe', options:opcoesClasse});
-    const campoValor = criarCampo({inputType:'number', inputName:'Valor', id:'valor'});
+    const campoConta = criarCampo({ inputType: 'select', inputName: 'Conta_a_debitar', id: 'conta', options: opcoesConta });
+    const campoCentro = criarCampo({ inputType: 'select', inputName: 'Centro_de_custo', id: 'centro', options: opcoesCentro });
+    const campoClasse = criarCampo({ inputType: 'select', inputName: 'Classe_operacional', id: 'classe', options: opcoesClasse });
+    const campoValor = criarCampo({ inputType: 'number', inputName: 'Valor', id: 'valor' });
 
     // Adiciona evento de mudança na classe para filtrar centro de custo
     // Cria o botão de remoção
@@ -446,14 +449,14 @@ export function adicionarLinhaClassificacao() {
     botaoRemover.type = 'button';
     botaoRemover.classList.add('remover-classificacao', 'close-icon', 'remove-btn');
     botaoRemover.addEventListener('click', () => removerLinhaClassificacao(botaoRemover));
-    
+
     // Adiciona todos os elementos à nova linha
     novaLinha.appendChild(campoConta);
     novaLinha.appendChild(campoCentro);
     novaLinha.appendChild(campoClasse);
     novaLinha.appendChild(campoValor);
     novaLinha.appendChild(botaoRemover);
-    
+
     // Adiciona a nova linha ao container
     camposClassificacao.appendChild(novaLinha);
     //popularSelects(globais.classificacoes,globais.centrosCusto);
@@ -473,15 +476,15 @@ export function adicionarLinhaClassificacao() {
 export function removerLinhaClassificacao(botao) {
     // Busca o form pai mais próximo
     const formPai = botao.closest('form');
-    
-    // Busca todas as linhas de classificação dentro deste form específico
+
+    // Busca todas as linhas de classificão dentro deste form específico
     const linhas = formPai.getElementsByClassName('linha-classificacao');
-    
+
     // Impede a remoção se houver apenas uma linha
     if (linhas.length <= 1) {
         return;
     }
-    
+
     // Remove a linha específica
     const linhaAtual = botao.closest('.linha-classificacao');
     linhaAtual.remove();
@@ -497,7 +500,7 @@ function preencherDadosClassificacao(classificacoes) {
     formClassificacao.querySelectorAll('.linha-classificacao').forEach(linha => {
         linha.remove();
     });
-    
+
     // Para cada classificação, cria uma nova linha
     classificacoes.forEach(classificacao => {
         // Extrai os valores do display_value
@@ -505,22 +508,22 @@ function preencherDadosClassificacao(classificacoes) {
 
         // Adiciona uma nova linha
         adicionarLinhaClassificacao();
-        
+
         // Pega a última linha adicionada
         const ultimaLinha = formClassificacao.querySelector('.linha-classificacao:last-child');
-        
+
         // Preenche os campos
         const selectConta = ultimaLinha.querySelector('select[name="Conta_a_debitar"]');
         const selectCentro = ultimaLinha.querySelector('select[name="Centro_de_custo"]');
         const selectClasse = ultimaLinha.querySelector('select[name="Classe_operacional"]');
         const inputValor = ultimaLinha.querySelector('input[name="Valor"]');
-        
+
         // Extrai apenas o código antes do hífen para fazer o match
         const codigoClasse = classe.split(' - ')[0].trim();
         const codigoCentro = centro.split(' - ')[0].trim();
 
-        
-        
+
+
         // Encontra e seleciona a opção correta em cada select
         Array.from(selectCentro.options).forEach(option => {
             if (option.text.startsWith(codigoCentro)) {
@@ -533,14 +536,14 @@ function preencherDadosClassificacao(classificacoes) {
                 option.selected = true;
             }
         });
-        
+
         // Adiciona seleção da conta a debitar
         Array.from(selectConta.options).forEach(option => {
             if (option.text === conta.trim()) {
                 option.selected = true;
             }
         });
-        
+
         // Formata e define o valor
         inputValor.value = formatToBRL({ target: { value: valor } });
     });
@@ -559,24 +562,24 @@ export function initClassificacaoForm(classificacoes, centrosCusto) {
     // Oculta mensagem de carregamento
     const loadingMessage = document.getElementById('loading-classificacao');
     loadingMessage.style.display = 'none';
-    
+
     // Mostra o formulário
     const form = document.getElementById('form-classificacao');
     // Adiciona ouvinte para formatar o campo valor como moeda brasileira
     const camposValor = form.querySelectorAll('input[name="Valor"]');
     camposValor.forEach(campo => {
         campo.type = 'text';
-        campo.addEventListener('blur', function() {
+        campo.addEventListener('blur', function () {
             formatToBRL(this);
         });
     });
-    
+
     // Adiciona ouvinte para formatar o campo valor como moeda brasileira
     form.style.display = 'block';
-    
+
     // Popula os selects
     popularSelects(classificacoes, centrosCusto);
-    
+
     // Mostra o primeiro conjunto de campos de classificação
     const camposClassificacao = document.getElementById('camposClassificacao');
     camposClassificacao.classList.remove('hidden');
@@ -594,12 +597,12 @@ export function popularSelects(classificacoes, centrosCusto) {
     // Busca todos os conjuntos de selects dentro do form-classificacao
     const classificacaoForm = document.getElementById('form-classificacao');
     const todasClassificacoes = classificacaoForm.querySelectorAll('.linha-classificacao');
-    
+
     todasClassificacoes.forEach(container => {
         // Seleciona os selects dentro de cada container de classificação
         const selectCentro = container.querySelector('select[name="Centro_de_custo"]');
         const selectClassificacao = container.querySelector('select[name="Classe_operacional"]');
-        
+
         // Popula select de centros de custo
         if (selectCentro) {
             selectCentro.innerHTML = '<option value="" disabled selected>Selecione...</option>';
@@ -633,16 +636,16 @@ export function popularSelects(classificacoes, centrosCusto) {
 export function atualizarValorTotalClassificacoes() {
 
     const labelTotal = document.getElementById('valor-total-classificacoes');
-    if(globais.idFornAprovado) {
+    if (globais.idFornAprovado) {
         const table = document.getElementById('priceTable');
         const headerRow = table.rows[0];
         const totalRow = table.rows[table.rows.length - 2];
-        
+
         const colIndex = Array.from(headerRow.cells).findIndex(cell => cell.dataset.id_forn === globais.idFornAprovado);
 
         if (colIndex !== -1) {
             const valorTotalFornecedor = totalRow.cells[colIndex - 2].innerText;
-            
+
             let total = converterStringParaDecimal(valorTotalFornecedor).toFixed(2);
 
             const valoresClassificacoes = document.querySelectorAll('#form-classificacao input[name="Valor"]');
@@ -652,10 +655,10 @@ export function atualizarValorTotalClassificacoes() {
                 total -= valor; // Reduz o valor da classificação do total
                 total = parseFloat(total).toFixed(2); // Converte total para número antes de usar toFixed
             });
-        
-            
+
+
             labelTotal.innerText = formatToBRL(total);
-            
+
             if (total == 0) {
                 labelTotal.classList.add('valor-igual');
                 labelTotal.classList.remove('valor-diferente');
@@ -668,8 +671,7 @@ export function atualizarValorTotalClassificacoes() {
             labelTotal.classList.add('valor-diferente');
             labelTotal.classList.remove('valor-igual');
         }
-    }else
-    {
+    } else {
         labelTotal.innerText = "-";
         labelTotal.classList.add('valor-diferente');
         labelTotal.classList.remove('valor-igual');
@@ -690,7 +692,7 @@ export function atualizarValorTotalClassificacoes() {
 export function setupPixValidation() {
     const tipoPix = document.getElementById('tipo-pix');
     const chavePix = document.getElementById('pix-chave');
-    
+
     // Cria elemento para mensagem de erro
     const errorMessage = document.createElement('span');
     errorMessage.classList.add('error-message');
@@ -804,16 +806,15 @@ export function atualizarValorTotalParcelas() {
 
     const labelTotal = document.getElementById('valor-total-parcelas');
 
-    if(globais.idFornAprovado)
-    {
+    if (globais.idFornAprovado) {
         const colIndex = Array.from(headerRow.cells).findIndex(cell => cell.dataset.id_forn === globais.idFornAprovado); // Encontra o índice da coluna do fornecedor aprovado
-        
+
         if (colIndex !== -1) {
             // Obtém o valor total do fornecedor na linha de total
             const valorTotalFornecedor = totalRow.cells[colIndex - 2].innerText; // +1 para pegar a célula correta
 
             const valoresParcelas = document.querySelectorAll('#camposData input[name="Valor"]');
-    
+
             let total = converterStringParaDecimal(valorTotalFornecedor).toFixed(2) || 0; // Inicializa o total com o valor do fornecedor aprovado
 
             valoresParcelas.forEach(input => {
@@ -838,8 +839,7 @@ export function atualizarValorTotalParcelas() {
             labelTotal.classList.remove('valor-igual');
 
         }
-    }else
-    {
+    } else {
         labelTotal.innerText = "-";
         labelTotal.classList.add('valor-diferente');
         labelTotal.classList.remove('valor-igual');
@@ -899,4 +899,108 @@ export function calcularValorTotalPagar() {
     // Atualiza o valor total a pagar com os acréscimos
     const valorTotalFinal = valorTotalPagar + totalAcrescimos;
     document.getElementById('valor-total-pagar').innerText = formatToBRL(valorTotalFinal);
+}
+
+
+
+
+export async function preencherListaAnexosV2(anexos) {
+    await ZOHO.CREATOR.init();
+    const galleryElement = document.getElementById('gallery');
+    
+    if (!galleryElement) {
+        console.error('Elemento gallery não encontrado');
+        return;
+    }
+
+    // Limpa a galeria antes de adicionar novos elementos
+    galleryElement.innerHTML = '';
+    
+    if (anexos && anexos.length > 0) {
+        async function adicionarImagem(img) {
+            return new Promise((resolve) => {
+                const newImgEl = document.createElement('img');
+                
+                // Copia os dados da imagem original
+                newImgEl.src = img.src;
+                newImgEl.href = img.src;
+                
+                // Espera a nova imagem carregar
+                newImgEl.onload = () => {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.classList.add('gallery-item');
+                    
+                    // Configura o Fancybox
+                    newImgEl.setAttribute('data-fancybox', 'gallery');
+                    newImgEl.setAttribute('data-src', img.src);
+                    
+                    imgContainer.appendChild(newImgEl);
+                    galleryElement.appendChild(imgContainer);
+                    resolve();
+                };
+            });
+        }
+
+        // Inicializa o Fancybox uma única vez para toda a galeria
+        $.fancybox.defaults.hash = false; // Desativa mudanças na URL
+        $('[data-fancybox="gallery"]').fancybox({
+            buttons: [
+                "zoom",
+                "download",
+                "close"
+            ],
+            zoom: true,
+            protect: true,
+            backFocus: false,
+            destroy: false
+        });
+
+        for (const anexo of anexos) {
+            const newAnexo = anexo.display_value;
+            const fileType = newAnexo.split('.').pop().toLowerCase();
+
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
+                const imgEl = document.createElement('img');
+                const loadingSpinner = document.createElement('div');
+                loadingSpinner.className = 'customConfirm-loading-spinner';
+                galleryElement.appendChild(loadingSpinner);
+
+                imgEl.style.display = 'none';
+                
+                await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
+                imgEl.onload = async () => {
+                    loadingSpinner.remove();
+                    await adicionarImagem(imgEl);
+                    imgEl.style.display = 'block';
+                };
+            } else {
+                console.log("É ARQUIVO ====================================>")
+                const regexID = /\/(\d+)\/anexo_arquivos\.Arquivos/;
+                const regexParentID = /anexo_arquivos\.Arquivos\/(\d+)\/download/;
+
+                const matchPrimeiroID = newAnexo.match(regexID);
+                const parentID = matchPrimeiroID ? matchPrimeiroID[1] : null;
+                const matchSegundoID = newAnexo.match(regexParentID);
+                const fileID = matchSegundoID ? matchSegundoID[1] : null;
+            }
+        }
+    } else {
+        const p = document.createElement('p');
+        p.classList.add('mensagem-anexos');
+        p.textContent = 'Não há anexos...';
+        galleryElement.appendChild(p);
+    }
+
+    // Adiciona o botão de "+" para carregar novos arquivos
+    const botaoAdicionar = document.createElement('button');
+    botaoAdicionar.textContent = '+';
+    botaoAdicionar.classList.add('botao-adicionar');
+    botaoAdicionar.style.padding = '10px 20px';
+    botaoAdicionar.style.fontSize = '20px';
+    botaoAdicionar.style.cursor = 'pointer';
+    botaoAdicionar.addEventListener('click', () => {
+        // Lógica para carregar novos arquivos
+        console.log("Carregar novos arquivos");
+    });
+    galleryElement.appendChild(botaoAdicionar);
 }

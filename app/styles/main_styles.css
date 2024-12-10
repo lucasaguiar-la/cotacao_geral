@@ -1164,10 +1164,6 @@ button:hover {
     display: none;
 }
 
-.form-anexos {
-    display: none;
-}
-
 .modal {
     display: none; 
     position: fixed; 
@@ -1263,4 +1259,37 @@ button:hover {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Cria 2 colunas de igual largura */
     gap: 15px; /* Espaçamento entre os campos */
+}
+
+.gallery
+{
+    display:flex;
+}
+
+.gallery img {
+    max-width: 100px;
+    max-height: 100px;
+    margin: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.gallery img:hover {
+    transform: scale(1.1);
+}
+
+.fancybox-custom {
+    /* Mantém o scroll da página pai */
+    position: absolute;
+    z-index: 9999;
+}
+
+.fancybox-custom .fancybox-bg {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.fancybox-custom .fancybox-inner {
+    /* Garante que o modal fique por cima sem afetar o scroll */
+    position: fixed;
 }
