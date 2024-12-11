@@ -901,10 +901,8 @@ export function calcularValorTotalPagar() {
     document.getElementById('valor-total-pagar').innerText = formatToBRL(valorTotalFinal);
 }
 
-
-
-
 export async function preencherListaAnexosV2(anexos) {
+    console.log("[COMEÇOU A RODAR A FUNÇÃO DE CRIAR LISTA DE ANEXOS]");
     await ZOHO.CREATOR.init();
     const galleryElement = document.getElementById('gallery');
     
@@ -915,90 +913,112 @@ export async function preencherListaAnexosV2(anexos) {
 
     galleryElement.innerHTML = '';
     
-    if (anexos && anexos.length > 0) {
-        async function adicionarImagem(img) {
-            return new Promise((resolve) => {
-                const newImgEl = document.createElement('img');
-                newImgEl.src = img.src;
-                newImgEl.href = img.src;
-                
-                newImgEl.onload = () => {
-                    const imgContainer = document.createElement('div');
-                    imgContainer.classList.add('gallery-item');
+    await new Promise(async (resolve) => {
+        
+        if (anexos && anexos.length > 0) {
+            console.log("==========> TEM ARQUIVOS");
+            async function adicionarImagem(img) {
+                console.log("=====> ADICIONADO A IMAGEM");
+                return new Promise((resolve) => {
+                    const newImgEl = document.createElement('img');
+                    newImgEl.src = img.src;
+                    newImgEl.href = img.src;
                     
-                    newImgEl.setAttribute('data-fancybox', 'gallery');
-                    newImgEl.setAttribute('data-src', img.src);
-                    newImgEl.setAttribute('data-download-src', img.src);
-                    
-                    imgContainer.appendChild(newImgEl);
-                    galleryElement.appendChild(imgContainer);
-                    resolve();
-                };
-            });
-        }
+                    newImgEl.onload = () => {
+                        console.log("=> IMAGEM CARREGADA, ADICIONANDO ATRIBUTOS");
+                        const imgContainer = document.createElement('div');
+                        imgContainer.classList.add('gallery-item');
+                        
+                        newImgEl.setAttribute('data-fancybox', 'gallery');
+                        newImgEl.setAttribute('data-src', img.src);
+                        newImgEl.setAttribute('data-download-src', img.src);
+                        
+                        imgContainer.appendChild(newImgEl);
+                        galleryElement.appendChild(imgContainer);
 
-        // Carrega todas as imagens primeiro
-        for (const anexo of anexos) {
-            const newAnexo = anexo.display_value;
-            const fileType = newAnexo.split('.').pop().toLowerCase();
-
-            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
-                const imgEl = document.createElement('img');
-                const loadingSpinner = document.createElement('div');
-                loadingSpinner.className = 'customConfirm-loading-spinner';
-                galleryElement.appendChild(loadingSpinner);
-
-                imgEl.style.display = 'none';
-                
-                await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
-                imgEl.onload = async () => {
-                    loadingSpinner.remove();
-                    await adicionarImagem(imgEl);
-                    imgEl.style.display = 'block';
-                };
-            } else {
-                console.log("É ARQUIVO ====================================>")
-                const regexID = /\/(\d+)\/anexo_arquivos\.Arquivos/;
-                const regexParentID = /anexo_arquivos\.Arquivos\/(\d+)\/download/;
-
-                const matchPrimeiroID = newAnexo.match(regexID);
-                const parentID = matchPrimeiroID ? matchPrimeiroID[1] : null;
-                const matchSegundoID = newAnexo.match(regexParentID);
-                const fileID = matchSegundoID ? matchSegundoID[1] : null;
+                        resolve();
+                    };
+                });
             }
-        }
+    
+            // Carrega todas as imagens primeiro
+            let index = 1;
+            const promises = []; // Array para armazenar as promessas
+            for (const anexo of anexos) {
+                console.log("==========> ARUIVO " + index);
+                index++;
+                const newAnexo = anexo.display_value;
+                const fileType = newAnexo.split('.').pop().toLowerCase();
+    
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
+                    console.log("==========> É IMAGEM ");
+                    const imgEl = document.createElement('img');
+                    const loadingSpinner = document.createElement('div');
+                    loadingSpinner.className = 'customConfirm-loading-spinner';
+                    galleryElement.appendChild(loadingSpinner);
+                    
+                    imgEl.style.display = 'none';
+                    console.log("==========> VINCULANDO IMAGEM COM ZOHO");
+                    await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
+                    console.log("==========> IMAGEM VINCULADA");
 
-        // Inicializa o Fancybox DEPOIS que todas as imagens foram carregadas
-        setTimeout(() => {
-            $.fancybox.defaults.hash = false;
-            $('[data-fancybox="gallery"]').fancybox({
-                buttons: [
-                    "zoom",
-                    "download",
-                    "close"
-                ],
-                modal: false,
-                touch: false,
-                download: true,
-                afterClose: function() {
-                    galleryElement.style.display = 'block';
+                    const promise = new Promise((resolve) => {
+                        imgEl.onload = async () => {
+                            console.log("==========> IMAGEM CARREGADA");
+                            loadingSpinner.remove();
+                            console.log("==========> EXECUTANDO O ADICIONAR IMAGEM");
+                            await adicionarImagem(imgEl);
+                            console.log("==========> ADICIONAR IMAGEM EXECUTADA COM SUCESSO");
+                            imgEl.style.display = 'block';
+                            resolve(); // Resolve a promessa quando a imagem é adicionada
+                        };
+                    });
+                    promises.push(promise); // Adiciona a promessa ao array
+                } else {
+                    console.log("==========> É ARQUIVO ");
+                    const regexID = /\/(\d+)\/anexo_arquivos\.Arquivos/;
+                    const regexParentID = /anexo_arquivos\.Arquivos\/(\d+)\/download/;
+    
+                    const matchPrimeiroID = newAnexo.match(regexID);
+                    const parentID = matchPrimeiroID ? matchPrimeiroID[1] : null;
+                    const matchSegundoID = newAnexo.match(regexParentID);
+                    const fileID = matchSegundoID ? matchSegundoID[1] : null;
                 }
-            });
-        }, 500); // Pequeno delay para garantir que todas as imagens foram processadas
+            }
 
-    } else {
-        const p = document.createElement('p');
-        p.classList.add('mensagem-anexos');
-        p.textContent = 'Não há anexos...';
-        galleryElement.appendChild(p);
-    }
+            // Aguarda todas as promessas de adição de imagens serem resolvidas
+            await Promise.all(promises);
+    
+            // Inicializa o Fancybox DEPOIS que todas as imagens foram carregadas
+            setTimeout(() => {
+                console.log("==========> SETANDO PARÂMETROS DA FANCY");
+                $.fancybox.defaults.hash = false;
+                $('[data-fancybox="gallery"]').fancybox({
+                    buttons: [
+                        "download",
+                        "close"
+                    ],
+                    modal: false,
+                    touch: false,
+                    download: true
+                });
+            }, 500); // Pequeno delay para garantir que todas as imagens foram processadas
+    
+        } else {
+            const p = document.createElement('p');
+            p.classList.add('mensagem-anexos');
+            p.textContent = 'Não há anexos...';
+            galleryElement.appendChild(p);
+        }
+        resolve();
+    });
 
     // Adiciona o botão de "+" para carregar novos arquivos
+    console.log("==========> ADICIONANDO BOTÃO DE ADICIONAR ARQUIVO");
     const botaoAdicionar = document.createElement('button');
-    botaoAdicionar.textContent = '+';
-    botaoAdicionar.classList.add('botao-adicionar');
+    botaoAdicionar.classList.add('botao-adicionar', 'add-btn', 'add-icon');
     botaoAdicionar.style.padding = '10px 20px';
-    botaoAdicionar.style.fontSize = '20px';
+    botaoAdicionar.style.fontSize = '60px';
     botaoAdicionar.style.cursor = 'pointer';
     botaoAdicionar.addEventListener('click', () => {
         // Lógica para carregar novos arquivos

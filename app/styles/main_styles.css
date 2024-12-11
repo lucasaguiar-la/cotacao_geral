@@ -1264,6 +1264,8 @@ button:hover {
 .gallery
 {
     display:flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .gallery img {
@@ -1279,17 +1281,18 @@ button:hover {
     transform: scale(1.1);
 }
 
-.fancybox-custom {
-    /* Mantém o scroll da página pai */
-    position: absolute;
-    z-index: 9999;
+.fancybox-button--slideshow {
+    display: none !important; /* Força a ocultação do botão de slideshow */
 }
-
-.fancybox-custom .fancybox-bg {
-    background: rgba(0, 0, 0, 0.9);
+.fancybox-button--download {
+    display: block !important; /* Força a ocultação do botão de slideshow */
 }
-
-.fancybox-custom .fancybox-inner {
-    /* Garante que o modal fique por cima sem afetar o scroll */
-    position: fixed;
+.fancybox-toolbar
+{
+    display: flex;
+}
+.botao-adicionar
+{
+    width:auto;
+    height: auto;
 }
