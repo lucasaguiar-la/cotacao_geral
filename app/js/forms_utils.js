@@ -1,5 +1,6 @@
 import { globais } from './main.js';
 import { formatToBRL, converterStringParaDecimal } from './utils.js';
+
 // Agora você pode usar o PDF.js para carregar e renderizar PDFs.
 
 let numeroParcela = 1;
@@ -901,7 +902,6 @@ export function calcularValorTotalPagar() {
 }
 
 export async function preencherListaAnexosV2(anexos) {
-    console.log("[COMEÇOU A RODAR A FUNÇÃO DE CRIAR LISTA DE ANEXOS]");
     await ZOHO.CREATOR.init();
     const galleryElement = document.getElementById('gallery');
 
@@ -913,7 +913,6 @@ export async function preencherListaAnexosV2(anexos) {
     galleryElement.innerHTML = '';
 
     if (anexos && anexos.length > 0) {
-        console.log("==========> TEM ARQUIVOS");
 
         for (const anexo of anexos) {
             const newAnexo = anexo.display_value;
@@ -941,7 +940,6 @@ export async function preencherListaAnexosV2(anexos) {
                         fileContainer.appendChild(imageElement);
                     } else if (fileType === 'pdf') {
                         // Adiciona PDFs como iframe no Fancybox
-                        console.log("==========> PROCESSANDO PDF");
                         const pdfPreview = document.createElement('img');
                         pdfPreview.alt = 'Visualizar PDF';
 
@@ -954,7 +952,6 @@ export async function preencherListaAnexosV2(anexos) {
                         fileContainer.appendChild(pdfPreview);
                     } else {
                         console.log("==========> ARQUIVO NÃO SUPORTADO");
-                        loadingSpinner.remove();
                     }
 
                     galleryElement.appendChild(fileContainer);
@@ -966,8 +963,6 @@ export async function preencherListaAnexosV2(anexos) {
 
         // Inicializa ou reconfigura o Fancybox após todos os itens serem adicionados
         setTimeout(() => {
-            console.log("==========> CONFIGURANDO FANCYBOX");
-        
             // Reconfigura o Fancybox para garantir que todos os itens da galeria estejam incluídos
             $('[data-fancybox="gallery"]').fancybox({
                 buttons: [
@@ -995,9 +990,7 @@ export async function preencherListaAnexosV2(anexos) {
         p.textContent = 'Não há anexos...';
         galleryElement.appendChild(p);
     }
-
-    // Adiciona o botão de "+" para carregar novos arquivos
-    console.log("==========> ADICIONANDO BOTÃO DE ADICIONAR ARQUIVO");
+    
     const botaoAdicionar = document.createElement('button');
     botaoAdicionar.classList.add('botao-adicionar', 'add-btn', 'add-icon');
     botaoAdicionar.style.padding = '10px 20px';
@@ -1067,60 +1060,5 @@ export async function preencherListaAnexosV2(anexos) {
     // Adiciona o botão e o input ao DOM
     galleryElement.appendChild(inputFile);
     galleryElement.appendChild(botaoAdicionar);
-}
-
-
-
-
-
-
-async function adicionarArquivoAGaleria(file) {
-    const galleryElement = document.getElementById('gallery');
-    // Lógica para adicionar o arquivo à galeria
-    const imgContainer = document.createElement('div');
-    imgContainer.classList.add('gallery-item');
-
-    // Verifica se o arquivo é um objeto File válido ou um array de arquivos
-    if (Array.isArray(file)) {
-        // Se for um array, itere sobre os arquivos
-        file.forEach(f => {
-            if (f instanceof File) {
-                adicionarImagem(f, imgContainer, galleryElement);
-            } else {
-                console.error('O item não é um objeto File válido:', f);
-            }
-        });
-    } else if (file instanceof File) {
-        // Se for um único arquivo, adiciona diretamente
-        adicionarImagem(file, imgContainer, galleryElement);
-    } else {
-        console.error('O arquivo não é um objeto File válido:', file);
-    }
-}
-
-function adicionarImagem(file, imgContainer = null, galleryElement = null) {
-
-    const newImgEl = document.createElement('img');
-    newImgEl.src = URL.createObjectURL(file);
-    newImgEl.setAttribute('data-fancybox', 'gallery');
-    newImgEl.setAttribute('data-src', newImgEl.src);
-    newImgEl.setAttribute('data-download-src', newImgEl.src);
-
-    const addBtn = galleryElement.getElementsByClassName('botao-adicionar')[0];
-
-    imgContainer.appendChild(newImgEl);
-    galleryElement.insertBefore(imgContainer, addBtn);
-
-    // Inicializa o Fancybox para o novo item
-    $.fancybox.defaults.hash = false;
-    $('[data-fancybox="gallery"]').fancybox({
-        buttons: [
-            "download",
-            "close"
-        ],
-        modal: false,
-        touch: false,
-        download: true
-    });
 }
 
