@@ -1,10 +1,10 @@
 import { globais } from './main.js';
 import { formatToBRL, converterStringParaDecimal } from './utils.js';
+// Agora você pode usar o PDF.js para carregar e renderizar PDFs.
 
 let numeroParcela = 1;
 
 // Configura o workerSrc para o pdf.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
 /**
  * Mostra/oculta campos de pagamento com base na forma de pagamento selecionada
@@ -201,9 +201,10 @@ export function preencherDadosPDC(resp) {
     }
 
     if (data.anexo_arquivos && data.anexo_arquivos.length > 0) {
-        console.log("ANEXOS EXISTENTES, CARREGANDO...")
-        console.log(data.anexo_arquivos);
         preencherListaAnexosV2(data.anexo_arquivos);
+    }else
+    {
+        preencherListaAnexosV2();
     }
 
 
@@ -903,113 +904,97 @@ export async function preencherListaAnexosV2(anexos) {
     console.log("[COMEÇOU A RODAR A FUNÇÃO DE CRIAR LISTA DE ANEXOS]");
     await ZOHO.CREATOR.init();
     const galleryElement = document.getElementById('gallery');
-    
+
     if (!galleryElement) {
         console.error('Elemento gallery não encontrado');
         return;
     }
 
     galleryElement.innerHTML = '';
-    
-    await new Promise(async (resolve) => {
-        
-        if (anexos && anexos.length > 0) {
-            console.log("==========> TEM ARQUIVOS");
-            async function adicionarImagem(img) {
-                console.log("=====> ADICIONADO A IMAGEM");
-                return new Promise((resolve) => {
-                    const newImgEl = document.createElement('img');
-                    newImgEl.src = img.src;
-                    newImgEl.href = img.src;
-                    
-                    newImgEl.onload = () => {
-                        console.log("=> IMAGEM CARREGADA, ADICIONANDO ATRIBUTOS");
-                        const imgContainer = document.createElement('div');
-                        imgContainer.classList.add('gallery-item');
-                        
-                        newImgEl.setAttribute('data-fancybox', 'gallery');
-                        newImgEl.setAttribute('data-src', img.src);
-                        newImgEl.setAttribute('data-download-src', img.src);
-                        
-                        imgContainer.appendChild(newImgEl);
-                        galleryElement.appendChild(imgContainer);
 
-                        resolve();
-                    };
-                });
-            }
-    
-            // Carrega todas as imagens primeiro
-            let index = 1;
-            const promises = []; // Array para armazenar as promessas
-            for (const anexo of anexos) {
-                console.log("==========> ARUIVO " + index);
-                index++;
-                const newAnexo = anexo.display_value;
-                const fileType = newAnexo.split('.').pop().toLowerCase();
-    
-                if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
-                    console.log("==========> É IMAGEM ");
-                    const imgEl = document.createElement('img');
-                    const loadingSpinner = document.createElement('div');
-                    loadingSpinner.className = 'customConfirm-loading-spinner';
-                    galleryElement.appendChild(loadingSpinner);
-                    
-                    imgEl.style.display = 'none';
-                    console.log("==========> VINCULANDO IMAGEM COM ZOHO");
-                    await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
-                    console.log("==========> IMAGEM VINCULADA");
+    if (anexos && anexos.length > 0) {
+        console.log("==========> TEM ARQUIVOS");
 
-                    const promise = new Promise((resolve) => {
-                        imgEl.onload = async () => {
-                            console.log("==========> IMAGEM CARREGADA");
-                            loadingSpinner.remove();
-                            console.log("==========> EXECUTANDO O ADICIONAR IMAGEM");
-                            await adicionarImagem(imgEl);
-                            console.log("==========> ADICIONAR IMAGEM EXECUTADA COM SUCESSO");
-                            imgEl.style.display = 'block';
-                            resolve(); // Resolve a promessa quando a imagem é adicionada
-                        };
-                    });
-                    promises.push(promise); // Adiciona a promessa ao array
-                } else {
-                    console.log("==========> É ARQUIVO ");
-                    const regexID = /\/(\d+)\/anexo_arquivos\.Arquivos/;
-                    const regexParentID = /anexo_arquivos\.Arquivos\/(\d+)\/download/;
-    
-                    const matchPrimeiroID = newAnexo.match(regexID);
-                    const parentID = matchPrimeiroID ? matchPrimeiroID[1] : null;
-                    const matchSegundoID = newAnexo.match(regexParentID);
-                    const fileID = matchSegundoID ? matchSegundoID[1] : null;
+        for (const anexo of anexos) {
+            const newAnexo = anexo.display_value;
+            const fileType = newAnexo.split('.').pop().toLowerCase();
+
+            const loadingSpinner = document.createElement('div');
+            loadingSpinner.className = 'customConfirm-loading-spinner';
+            galleryElement.appendChild(loadingSpinner);
+
+            const imgEl = document.createElement('img');
+            await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
+
+            const checkSrcInterval = setInterval(() => {
+                if (imgEl && imgEl.src && imgEl.src !== "") {
+                    const fileContainer = document.createElement('div');
+                    fileContainer.classList.add('gallery-item');
+
+                    if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
+                        // Adiciona imagens ao Fancybox
+                        const imageElement = document.createElement('img');
+                        imageElement.src = imgEl.src;
+                        imageElement.setAttribute('data-fancybox', 'gallery');
+                        imageElement.setAttribute('data-src', imgEl.src);
+                        imageElement.setAttribute('data-download-src', imgEl.src);
+                        fileContainer.appendChild(imageElement);
+                    } else if (fileType === 'pdf') {
+                        // Adiciona PDFs como iframe no Fancybox
+                        console.log("==========> PROCESSANDO PDF");
+                        const pdfPreview = document.createElement('img');
+                        pdfPreview.alt = 'Visualizar PDF';
+
+                        pdfPreview.setAttribute('data-fancybox', 'gallery');
+                        pdfPreview.setAttribute('data-src', imgEl.src); // URL do PDF
+                        pdfPreview.src = 'https://via.placeholder.com/150?text=PDF'; // Ícone de substituição
+                        pdfPreview.setAttribute('data-type', 'iframe'); // Força o Fancybox a tratar como iframe
+                        pdfPreview.setAttribute('data-download-src', imgEl.src);
+
+                        fileContainer.appendChild(pdfPreview);
+                    } else {
+                        console.log("==========> ARQUIVO NÃO SUPORTADO");
+                        loadingSpinner.remove();
+                    }
+
+                    galleryElement.appendChild(fileContainer);
+                    clearInterval(checkSrcInterval);
+                    loadingSpinner.remove();
                 }
-            }
-
-            // Aguarda todas as promessas de adição de imagens serem resolvidas
-            await Promise.all(promises);
-    
-            // Inicializa o Fancybox DEPOIS que todas as imagens foram carregadas
-            setTimeout(() => {
-                console.log("==========> SETANDO PARÂMETROS DA FANCY");
-                $.fancybox.defaults.hash = false;
-                $('[data-fancybox="gallery"]').fancybox({
-                    buttons: [
-                        "download",
-                        "close"
-                    ],
-                    modal: false,
-                    touch: false,
-                    download: true
-                });
-            }, 500); // Pequeno delay para garantir que todas as imagens foram processadas
-    
-        } else {
-            const p = document.createElement('p');
-            p.classList.add('mensagem-anexos');
-            p.textContent = 'Não há anexos...';
-            galleryElement.appendChild(p);
+            }, 100);
         }
-        resolve();
-    });
+
+        // Inicializa ou reconfigura o Fancybox após todos os itens serem adicionados
+        setTimeout(() => {
+            console.log("==========> CONFIGURANDO FANCYBOX");
+        
+            // Reconfigura o Fancybox para garantir que todos os itens da galeria estejam incluídos
+            $('[data-fancybox="gallery"]').fancybox({
+                buttons: [
+                    "zoom",
+                    "download",
+                    "close"
+                ],
+                iframe: {
+                    css: {
+                        width: '80%',
+                        height: '80%'
+                    },
+                    preload: false
+                },
+                afterLoad: function (instance, current) {
+                    if (current.src && current.src.endsWith('.pdf')) {
+                        current.type = 'iframe'; // Define o tipo como iframe para PDFs
+                    }
+                }
+            });
+        }, 500);
+    } else {
+        const p = document.createElement('p');
+        p.classList.add('mensagem-anexos');
+        p.textContent = 'Não há anexos...';
+        galleryElement.appendChild(p);
+    }
 
     // Adiciona o botão de "+" para carregar novos arquivos
     console.log("==========> ADICIONANDO BOTÃO DE ADICIONAR ARQUIVO");
@@ -1018,40 +1003,76 @@ export async function preencherListaAnexosV2(anexos) {
     botaoAdicionar.style.padding = '10px 20px';
     botaoAdicionar.style.fontSize = '60px';
     botaoAdicionar.style.cursor = 'pointer';
+    botaoAdicionar.style.borderRight =  '1px solid transparent';
+    botaoAdicionar.style.borderImage= 'linear-gradient(to bottom, transparent, gray, gray, gray, gray, gray, gray, transparent) 1';
 
-    // Cria um input oculto para seleção de arquivos
+    // Cria um input do tipo file, escondido
     const inputFile = document.createElement('input');
     inputFile.type = 'file';
-    inputFile.style.display = 'none'; // Oculta o input
+    inputFile.style.display = 'none';
 
+    // Evento para abrir o seletor de arquivos ao clicar no botão
     botaoAdicionar.addEventListener('click', () => {
-        inputFile.click(); // Abre o explorador de arquivos
+        inputFile.click();
     });
 
+    // Evento de mudança no input, para processar o arquivo selecionado
     inputFile.addEventListener('change', async (event) => {
         const files = event.target.files;
         if (files.length > 0) {
             const file = files[0];
+            const fileType = file.name.split('.').pop().toLowerCase();
 
-            // Verifica o tipo de arquivo
-            if (file.type === 'application/pdf') {
-                // Converte PDF para JPEG
-                const jpegFile = await converterPdfParaJpeg(file);
-                await adicionarArquivoAGaleria(jpegFile);
-            } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
-                       file.type === 'application/msword') {
-                // Aqui você pode adicionar a lógica para converter DOC/DOCX para JPEG
-                // const jpegFile = await converterDocParaJpeg(file);
-                // await adicionarArquivoAGaleria(jpegFile);
+            // Cria o container para o arquivo
+            const fileContainer = document.createElement('div');
+            fileContainer.classList.add('gallery-item');
+
+            const blobUrl = URL.createObjectURL(file);
+
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
+                // Imagem - gera uma miniatura
+                const imgEl = document.createElement('img');
+                imgEl.src = blobUrl;
+                imgEl.setAttribute('data-fancybox', 'gallery');
+                imgEl.setAttribute('data-src', blobUrl);
+                imgEl.setAttribute('data-download-src', blobUrl); // Permitir download
+                fileContainer.appendChild(imgEl);
+
+                galleryElement.appendChild(fileContainer);
+
+                // Reconfigura o Fancybox para incluir o novo item
+                $('[data-fancybox="gallery"]').fancybox();
+            } else if (fileType === 'pdf') {
+                // PDF - cria um link ou ícone para visualização
+                const pdfPreview = document.createElement('img');
+                pdfPreview.alt = 'Visualizar PDF';
+                pdfPreview.src = 'https://via.placeholder.com/150?text=PDF'; // Ícone de substituição
+                pdfPreview.setAttribute('data-fancybox', 'gallery');
+                pdfPreview.setAttribute('data-src', blobUrl);
+                pdfPreview.setAttribute('data-type', 'iframe'); // Define como iframe no Fancybox
+                pdfPreview.setAttribute('data-download-src', blobUrl); // Permitir download
+                fileContainer.appendChild(pdfPreview);
+
+                galleryElement.appendChild(fileContainer);
+
+                // Reconfigura o Fancybox para incluir o novo item
+                $('[data-fancybox="gallery"]').fancybox();
             } else {
-                await adicionarArquivoAGaleria(file);
+                console.error("Tipo de arquivo não suportado:", fileType);
+                alert("Tipo de arquivo não suportado. Por favor, selecione uma imagem ou PDF.");
             }
         }
     });
 
-    galleryElement.appendChild(inputFile); // Adiciona o input ao DOM
+    // Adiciona o botão e o input ao DOM
+    galleryElement.appendChild(inputFile);
     galleryElement.appendChild(botaoAdicionar);
 }
+
+
+
+
+
 
 async function adicionarArquivoAGaleria(file) {
     const galleryElement = document.getElementById('gallery');
@@ -1059,8 +1080,28 @@ async function adicionarArquivoAGaleria(file) {
     const imgContainer = document.createElement('div');
     imgContainer.classList.add('gallery-item');
 
+    // Verifica se o arquivo é um objeto File válido ou um array de arquivos
+    if (Array.isArray(file)) {
+        // Se for um array, itere sobre os arquivos
+        file.forEach(f => {
+            if (f instanceof File) {
+                adicionarImagem(f, imgContainer, galleryElement);
+            } else {
+                console.error('O item não é um objeto File válido:', f);
+            }
+        });
+    } else if (file instanceof File) {
+        // Se for um único arquivo, adiciona diretamente
+        adicionarImagem(file, imgContainer, galleryElement);
+    } else {
+        console.error('O arquivo não é um objeto File válido:', file);
+    }
+}
+
+function adicionarImagem(file, imgContainer = null, galleryElement = null) {
+
     const newImgEl = document.createElement('img');
-    newImgEl.src = URL.createObjectURL(file); // Cria um URL temporário para o arquivo
+    newImgEl.src = URL.createObjectURL(file);
     newImgEl.setAttribute('data-fancybox', 'gallery');
     newImgEl.setAttribute('data-src', newImgEl.src);
     newImgEl.setAttribute('data-download-src', newImgEl.src);
@@ -1083,34 +1124,3 @@ async function adicionarArquivoAGaleria(file) {
     });
 }
 
-// Função para converter PDF para JPEG
-async function converterPdfParaJpeg(pdfFile) {
-    const pdfData = await pdfFile.arrayBuffer();
-    const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise; // Carrega o PDF
-    const numPages = pdfDoc.numPages; // Obtém o número total de páginas
-    const jpegFiles = []; // Array para armazenar os arquivos JPEG
-
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        const page = await pdfDoc.getPage(pageNum); // Pega a página atual
-        const viewport = page.getViewport({ scale: 2 }); // Define a escala
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const context = canvas.getContext('2d');
-
-        // Renderiza a página no canvas
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-        // Converte o canvas para um Blob
-        const jpegBlob = await new Promise((resolve) => {
-            canvas.toBlob((blob) => {
-                resolve(blob);
-            }, 'image/jpeg');
-        });
-
-        // Adiciona o arquivo JPEG ao array
-        jpegFiles.push(new File([jpegBlob], `converted-image-page-${pageNum}.jpeg`, { type: 'image/jpeg' }));
-    }
-
-    return jpegFiles; // Retorna o array de arquivos JPEG
-}

@@ -220,21 +220,6 @@ async function executarProcessosParalelos() {
                 }
                 criarBotao({page:globais.pag});
 
-                if(globais.pag === "checagem_final")
-                {
-                    console.log("Deixando campos de anexos visiveis");
-                    const formAnexos = document.querySelector('.form-anexos');
-                    if (formAnexos) {
-                        formAnexos.classList.remove('hidden');
-                    }
-                }else
-                {
-                    console.log("Deixando campos de anexos visiveis");
-                    const formAnexos = document.querySelector('.form-anexos');
-                    if (formAnexos) {
-                        formAnexos.classList.remove('hidden');
-                    }
-                }
 
             }else if (globais.pag == "autorizar_pagamento_subsindico" || globais.pag == "autorizar_pagamento_sindico" || globais.pag == "confirmar_todas_as_assinaturas") {
                 criarBotao({page: globais.pag, removeExistingButtons: true});

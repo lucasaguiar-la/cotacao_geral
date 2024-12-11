@@ -9,8 +9,7 @@
     <!-- Incluindo o jQuery e o Fancybox -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://*.zappsusercontent.com https://*.zohostatic.com https://*.sigmausercontent.com https://*.qntrlusercontent.com data:;">
 
     <!-- Incluindo o CSS do Fancybox -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.css" />
@@ -330,8 +329,14 @@
             </div>
         </div>
         <!--FORM DE ANEXOS-->
-        <div id="gallery" class="gallery">
-            <!-- As imagens serão inseridas dinamicamente aqui -->
+        <div class="section-header">
+            <h2 class="titulos">ANEXOS</h2>
+            <button class="toggle-section"></button>
+        </div>
+        <div class="gallery-section section" id="section-anexos">
+            <div id="gallery" class="gallery">
+                <!-- As imagens serão inseridas dinamicamente aqui -->
+            </div>
         </div>
         <!--BOTÃO SALVAR-->
         <div class="section section-buttons" id="section-final">
