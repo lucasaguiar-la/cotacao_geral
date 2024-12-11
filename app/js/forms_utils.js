@@ -1,12 +1,10 @@
 import { globais } from './main.js';
 import { formatToBRL, converterStringParaDecimal } from './utils.js';
-import {
-    GlobalWorkerOptions,
-    getDocument
-} from '../jsPDF/pdf.js';
-GlobalWorkerOptions.workerSrc = '../jsPDF/pdf.worker.js'; // Altere para o caminho correto
 
 let numeroParcela = 1;
+
+// Configura o workerSrc para o pdf.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
 /**
  * Mostra/oculta campos de pagamento com base na forma de pagamento selecionada
@@ -1020,9 +1018,99 @@ export async function preencherListaAnexosV2(anexos) {
     botaoAdicionar.style.padding = '10px 20px';
     botaoAdicionar.style.fontSize = '60px';
     botaoAdicionar.style.cursor = 'pointer';
+
+    // Cria um input oculto para seleção de arquivos
+    const inputFile = document.createElement('input');
+    inputFile.type = 'file';
+    inputFile.style.display = 'none'; // Oculta o input
+
     botaoAdicionar.addEventListener('click', () => {
-        // Lógica para carregar novos arquivos
-        console.log("Carregar novos arquivos");
+        inputFile.click(); // Abre o explorador de arquivos
     });
+
+    inputFile.addEventListener('change', async (event) => {
+        const files = event.target.files;
+        if (files.length > 0) {
+            const file = files[0];
+
+            // Verifica o tipo de arquivo
+            if (file.type === 'application/pdf') {
+                // Converte PDF para JPEG
+                const jpegFile = await converterPdfParaJpeg(file);
+                await adicionarArquivoAGaleria(jpegFile);
+            } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                       file.type === 'application/msword') {
+                // Aqui você pode adicionar a lógica para converter DOC/DOCX para JPEG
+                // const jpegFile = await converterDocParaJpeg(file);
+                // await adicionarArquivoAGaleria(jpegFile);
+            } else {
+                await adicionarArquivoAGaleria(file);
+            }
+        }
+    });
+
+    galleryElement.appendChild(inputFile); // Adiciona o input ao DOM
     galleryElement.appendChild(botaoAdicionar);
+}
+
+async function adicionarArquivoAGaleria(file) {
+    const galleryElement = document.getElementById('gallery');
+    // Lógica para adicionar o arquivo à galeria
+    const imgContainer = document.createElement('div');
+    imgContainer.classList.add('gallery-item');
+
+    const newImgEl = document.createElement('img');
+    newImgEl.src = URL.createObjectURL(file); // Cria um URL temporário para o arquivo
+    newImgEl.setAttribute('data-fancybox', 'gallery');
+    newImgEl.setAttribute('data-src', newImgEl.src);
+    newImgEl.setAttribute('data-download-src', newImgEl.src);
+
+    const addBtn = galleryElement.getElementsByClassName('botao-adicionar')[0];
+
+    imgContainer.appendChild(newImgEl);
+    galleryElement.insertBefore(imgContainer, addBtn);
+
+    // Inicializa o Fancybox para o novo item
+    $.fancybox.defaults.hash = false;
+    $('[data-fancybox="gallery"]').fancybox({
+        buttons: [
+            "download",
+            "close"
+        ],
+        modal: false,
+        touch: false,
+        download: true
+    });
+}
+
+// Função para converter PDF para JPEG
+async function converterPdfParaJpeg(pdfFile) {
+    const pdfData = await pdfFile.arrayBuffer();
+    const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise; // Carrega o PDF
+    const numPages = pdfDoc.numPages; // Obtém o número total de páginas
+    const jpegFiles = []; // Array para armazenar os arquivos JPEG
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum); // Pega a página atual
+        const viewport = page.getViewport({ scale: 2 }); // Define a escala
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const context = canvas.getContext('2d');
+
+        // Renderiza a página no canvas
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // Converte o canvas para um Blob
+        const jpegBlob = await new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                resolve(blob);
+            }, 'image/jpeg');
+        });
+
+        // Adiciona o arquivo JPEG ao array
+        jpegFiles.push(new File([jpegBlob], `converted-image-page-${pageNum}.jpeg`, { type: 'image/jpeg' }));
+    }
+
+    return jpegFiles; // Retorna o array de arquivos JPEG
 }
