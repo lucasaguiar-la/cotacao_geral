@@ -1459,6 +1459,194 @@ export async function prenchTabCot(resp) {
     }
 }
 
+// Função para exibir um modal de alerta com um botão de OK
+function showAlertModal(message) {
+    const modal = document.createElement('div');
+    modal.classList.add('popup-overlay'); // Usando a classe de overlay da customModal
+
+    const popupFornecedor = document.createElement('div');
+    popupFornecedor.classList.add('popup-fornecedor'); // Usando a classe do popup
+
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('popup-content');
+
+    const messageText = document.createElement('p');
+    messageText.innerText = message;
+    messageText.style.color = 'red'; // Define a cor do texto como vermelho
+
+    // Botão de fechar no topo
+    const closeButton = document.createElement('button');
+    closeButton.classList.add('btn-fechar', 'close-icon'); // Adiciona classes para estilo
+    closeButton.onclick = () => {
+        document.body.removeChild(modal);
+    };
+
+    // Estilizando o botão de fechar para ficar mais próximo da borda
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '0px'; // Distância do topo
+    closeButton.style.right = '0px'; // Distância da direita
+    closeButton.style.border = 'none'; // Remove borda
+    closeButton.style.background = 'transparent'; // Fundo transparente
+    closeButton.style.cursor = 'pointer'; // Cursor de ponteiro
+
+    modalContent.appendChild(closeButton); // Adiciona o botão de fechar ao conteúdo do modal
+    modalContent.appendChild(messageText);
+    popupFornecedor.appendChild(modalContent);
+    modal.appendChild(popupFornecedor);
+    document.body.appendChild(modal);
+}
+
+//===================================================================================//
+//===========================MODAL DE CADASTRAR FORNECEDOR===========================//
+//===================================================================================//
+async function abrirModalCadastroFornecedor() {
+    // Criação do overlay do modal
+    const overlay = document.createElement('div');
+    overlay.classList.add('popup-overlay');
+
+    // Criação do modal
+    const modal = document.createElement('div');
+    modal.classList.add('modal-cadastro-fornecedor'); // Classe para estilização
+
+    // Cabeçalho do modal
+    const cabecalho = document.createElement('h2');
+    cabecalho.classList.add('cadastro-fornecedor-titulo');
+    cabecalho.innerText = 'Cadastro de Fornecedor';
+    modal.appendChild(cabecalho);
+
+    // Formulário de cadastro
+    const formulario = document.createElement('form');
+    formulario.classList.add('form-colunas'); // Adiciona classe para colunas
+
+    // Campos do formulário
+    const campos = [
+        { label: 'Nome:', name: 'Nome_do_fornecedor' },
+        { label: 'Cpf/Cnpj:', name: 'Cpf_Cnpj_do_fornecedor' },
+        { label: 'Serviços prestados:', name: 'Servicos_prestados' },
+        { label: 'Dados bancários:', name: 'Dados_bancarios' },
+        { label: 'E-mail:', name: 'E_mail' },
+        { label: 'Telefone:', name: 'Telefone' },
+    ];
+
+    campos.forEach(campo => {
+        const divCampo = document.createElement('div');
+        divCampo.classList.add('campo'); // Adiciona a classe 'campo' para o layout flexível
+
+        const label = document.createElement('label');
+        label.innerText = campo.label;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = campo.name;
+
+        // Adiciona ouvintes de eventos para validação
+        input.addEventListener('input', () => {
+            switch (campo.name) {
+                case 'Telefone':
+                    // Permite apenas números e formata o telefone
+                    input.value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+                    if (input.value.length > 11) {
+                        input.value = input.value.slice(0, 11); // Limita a 10 dígitos
+                    }
+
+                    if (input.value.length > 6) {
+                        input.value = `(${input.value.slice(0, 2)}) ${input.value.slice(2, 3)} ${input.value.slice(3, 7)}-${input.value.slice(7)}`;
+                    } else if (input.value.length > 2) {
+                        input.value = `(${input.value.slice(0, 2)}) ${input.value.slice(2)}`;
+                    }
+                    break;
+                case 'Cpf_Cnpj_do_fornecedor':
+                    // Permite apenas números e formata CPF ou CNPJ
+                    input.value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+                    if (input.value.length > 14) {
+                        input.value = input.value.slice(0, 14); // Limita a 14 dígitos
+                    }
+                    if (input.value.length === 11) {
+                        input.value = input.value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{2})$/, '$1-$2'); // Formata CPF
+                    } else if (input.value.length === 14) {
+                        input.value = input.value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5'); // Formata CNPJ
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        // Adicionando evento blur para o campo de e-mail
+        input.addEventListener('blur', () => {
+            if (campo.name === 'E_mail' && !input.value.includes('@')) {
+                alert('Por favor, insira um e-mail válido que contenha "@"');
+            }
+        });
+
+        divCampo.appendChild(label);
+        divCampo.appendChild(input);
+        formulario.appendChild(divCampo);
+    });
+
+    // Checkbox para fornecedor online
+    const divCheckbox = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'Fornecedor_online';
+    const checkboxLabel = document.createElement('label');
+    checkboxLabel.innerText = 'Fornecedor online';
+    divCheckbox.appendChild(checkbox);
+    divCheckbox.appendChild(checkboxLabel);
+    formulario.appendChild(divCheckbox);
+
+    // Botão de salvar
+    const botaoSalvar = document.createElement('button');
+    botaoSalvar.type = 'button'; // Mantenha como 'button' para evitar envio do formulário
+    botaoSalvar.innerText = 'Salvar';
+    botaoSalvar.classList.add('botao-salvar', 'save-btn'); // Adiciona a classe para estilização
+
+    // Retorna uma Promise
+    return new Promise((resolve) => {
+        botaoSalvar.onclick = () => {
+            const formularioData = {};
+            const inputs = formulario.querySelectorAll('input');
+
+            // Coleta todos os dados do formulário
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    formularioData[input.name] = input.checked; // Para checkboxes, armazena o estado (true/false)
+                } else {
+                    formularioData[input.name] = input.value; // Para outros inputs, armazena o valor
+                }
+            });
+            // Validação dos campos
+            if (!formularioData['Nome_do_fornecedor']) {
+                alert('Por favor, preencha o nome do fornecedor.');
+                return; // Cancela a ação de salvar
+            }
+            if (!formularioData['Cpf_Cnpj_do_fornecedor']) {
+                alert('Por favor, preencha o CNPJ do fornecedor.');
+                return; // Cancela a ação de salvar
+            }
+            
+            executar_apiZoho({ tipo: "add_reg", corpo: formularioData, nomeF: "Base_de_fornecedores_Laranjeiras" }).then((resp) => {
+                console.log("Resp => ", resp);
+                if (resp.code === 3000) {
+                    console.log(resp);
+                    document.body.removeChild(overlay); // Fecha o modal
+                    console.log("FECHOU O MODAL");
+                    resolve(resp.data.ID); // Resolve a Promise com o ID
+                } else {
+                    alert("Falha ao realizar o envio, tente novamente ou contate o adminsitrador do sistema!")
+                    resolve(null); // Resolve com null em caso de falha
+                }
+            });
+        };
+
+        // Adiciona o formulário ao modal
+        modal.appendChild(formulario);
+        modal.appendChild(botaoSalvar);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    });
+}
+
 //=========================================================================================//
 //===========================FUNÇÕES AUXILIARES PARA SALVAR TUDO===========================//
 //=========================================================================================//
@@ -1777,6 +1965,23 @@ async function pegarDadosClassificacao() {
     return dadosClassificacao;
 }
 
+function pegarArquivosGaleria() {
+    const galeria = document.getElementById('gallery');
+    const arquivos = galeria.querySelectorAll('.novo-anexo');
+    const listaArquivos = [];
+  
+    arquivos.forEach((arquivo) => {
+      const arquivoObj = {
+        nome: arquivo.getAttribute('alt'),
+        url: arquivo.getAttribute('data-src'),
+        tipo: arquivo.getAttribute('data-type'),
+      };
+      listaArquivos.push(arquivoObj);
+    });
+  
+    return listaArquivos;
+}
+
 //================================================================//
 //===========================SALVA TUDO===========================//
 //================================================================//
@@ -1799,7 +2004,7 @@ export async function saveTableData({ tipo = null }) {
                     Ativo: false
                 }
             };
-            await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
+            //await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
         }
         globais.cotacaoExiste = false;
         await saveTableData(globais.tipo);
@@ -1820,209 +2025,61 @@ export async function saveTableData({ tipo = null }) {
                 data: dadosPDC
             };
 
-            respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
+            //respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
         } else {
 
-            respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
+            //respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
 
             // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
             if (respPDC.code === 3000 && globais.idPDC === null) {
                 globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
             }
         }
+        //====================CRIA O REGISTRO DOS ARQUIVOS GALERÍA================//
+
+        const qtdFiles = globais.arquivosGaleria.length;
+
+        const dataList = [];
+
+        for (let i = 0; i < qtdFiles; i++) {
+            dataList.push({ PDC_Digital: globais.idPDC});
+        }
+
+        const respFilesRec = await executar_apiZoho({ tipo: "add_reg", corpo: dataList, nomeF: "laranj_arquivos_pdc" });
+        console.log("resFilesRec ================>", JSON.stringify(respFilesRec));
+
+        if (respFilesRec.result.every(item => item.code === 3000)){
+
+            const idArquivos = respFilesRec.result.map(item => item.data.ID);
+
+            let indexFile = 0;
+            for (const id of idArquivos) {
+                console.log("Arquivos da galeria: ", globais.arquivosGaleria);
+
+
+                const blob = globais.arquivosGaleria[indexFile++];
+
+                console.log("Arquivo: ", JSON.stringify(blob, null, 2));
+
+                const respFileUpload = await executar_apiZoho({ tipo: "subir_arq", nomeR: "laranj_arquivos_pdc_Report", ID: id, corpo:  blob});
+
+                console.log("respFileUpload ================>", respFileUpload);
+
+                if (respFileUpload.code !== 3000) {
+                    console.log("Erro ao subir o arquivo, erro: ", respFileUpload);
+                    console.log("Arquivo: ", blob);
+                    break;
+                }
+            }
+        }else {
+            console.log("Erro ao criar o registro de arquivos, erro: ", respFilesRec);
+            console.log("Arquivo: ", blob);
+        }
 
         //====================CRIA O REGISTRO DA COTAÇÃO====================//
         const json = JSON.stringify(dadostabPrecos, null, 2);
-        let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
+        //let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
 
         globais.cotacaoExiste = true;
     }
-}
-
-// Função para exibir um modal de alerta com um botão de OK
-function showAlertModal(message) {
-    const modal = document.createElement('div');
-    modal.classList.add('popup-overlay'); // Usando a classe de overlay da customModal
-
-    const popupFornecedor = document.createElement('div');
-    popupFornecedor.classList.add('popup-fornecedor'); // Usando a classe do popup
-
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('popup-content');
-
-    const messageText = document.createElement('p');
-    messageText.innerText = message;
-    messageText.style.color = 'red'; // Define a cor do texto como vermelho
-
-    // Botão de fechar no topo
-    const closeButton = document.createElement('button');
-    closeButton.classList.add('btn-fechar', 'close-icon'); // Adiciona classes para estilo
-    closeButton.onclick = () => {
-        document.body.removeChild(modal);
-    };
-
-    // Estilizando o botão de fechar para ficar mais próximo da borda
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '0px'; // Distância do topo
-    closeButton.style.right = '0px'; // Distância da direita
-    closeButton.style.border = 'none'; // Remove borda
-    closeButton.style.background = 'transparent'; // Fundo transparente
-    closeButton.style.cursor = 'pointer'; // Cursor de ponteiro
-
-    modalContent.appendChild(closeButton); // Adiciona o botão de fechar ao conteúdo do modal
-    modalContent.appendChild(messageText);
-    popupFornecedor.appendChild(modalContent);
-    modal.appendChild(popupFornecedor);
-    document.body.appendChild(modal);
-}
-
-//===================================================================================//
-//===========================MODAL DE CADASTRAR FORNECEDOR===========================//
-//===================================================================================//
-async function abrirModalCadastroFornecedor() {
-    // Criação do overlay do modal
-    const overlay = document.createElement('div');
-    overlay.classList.add('popup-overlay');
-
-    // Criação do modal
-    const modal = document.createElement('div');
-    modal.classList.add('modal-cadastro-fornecedor'); // Classe para estilização
-
-    // Cabeçalho do modal
-    const cabecalho = document.createElement('h2');
-    cabecalho.classList.add('cadastro-fornecedor-titulo');
-    cabecalho.innerText = 'Cadastro de Fornecedor';
-    modal.appendChild(cabecalho);
-
-    // Formulário de cadastro
-    const formulario = document.createElement('form');
-    formulario.classList.add('form-colunas'); // Adiciona classe para colunas
-
-    // Campos do formulário
-    const campos = [
-        { label: 'Nome:', name: 'Nome_do_fornecedor' },
-        { label: 'Cpf/Cnpj:', name: 'Cpf_Cnpj_do_fornecedor' },
-        { label: 'Serviços prestados:', name: 'Servicos_prestados' },
-        { label: 'Dados bancários:', name: 'Dados_bancarios' },
-        { label: 'E-mail:', name: 'E_mail' },
-        { label: 'Telefone:', name: 'Telefone' },
-    ];
-
-    campos.forEach(campo => {
-        const divCampo = document.createElement('div');
-        divCampo.classList.add('campo'); // Adiciona a classe 'campo' para o layout flexível
-
-        const label = document.createElement('label');
-        label.innerText = campo.label;
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.name = campo.name;
-
-        // Adiciona ouvintes de eventos para validação
-        input.addEventListener('input', () => {
-            switch (campo.name) {
-                case 'Telefone':
-                    // Permite apenas números e formata o telefone
-                    input.value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-                    if (input.value.length > 11) {
-                        input.value = input.value.slice(0, 11); // Limita a 10 dígitos
-                    }
-
-                    if (input.value.length > 6) {
-                        input.value = `(${input.value.slice(0, 2)}) ${input.value.slice(2, 3)} ${input.value.slice(3, 7)}-${input.value.slice(7)}`;
-                    } else if (input.value.length > 2) {
-                        input.value = `(${input.value.slice(0, 2)}) ${input.value.slice(2)}`;
-                    }
-                    break;
-                case 'Cpf_Cnpj_do_fornecedor':
-                    // Permite apenas números e formata CPF ou CNPJ
-                    input.value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-                    if (input.value.length > 14) {
-                        input.value = input.value.slice(0, 14); // Limita a 14 dígitos
-                    }
-                    if (input.value.length === 11) {
-                        input.value = input.value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{2})$/, '$1-$2'); // Formata CPF
-                    } else if (input.value.length === 14) {
-                        input.value = input.value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5'); // Formata CNPJ
-                    }
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        // Adicionando evento blur para o campo de e-mail
-        input.addEventListener('blur', () => {
-            if (campo.name === 'E_mail' && !input.value.includes('@')) {
-                alert('Por favor, insira um e-mail válido que contenha "@"');
-            }
-        });
-
-        divCampo.appendChild(label);
-        divCampo.appendChild(input);
-        formulario.appendChild(divCampo);
-    });
-
-    // Checkbox para fornecedor online
-    const divCheckbox = document.createElement('div');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.name = 'Fornecedor_online';
-    const checkboxLabel = document.createElement('label');
-    checkboxLabel.innerText = 'Fornecedor online';
-    divCheckbox.appendChild(checkbox);
-    divCheckbox.appendChild(checkboxLabel);
-    formulario.appendChild(divCheckbox);
-
-    // Botão de salvar
-    const botaoSalvar = document.createElement('button');
-    botaoSalvar.type = 'button'; // Mantenha como 'button' para evitar envio do formulário
-    botaoSalvar.innerText = 'Salvar';
-    botaoSalvar.classList.add('botao-salvar', 'save-btn'); // Adiciona a classe para estilização
-
-    // Retorna uma Promise
-    return new Promise((resolve) => {
-        botaoSalvar.onclick = () => {
-            const formularioData = {};
-            const inputs = formulario.querySelectorAll('input');
-
-            // Coleta todos os dados do formulário
-            inputs.forEach(input => {
-                if (input.type === 'checkbox') {
-                    formularioData[input.name] = input.checked; // Para checkboxes, armazena o estado (true/false)
-                } else {
-                    formularioData[input.name] = input.value; // Para outros inputs, armazena o valor
-                }
-            });
-            // Validação dos campos
-            if (!formularioData['Nome_do_fornecedor']) {
-                alert('Por favor, preencha o nome do fornecedor.');
-                return; // Cancela a ação de salvar
-            }
-            if (!formularioData['Cpf_Cnpj_do_fornecedor']) {
-                alert('Por favor, preencha o CNPJ do fornecedor.');
-                return; // Cancela a ação de salvar
-            }
-            
-            executar_apiZoho({ tipo: "add_reg", corpo: formularioData, nomeF: "Base_de_fornecedores_Laranjeiras" }).then((resp) => {
-                console.log("Resp => ", resp);
-                if (resp.code === 3000) {
-                    console.log(resp);
-                    document.body.removeChild(overlay); // Fecha o modal
-                    console.log("FECHOU O MODAL");
-                    resolve(resp.data.ID); // Resolve a Promise com o ID
-                } else {
-                    alert("Falha ao realizar o envio, tente novamente ou contate o adminsitrador do sistema!")
-                    resolve(null); // Resolve com null em caso de falha
-                }
-            });
-        };
-
-        // Adiciona o formulário ao modal
-        modal.appendChild(formulario);
-        modal.appendChild(botaoSalvar);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-    });
 }

@@ -1035,6 +1035,7 @@ export async function preencherListaAnexosV2(anexos) {
         const files = event.target.files;
         if (files.length > 0) {
             const file = files[0];
+            globais.arquivosGaleria.push(file);
             const fileType = file.name.split('.').pop().toLowerCase();
 
             // Cria o container para o arquivo

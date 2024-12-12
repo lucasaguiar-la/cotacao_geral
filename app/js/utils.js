@@ -109,6 +109,21 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
             return Array.from(baseApoio.values());
         }
 
+        async function subirArquivos()
+        {
+            const config = {
+                appName: globais.nomeApp,
+                reportName: nomeR,
+                id: ID,
+                fieldName: 'Arquivos',
+                file: corpo
+            }
+
+            console.log("config =============>", JSON.stringify(config));
+
+            return await recOps.uploadFile(config);
+        }
+
         // Funções solicitadas conforme tipo
         if (tipo === "add_reg") {
             
@@ -122,6 +137,8 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
         } else if (tipo === "busc_reg_recursivo") {
 
             return await buscarRecursivamente(nomeR, criterios);
+        }else if(tipo === "subir_arq"){
+            return await subirArquivos();
         }
     } catch (err) {
         return err;

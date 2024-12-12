@@ -38,8 +38,7 @@ class Globais {
             baseClassesOperacionais: new Map(),
             baseFornecedores: new Map(),
             baseCentrosCusto: new Map(),
-            idFornAprovado: null,
-            selectedCheckbox: null,
+            arquivosGaleria: [],
             ...CONFIG.INITIAL_STATE,
             ...CONFIG.APPS
         };
