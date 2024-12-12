@@ -2004,7 +2004,7 @@ export async function saveTableData({ tipo = null }) {
                     Ativo: false
                 }
             };
-            //await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
+            await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
         }
         globais.cotacaoExiste = false;
         await saveTableData(globais.tipo);
@@ -2025,10 +2025,10 @@ export async function saveTableData({ tipo = null }) {
                 data: dadosPDC
             };
 
-            //respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
+            respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
         } else {
 
-            //respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
+            respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
 
             // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
             if (respPDC.code === 3000 && globais.idPDC === null) {
@@ -2054,17 +2054,9 @@ export async function saveTableData({ tipo = null }) {
 
             let indexFile = 0;
             for (const id of idArquivos) {
-                console.log("Arquivos da galeria: ", globais.arquivosGaleria);
-
-
                 const blob = globais.arquivosGaleria[indexFile++];
 
-                console.log("Arquivo: ", JSON.stringify(blob, null, 2));
-
                 const respFileUpload = await executar_apiZoho({ tipo: "subir_arq", nomeR: "laranj_arquivos_pdc_Report", ID: id, corpo:  blob});
-
-                console.log("respFileUpload ================>", respFileUpload);
-
                 if (respFileUpload.code !== 3000) {
                     console.log("Erro ao subir o arquivo, erro: ", respFileUpload);
                     console.log("Arquivo: ", blob);
@@ -2078,7 +2070,7 @@ export async function saveTableData({ tipo = null }) {
 
         //====================CRIA O REGISTRO DA COTAÇÃO====================//
         const json = JSON.stringify(dadostabPrecos, null, 2);
-        //let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
+        let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
 
         globais.cotacaoExiste = true;
     }
