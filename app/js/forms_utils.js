@@ -902,12 +902,20 @@ export function calcularValorTotalPagar() {
 }
 
 export async function preencherListaAnexosV2(anexos) {
+    const typesToView = ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
     await ZOHO.CREATOR.init();
     const galleryElement = document.getElementById('gallery');
 
     if (!galleryElement) {
         console.error('Elemento gallery não encontrado');
         return;
+    }
+
+    function createLoadingSpinner() {
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.className = 'customConfirm-loading-spinner';
+        galleryElement.appendChild(loadingSpinner);
+        return loadingSpinner;
     }
 
     galleryElement.innerHTML = '';
@@ -918,47 +926,60 @@ export async function preencherListaAnexosV2(anexos) {
             const newAnexo = anexo.display_value;
             const fileType = newAnexo.split('.').pop().toLowerCase();
 
-            const loadingSpinner = document.createElement('div');
-            loadingSpinner.className = 'customConfirm-loading-spinner';
-            galleryElement.appendChild(loadingSpinner);
-
             const imgEl = document.createElement('img');
             await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
+            const fileContainer = document.createElement('div');
+            fileContainer.classList.add('gallery-item');
+
+            const newLoadingSpinner = createLoadingSpinner();
+            fileContainer.appendChild(newLoadingSpinner);
+
+
+            let fileElement = document.createElement('img');
+            fileElement.classList.add('anexo-no-zoho');
+            fileElement.setAttribute('data-fancybox', 'gallery');
+            fileElement.alt = 'Minitatura da imagem ou PDF';
+            fileElement.style.display = 'none';
 
             const checkSrcInterval = setInterval(() => {
                 if (imgEl && imgEl.src && imgEl.src !== "") {
-                    const fileContainer = document.createElement('div');
-                    fileContainer.classList.add('gallery-item');
+                    
+                    if (typesToView.includes(fileType)) {
+                        fileElement.setAttribute('data-src', imgEl.src);
+                        fileElement.src = imgEl.src;
+                        fileElement.setAttribute('data-download-src', imgEl.src);
+                        
+                        if (fileType === 'pdf') {
+                            fileElement.setAttribute('data-type', 'iframe');
+                            fileElement.src = 'https://via.placeholder.com/100?text=PDF';
+                        } else {
+                            console.log("==========> ARQUIVO NÃO SUPORTADO");
+                        }
+                        
+                    }else{
+                        const cloneFileElement = fileElement.cloneNode(true);
+                        cloneFileElement.style.width = '100px';
+                        cloneFileElement.style.height = '100px';
+                        cloneFileElement.style.display = 'block';
+                        cloneFileElement.removeAttribute('data-fancybox');
+                        cloneFileElement.src = 'https://via.placeholder.com/100?text=OUTRO';
 
-                    if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
-                        // Adiciona imagens ao Fancybox
-                        const imageElement = document.createElement('img');
-                        imageElement.src = imgEl.src;
-                        imageElement.setAttribute('data-fancybox', 'gallery');
-                        imageElement.setAttribute('data-src', imgEl.src);
-                        imageElement.setAttribute('data-download-src', imgEl.src);
-                        fileContainer.appendChild(imageElement);
-                    } else if (fileType === 'pdf') {
-                        // Adiciona PDFs como iframe no Fancybox
-                        const pdfPreview = document.createElement('img');
-                        pdfPreview.alt = 'Visualizar PDF';
-
-                        pdfPreview.setAttribute('data-fancybox', 'gallery');
-                        pdfPreview.setAttribute('data-src', imgEl.src); // URL do PDF
-                        pdfPreview.src = 'https://via.placeholder.com/150?text=PDF'; // Ícone de substituição
-                        pdfPreview.setAttribute('data-type', 'iframe'); // Força o Fancybox a tratar como iframe
-                        pdfPreview.setAttribute('data-download-src', imgEl.src);
-
-                        fileContainer.appendChild(pdfPreview);
-                    } else {
-                        console.log("==========> ARQUIVO NÃO SUPORTADO");
+                        const initUrl = 'https://guillaumon.zohocreatorportal.com';
+                        fileElement = document.createElement('a');
+                        fileElement.href = `${initUrl}${newAnexo}`;
+                        fileElement.download = `${initUrl}${newAnexo}`;
+                        fileElement.appendChild(cloneFileElement);
                     }
+                    fileElement.style.display = 'block';
+                    fileContainer.appendChild(fileElement);
+                    newLoadingSpinner.remove();
+                    
+                    
 
-                    galleryElement.appendChild(fileContainer);
                     clearInterval(checkSrcInterval);
-                    loadingSpinner.remove();
                 }
             }, 100);
+            galleryElement.appendChild(fileContainer);
         }
 
         // Inicializa ou reconfigura o Fancybox após todos os itens serem adicionados
@@ -1019,46 +1040,67 @@ export async function preencherListaAnexosV2(anexos) {
             // Cria o container para o arquivo
             const fileContainer = document.createElement('div');
             fileContainer.classList.add('gallery-item');
+            galleryElement.appendChild(fileContainer);
 
             const blobUrl = URL.createObjectURL(file);
 
-            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
-                // Imagem - gera uma miniatura
-                const imgEl = document.createElement('img');
-                imgEl.src = blobUrl;
-                imgEl.setAttribute('data-fancybox', 'gallery');
-                imgEl.setAttribute('data-src', blobUrl);
-                imgEl.setAttribute('data-download-src', blobUrl); // Permitir download
-                fileContainer.appendChild(imgEl);
+            const newLoadingSpinner = createLoadingSpinner();
+            fileContainer.appendChild(newLoadingSpinner);
 
-                galleryElement.appendChild(fileContainer);
+            let fileElement = document.createElement('img');
+            fileElement.classList.add('novo-anexo');
+            fileElement.style.display = 'none';
 
-                // Reconfigura o Fancybox para incluir o novo item
-                $('[data-fancybox="gallery"]').fancybox();
-            } else if (fileType === 'pdf') {
-                // PDF - cria um link ou ícone para visualização
-                const pdfPreview = document.createElement('img');
-                pdfPreview.alt = 'Visualizar PDF';
-                pdfPreview.src = 'https://via.placeholder.com/150?text=PDF'; // Ícone de substituição
-                pdfPreview.setAttribute('data-fancybox', 'gallery');
-                pdfPreview.setAttribute('data-src', blobUrl);
-                pdfPreview.setAttribute('data-type', 'iframe'); // Define como iframe no Fancybox
-                pdfPreview.setAttribute('data-download-src', blobUrl); // Permitir download
-                fileContainer.appendChild(pdfPreview);
+            if (typesToView.includes(fileType)) {
 
-                galleryElement.appendChild(fileContainer);
+                fileElement.alt = 'Minitatura do arquivo';
+                fileElement.setAttribute('data-fancybox', 'gallery');
+                fileElement.setAttribute('data-src', blobUrl);
+                fileElement.setAttribute('data-download-src', blobUrl); // Permitir download
 
-                // Reconfigura o Fancybox para incluir o novo item
-                $('[data-fancybox="gallery"]').fancybox();
+                if (fileType === 'pdf') {
+                    fileElement.setAttribute('data-type', 'iframe'); // Define como iframe no Fancybox
+                    fileElement.src = 'https://via.placeholder.com/150?text=PDF';
+                }else
+                {
+                    fileElement.src = blobUrl;
+                }
+                
             } else {
-                console.error("Tipo de arquivo não suportado:", fileType);
-                alert("Tipo de arquivo não suportado. Por favor, selecione uma imagem ou PDF.");
+                const cloneFileElement = fileElement.cloneNode(true);
+                cloneFileElement.classList.add('novo-anexo');
+                cloneFileElement.style.width = '100px';
+                cloneFileElement.style.height = '100px';
+                cloneFileElement.style.display = 'block';
+                cloneFileElement.src = 'https://via.placeholder.com/100?text=OUTRO';
+                
+                
+
+                fileElement = document.createElement('a');
+                fileElement.display = 'none';
+                fileElement.href = blobUrl;
+                fileElement.download = file.name;
+                fileElement.appendChild(cloneFileElement);
+
+
+            }
+
+            fileContainer.appendChild(fileElement);
+            fileElement.style.display = 'block';
+            newLoadingSpinner.remove();
+
+
+            $('[data-fancybox="gallery"]').fancybox();
+            // Remove a mensagem de anexos
+            const mensagemAnexos = document.querySelector('.mensagem-anexos');
+            if (mensagemAnexos) {
+                mensagemAnexos.remove();
             }
         }
     });
 
     // Adiciona o botão e o input ao DOM
     galleryElement.appendChild(inputFile);
-    galleryElement.appendChild(botaoAdicionar);
+    galleryElement.insertBefore(botaoAdicionar, galleryElement.firstChild);
 }
 
