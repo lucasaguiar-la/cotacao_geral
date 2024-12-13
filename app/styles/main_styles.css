@@ -1281,7 +1281,10 @@ button:hover {
     transform: scale(1.1);
 }
 
-.fancybox-button--slideshow {
+.fancybox-button--play {
+    display: none !important; /* Força a ocultação do botão de slideshow */
+}
+.fancybox-button--zoom {
     display: none !important; /* Força a ocultação do botão de slideshow */
 }
 .fancybox-button--download {
@@ -1296,3 +1299,22 @@ button:hover {
     width:auto;
     height: auto;
 }
+
+.placeholder-container {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .placeholder-text {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+  }

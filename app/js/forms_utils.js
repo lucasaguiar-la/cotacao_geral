@@ -1,11 +1,6 @@
 import { globais } from './main.js';
 import { formatToBRL, converterStringParaDecimal } from './utils.js';
-
-// Agora você pode usar o PDF.js para carregar e renderizar PDFs.
-
 let numeroParcela = 1;
-
-// Configura o workerSrc para o pdf.js
 
 /**
  * Mostra/oculta campos de pagamento com base na forma de pagamento selecionada
@@ -902,7 +897,7 @@ export function calcularValorTotalPagar() {
 }
 
 export async function preencherListaAnexosV2(anexos) {
-    const typesToView = ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
+    const typesToView = ['JPG', 'JPEG', 'PNG', 'GIF', 'PDF'];
     await ZOHO.CREATOR.init();
     const galleryElement = document.getElementById('gallery');
 
@@ -911,122 +906,150 @@ export async function preencherListaAnexosV2(anexos) {
         return;
     }
 
+    const elLibConfig = {
+        buttons: [
+            "download",
+            "close"
+        ],
+        download: true,
+        enableDownload: true
+    };
+
     function createLoadingSpinner() {
+        const loadingSpinnerContainer = document.createElement('div');
+        loadingSpinnerContainer.className = 'customConfirm-loading-spinner-container';
+        loadingSpinnerContainer.style.width = '100px';
+        loadingSpinnerContainer.style.height = '100px';
+        loadingSpinnerContainer.style.display = 'flex';
+        loadingSpinnerContainer.style.justifyContent = 'center';
+        loadingSpinnerContainer.style.alignItems = 'center';
+
         const loadingSpinner = document.createElement('div');
         loadingSpinner.className = 'customConfirm-loading-spinner';
-        galleryElement.appendChild(loadingSpinner);
-        return loadingSpinner;
+
+        loadingSpinnerContainer.appendChild(loadingSpinner);
+    
+        return loadingSpinnerContainer;
     }
 
     galleryElement.innerHTML = '';
 
     if (anexos && anexos.length > 0) {
-
+        const promises = [];
         for (const anexo of anexos) {
-            const newAnexo = anexo.display_value;
-            const fileType = newAnexo.split('.').pop().toLowerCase();
+            promises.push(new Promise((resolve) => {
+                //==========VARIÁVEIS DE APOIO==========//
+                const newAnexo = anexo.display_value;
+                const fileType = newAnexo.split('.').pop().toUpperCase();
+                const fileName = newAnexo.split('?filepath=')[1];
 
-            const imgEl = document.createElement('img');
-            await ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
-            const fileContainer = document.createElement('div');
-            fileContainer.classList.add('gallery-item');
+                //==========BUSCANDO O ARQUIVO NO ZOHO==========//
+                const imgEl = document.createElement('img');
+                ZOHO.CREATOR.UTIL.setImageData(imgEl, newAnexo);
 
-            const newLoadingSpinner = createLoadingSpinner();
-            fileContainer.appendChild(newLoadingSpinner);
+                //==========CRIANDO ITEM DA GALERIA==========//
+                const fileContainer = document.createElement('div');
+                fileContainer.classList.add('gallery-item');
 
+                //==========CRIANDO O ELEMENTO DE CARREGAMENTO DE IMAGEM==========//
+                const newLoadingSpinner = createLoadingSpinner();
+                fileContainer.appendChild(newLoadingSpinner);
 
-            let fileElement = document.createElement('img');
-            fileElement.classList.add('anexo-no-zoho');
-            fileElement.setAttribute('data-fancybox', 'gallery');
-            fileElement.alt = 'Minitatura da imagem ou PDF';
-            fileElement.style.display = 'none';
+                //==========ADICIONANDO ITEM A GALERIA==========//
+                galleryElement.appendChild(fileContainer);
 
-            const checkSrcInterval = setInterval(() => {
-                if (imgEl && imgEl.src && imgEl.src !== "") {
-                    
-                    if (typesToView.includes(fileType)) {
-                        fileElement.setAttribute('data-src', imgEl.src);
-                        fileElement.src = imgEl.src;
-                        fileElement.setAttribute('data-download-src', imgEl.src);
-                        
-                        if (fileType === 'pdf') {
-                            fileElement.setAttribute('data-type', 'iframe');
-                            fileElement.src = 'https://via.placeholder.com/100?text=PDF';
-                        } else {
-                            console.log("==========> ARQUIVO NÃO SUPORTADO");
-                        }
-                        
-                    }else{
-                        const cloneFileElement = fileElement.cloneNode(true);
-                        cloneFileElement.style.width = '100px';
-                        cloneFileElement.style.height = '100px';
-                        cloneFileElement.style.display = 'block';
-                        cloneFileElement.removeAttribute('data-fancybox');
-                        cloneFileElement.src = 'https://via.placeholder.com/100?text=OUTRO';
+                //==========CRIANDO ELEMENTO PARA ARQUIVO==========//
+                let fileElement = document.createElement('img');
+                fileElement.classList.add('anexo-no-zoho');
+                fileElement.setAttribute('data-fancybox', 'gallery');
+                fileElement.alt = 'Minitatura da imagem ou PDF';
+                fileElement.style.display = 'none';
 
+                const checkSrcInterval = setInterval(() => {
+                    if (imgEl && imgEl.src && imgEl.src !== "") {
+                        //==========ADICIONANDO ARQUIVOS EM SEUS RESPECTIVOS FORMATOS==========//
                         const initUrl = 'https://guillaumon.zohocreatorportal.com';
-                        fileElement = document.createElement('a');
-                        fileElement.href = `${initUrl}${newAnexo}`;
-                        fileElement.download = `${initUrl}${newAnexo}`;
-                        fileElement.appendChild(cloneFileElement);
-                    }
-                    fileElement.style.display = 'block';
-                    fileContainer.appendChild(fileElement);
-                    newLoadingSpinner.remove();
-                    
-                    
+                        if (typesToView.includes(fileType)) {
+                            fileElement.setAttribute('data-src', imgEl.src);
+                            fileElement.src = imgEl.src;
+                            fileElement.setAttribute('data-download-src', imgEl.src);
+                            if (fileType === 'PDF') {
+                                fileElement.setAttribute('data-type', 'iframe');
+                                fileElement.removeAttribute('data-download-src');
+                                fileElement.setAttribute('data-download-url', `${initUrl}${newAnexo}`);
+                                //==========CRIANDO UM PLACEHOLDER PARA OS ARQUIVOS QUE NÃO POSSUEM MINIATURAS==========//
+                                fileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
+                            }
+                        }else{
+                            const cloneFileElement = fileElement.cloneNode(true);
+                            cloneFileElement.style.width = '100px';
+                            cloneFileElement.style.height = '100px';
+                            cloneFileElement.style.display = 'block';
+                            cloneFileElement.removeAttribute('data-fancybox');
 
-                    clearInterval(checkSrcInterval);
-                }
-            }, 100);
-            galleryElement.appendChild(fileContainer);
+                            //==========CRIANDO UM PLACEHOLDER PARA OS ARQUIVOS QUE NÃO POSSUEM MINIATURAS==========//
+                            cloneFileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
+
+                            fileElement = document.createElement('a');
+                            fileElement.href = `${initUrl}${newAnexo}`;
+                            fileElement.download = `${initUrl}${newAnexo}`;
+                            fileElement.appendChild(cloneFileElement);
+                        }
+
+                        //==========ADICIONANDO O ELEMENTO A GALERIA==========//
+                        fileElement.style.display = 'block';
+                        fileContainer.appendChild(fileElement);
+                        newLoadingSpinner.remove();
+                        
+                        clearInterval(checkSrcInterval);
+                        resolve();
+                    }
+                }, 100);
+                
+            }))
         }
-
-        // Inicializa ou reconfigura o Fancybox após todos os itens serem adicionados
-        setTimeout(() => {
-            // Reconfigura o Fancybox para garantir que todos os itens da galeria estejam incluídos
-            $('[data-fancybox="gallery"]').fancybox({
-                buttons: [
-                    "zoom",
-                    "download",
-                    "close"
-                ],
-                iframe: {
-                    css: {
-                        width: '80%',
-                        height: '80%'
-                    },
-                    preload: false
-                },
-                afterLoad: function (instance, current) {
-                    if (current.src && current.src.endsWith('.pdf')) {
-                        current.type = 'iframe'; // Define o tipo como iframe para PDFs
-                    }
-                }
-            });
-        }, 500);
+        await Promise.all(promises);
     } else {
+
+        //==========CRIANDO MENSAGEM DE NÃO HÁ ANEXOS==========//
+        const pContainer = document.createElement('div');
+        pContainer.classList.add('gallery-item', 'mensagem-anexos-container');
+
         const p = document.createElement('p');
+        p.style.textAlign = 'center';
+        p.style.margin = '20px';
+        p.style.color = 'gray';
+        p.style.fontSize = '14px';
+        p.style.fontWeight = 'bold';
         p.classList.add('mensagem-anexos');
         p.textContent = 'Não há anexos...';
-        galleryElement.appendChild(p);
+        pContainer.appendChild(p);
+        galleryElement.appendChild(pContainer);
+
     }
-    
-    const botaoAdicionar = document.createElement('button');
-    botaoAdicionar.classList.add('botao-adicionar', 'add-btn', 'add-icon');
+    console.log("CRIANDO OS BOTÕES");
+
+    const btnContainer = document.createElement('div');
+    btnContainer.classList.add('btn-container', 'gallery-item');
+
+    const botaoAdicionar = document.createElement('a');
+    botaoAdicionar.classList.add('botao-adicionar', 'add-btn', 'add-icon', 'gallery-item');
     botaoAdicionar.style.padding = '10px 20px';
     botaoAdicionar.style.fontSize = '60px';
     botaoAdicionar.style.cursor = 'pointer';
-    botaoAdicionar.style.borderRight =  '1px solid transparent';
+    botaoAdicionar.style.borderLeft =  '1px solid transparent';
     botaoAdicionar.style.borderImage= 'linear-gradient(to bottom, transparent, gray, gray, gray, gray, gray, gray, transparent) 1';
 
     // Cria um input do tipo file, escondido
     const inputFile = document.createElement('input');
     inputFile.type = 'file';
+    
     inputFile.style.display = 'none';
 
     // Evento para abrir o seletor de arquivos ao clicar no botão
     botaoAdicionar.addEventListener('click', () => {
+        inputFile.disabled = false;
+        inputFile.readOnly = false;
         inputFile.click();
     });
 
@@ -1035,13 +1058,15 @@ export async function preencherListaAnexosV2(anexos) {
         const files = event.target.files;
         if (files.length > 0) {
             const file = files[0];
+            const fileName = file.name;
+
             globais.arquivosGaleria.push(file);
-            const fileType = file.name.split('.').pop().toLowerCase();
+            const fileType = file.name.split('.').pop().toUpperCase();
 
             // Cria o container para o arquivo
             const fileContainer = document.createElement('div');
             fileContainer.classList.add('gallery-item');
-            galleryElement.appendChild(fileContainer);
+            galleryElement.insertBefore(fileContainer, btnContainer);
 
             const blobUrl = URL.createObjectURL(file);
 
@@ -1059,7 +1084,7 @@ export async function preencherListaAnexosV2(anexos) {
                 fileElement.setAttribute('data-src', blobUrl);
                 fileElement.setAttribute('data-download-src', blobUrl); // Permitir download
 
-                if (fileType === 'pdf') {
+                if (fileType === 'PDF') {
                     fileElement.setAttribute('data-type', 'iframe'); // Define como iframe no Fancybox
                     fileElement.src = 'https://via.placeholder.com/150?text=PDF';
                 }else
@@ -1073,7 +1098,7 @@ export async function preencherListaAnexosV2(anexos) {
                 cloneFileElement.style.width = '100px';
                 cloneFileElement.style.height = '100px';
                 cloneFileElement.style.display = 'block';
-                cloneFileElement.src = 'https://via.placeholder.com/100?text=OUTRO';
+                cloneFileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
                 
                 
 
@@ -1089,19 +1114,22 @@ export async function preencherListaAnexosV2(anexos) {
             fileContainer.appendChild(fileElement);
             fileElement.style.display = 'block';
             newLoadingSpinner.remove();
-
-
-            $('[data-fancybox="gallery"]').fancybox();
+            $('[data-fancybox="gallery"]').fancybox(elLibConfig);
             // Remove a mensagem de anexos
-            const mensagemAnexos = document.querySelector('.mensagem-anexos');
+            const mensagemAnexos = document.querySelector('.mensagem-anexos-container');
             if (mensagemAnexos) {
                 mensagemAnexos.remove();
             }
         }
     });
 
+    console.log("INICIANDO O FANCYBOX");
+    //==========INICIANDO O FANCYBOX==========//
+    await $('[data-fancybox="gallery"]').fancybox(elLibConfig);
     // Adiciona o botão e o input ao DOM
-    galleryElement.appendChild(inputFile);
-    galleryElement.insertBefore(botaoAdicionar, galleryElement.firstChild);
+    console.log("ADICIONANDO OS ELEMENTOS AO DOM");
+    btnContainer.appendChild(inputFile);
+    btnContainer.appendChild(botaoAdicionar);
+    galleryElement.appendChild(btnContainer);
 }
 
