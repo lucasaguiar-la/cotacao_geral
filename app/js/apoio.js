@@ -21,14 +21,3 @@ function formatarNumeroDecimal(input) {
 
     return parseFloat(numeroFormatado).toFixed(2); // Retorna como número com 2 casas decimais
 }
-
-// Exemplos de uso
-try {
-    console.log(formatarNumeroDecimal("1.234,56")); // Saída: "12.34"
-    console.log(formatarNumeroDecimal("123456"));    // Saída: "1234.56"
-    console.log(formatarNumeroDecimal("00001234"));  // Saída: "12.34"
-    console.log(formatarNumeroDecimal(123));         // Saída: "1.23"
-    console.log(formatarNumeroDecimal("12"));        // Saída: "0.12"
-} catch (error) {
-    console.error(error.message);
-}

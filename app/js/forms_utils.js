@@ -225,7 +225,7 @@ export function preencherDadosPDC(resp) {
  * - Cria um novo campo de data para parcelas de pagamento
  */
 export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
-
+    //const numPDC = getNumPDC ? getNumPDC() : null;
     numeroParcela++;
 
     //====================CRIA UM NOVO CONTAINER PARA O CAMPO DE DATA E O BOTÃO DE REMOVER====================//
@@ -257,6 +257,14 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
     //====================CRIA UM CAMPO DE NÚMERO DO PDC====================//
     let novoInputNumPDC;
     if (numPDC) {
+
+        const camposParcelas = document.querySelectorAll('.parcela');
+        const numPDCInput = camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]');
+        
+        if (camposParcelas.length === 1 && !numPDCInput.value.includes('/')) {
+            numPDCInput.value = `${numPDC}/01`;
+        }
+
         novoInputNumPDC = document.createElement('input');
         novoInputNumPDC.type = 'text';
         novoInputNumPDC.name = 'Num_PDC_parcela';
@@ -282,7 +290,6 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
         atualizarValorTotalParcelas();
         atualizarLabels();
     });
-
     //====================ADICIONA O CAMPO DE DATA, O RÓTULO E O BOTÃO DE REMOVER AO CONTAINER====================//
     novoCampo.appendChild(novoLabel);
     novoCampo.appendChild(novoInput);

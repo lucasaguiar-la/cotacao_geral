@@ -167,12 +167,7 @@ export async function addSupplierColumn() {
     const spinner = document.createElement('div');
     spinner.classList.add('loading-spinner');
 
-    const loadingText = document.createElement('div');
-    loadingText.classList.add('loading-text');
-    loadingText.innerText = 'Carregando fornecedores...';
-
     loadingState.appendChild(spinner);
-    loadingState.appendChild(loadingText);
 
     // Criar e mostrar o popup inicial
     const overlay = document.createElement('div');
@@ -710,13 +705,7 @@ function criarPopupBase(conteudo) {
     const conteudoPopup = document.createElement('div');
     conteudoPopup.classList.add('popup-content');
 
-    const cabecalhoPopup = document.createElement('div');
-    cabecalhoPopup.classList.add('cabecalho-popup');
-    cabecalhoPopup.innerText = 'Selecione um fornecedor';
-
-    conteudoPopup.appendChild(cabecalhoPopup);
     conteudoPopup.appendChild(conteudo);
-
     popupFornecedor.appendChild(botaoFechar);
     popupFornecedor.appendChild(conteudoPopup);
 
@@ -1115,7 +1104,6 @@ export function atualizarOuvintesTabDetlhesForn() {
  *   - Observações
  */
 export async function prenchTabCot(resp) {
-    console.log("[ENTROU NO PREENCHER TABELA DE COTAÇÃO");
     if (resp && resp.code === 3000 && Array.isArray(resp.data) && resp.data.length > 0) {
 
         globais.cotacaoExiste = true;
@@ -1638,7 +1626,7 @@ async function abrirModalCadastroFornecedor() {
             if (formularioData['Tipo'] !== 'DEPARTAMENTO PESSOAL') {
                 requiredFields.push('Cpf_Cnpj_do_fornecedor');
             }
-            
+
             const missingFields = requiredFields.filter(field => !formularioData[field]);
 
             if (missingFields.length) {

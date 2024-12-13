@@ -58,6 +58,8 @@ export function criarBotao({page = null, removeExistingButtons = false})
                 setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
 
+            case "criar_cotacao_DP":
+            case "editar_cotacao_DP":
             case "criar_numero_de_PDC":
                 configurarBotao('criar-pdc-btn adjust-btn', 'Criar PDC', null, null, null);
 
@@ -76,7 +78,14 @@ export function criarBotao({page = null, removeExistingButtons = false})
                             }
                         }
                     });
-                    setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
+
+                    if(globais.pag.includes('_DP'))
+                    {
+                        setTimeout(() => criarBotao({page: "ajustar_compra_compras", removeExistingButtons:false}), 0);
+                    }else
+                    {
+                        setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
+                    }
                 }else
                 {
                     newButton.onclick = () => {
@@ -127,7 +136,10 @@ export function criarBotao({page = null, removeExistingButtons = false})
                         salvarButton.onclick = function () {
                             const numeroPDC = document.getElementById('numeroPDC').value;
                             const parcelas = document.querySelectorAll('#camposData .parcela');
+
+                            globais.numPDC = numeroPDC;
                             parcelas.forEach((parcela, index) => {
+                                const btnRemovParcela = parcela.querySelector('.remover-parcela')
                                 const pdcValue = parcelas.length > 1 ? `${numeroPDC}/${String(index + 1).padStart(2, '0')}` : numeroPDC;
                                 const inputPDC = document.createElement('input');
                                 inputPDC.classList.add("campo-datas");
@@ -135,7 +147,13 @@ export function criarBotao({page = null, removeExistingButtons = false})
                                 inputPDC.value = pdcValue;
                                 inputPDC.contentEditable = true; // Campo somente leitura
                                 inputPDC.name = 'Num_PDC_parcela';
-                                parcela.appendChild(inputPDC); // Adiciona o campo na parcela
+
+                                if (btnRemovParcela) {
+                                    parcela.insertBefore(inputPDC, btnRemovParcela);
+                                } else {
+                                    parcela.appendChild(inputPDC);
+                                }
+                                
                             });
                             overlay.remove(); // Fecha o modal
                             
@@ -144,8 +162,14 @@ export function criarBotao({page = null, removeExistingButtons = false})
                             newButton.classList.add('disabled'); // Adiciona a classe para estilo visual
                             
                             // Adiciona o novo botão após o botão "Criar PDC"
-                            setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
-        
+                            if(globais.pag.includes('_DP'))
+                            {
+                                setTimeout(() => criarBotao({page: "ajustar_compra_compras", removeExistingButtons:false}), 0);
+                            }else
+                            {
+                                setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
+                            }
+
                             // Oculta todas as seções, exceto a seção de parcelas
                             const allSections = document.querySelectorAll('.section');
                             allSections.forEach(section => {
@@ -159,7 +183,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
                             });
                         };
                         // Função para fechar o modal
-                        document.getElementById('fecharModal').onclick = function () {
+                        fecharButton.onclick = function () {
                             overlay.remove();
                         };
     
@@ -179,16 +203,15 @@ export function criarBotao({page = null, removeExistingButtons = false})
             case "solicitar_ajuste_ao_compras":
                 configurarBotao('confirm-purchase-btn adjust-btn', 'Solicitar ajuste', page, null, 'Deseja solicitar o AJUSTE deste PDC?');
                 break;
-            
-            case "criar_cotacao_DP":
-            case "editar_cotacao_DP":
+
             case "ajustar_compra_compras":
-                configurarBotao('confirm-purchase-btn adjust-btn', 'Enviar p/ checagem final', 'enviar_p_checagem_final', null, 'Deseja enviar o PDC para que o SÍNDICO e o SUBSÍNDICO possa autorizar?');
+                configurarBotao('confirm-purchase-btn adjust-btn', 'Enviar p/ checagem final', 'enviar_p_checagem_final', null, 'Deseja enviar o PDC para a CHECAGEM FINAL da controladoria?');
                 //setTimeout(() => criarBotao({page: "arquivar_cotacao"}));
                 break;
 
             case "checagem_final":
-                configurarBotao('confirm-purchase-btn adjust-btn', 'Sol. aut. Síndico', 'enviar_p_assinatura', null, 'Deseja enviar o PDC para a CHECAGEM FINAL da controladoria?');
+                configurarBotao('confirm-purchase-btn adjust-btn', 'Sol. aut. Síndico', 'enviar_p_assinatura', null, 'Deseja enviar o PDC para que o SÍNDICO e o SUBSÍNDICO possa autorizar?');
+
                 break;
 
             case "suspender_pagamento":
@@ -204,7 +227,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
         }
 
         //==========SE O BOTÃO NÃO FOR UMA EXCEÇÃO, CRIA O ONCLICK PARA ABRIR UM MODAL DE CONFIRMAÇÃO==========//
-        if (!["criar_numero_de_PDC"].includes(page)) {
+        if (!["criar_numero_de_PDC", "criar_cotacao_DP", "editar_cotacao_DP"].includes(page)) {
             newButton.onclick = () => {
                 customModal({botão: this, tipo: type, titulo: title, mensagem: message});
             };

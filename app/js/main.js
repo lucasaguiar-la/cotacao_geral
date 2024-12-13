@@ -255,7 +255,8 @@ async function executarProcessosParalelos() {
             newSaveButton.addEventListener('click', () => {
                 customModal({botao:newSaveButton, tipo: "criar_cotacao_DP", mensagem:"Deseja realmente salvar este registro?"});
             });
-            /*
+
+            /*SELECIONAVA O FORNECEDOR A PARTIR DO CAMPO TIPO, MUDOU PARA BOTÃO DE ADD FORN, SE NÃO DEU ERRO PODE EXCLUIR
             const entidadeSelect = document.getElementById('tipo');
             const opcoes = [
                 { value: '', text: 'Selecione...', disabled: true, selected: true, id_forn: null },
