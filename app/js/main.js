@@ -255,7 +255,35 @@ async function executarProcessosParalelos() {
             const entidadeSelect = document.getElementById('tipo');
             const opcoes = [
                 { value: '', text: 'Selecione...', disabled: true, selected: true, id_forn: null },
-                { value: '3938561000087230717', text: 'FOLHA DE PAGAMENTO', id_forn: 1206 }
+                { value: '3938561000087230717', text: 'FOLHA DE PAGAMENTO', id_forn: 1206 },
+                { value: '3938561000087786617', text: 'ADIANTAMENTO SALARIAL', id_forn: 1684},
+                { value: '3938561000069174082', text: 'FÉRIAS', id_forn: 1148},
+                { value: '3938561000069356031', text: 'RESCISÃO CONTRATUAL', id_forn: 1177},
+                { value: '3938561000071216432', text: 'ADIANTAMENTO 1ª PARCELA 13º SALÁRIO', id_forn: 1313},
+                { value: '3938561000086192829', text: 'ADIANTAMENTO 2ª PARCELA 13º SALÁRIO', id_forn: 1643},
+                { value: '3938561000085830084', text: '1ª PARCELA 13º SALÁRIO', id_forn: 1636},
+                { value: '3938561000087620085', text: '2º PARCELA 13º SALÁRIO', id_forn: 1682},
+                { value: '3938561000080428170', text: 'INSS FOLHA DE PAGAMENTO', id_forn: 1555},
+                { value: '3938561000080426996', text: 'FGTS FOLHA DE PAGAMENTO', id_forn: 1553},
+                { value: '3938561000087786625', text: 'PENSÃO ALIMENTÍCIA', id_forn: 1686},
+                { value: '3938561000087786621', text: 'INSS CONTRIBUINTE INDIVIDUAL', id_forn: 1685},
+                { value: '3938561000087786629', text: 'IRRF FOLHA DE PAGAMENTO', id_forn: 1687},
+                { value: '3938561000087786645', text: 'IRRF FÉRIAS', id_forn: 1691},
+                { value: '3938561000087786649', text: 'IRRF 13º SALÁRIO', id_forn: 1692},
+                { value: '3938561000087786633', text: 'PIS FOLHA DE PAGAMENTO', id_forn: 1688},
+                { value: '3938561000087786653', text: 'PIS 13º SALARIO', id_forn: 1693},
+                { value: '3938561000087786637', text: 'FGTS RESCISÃO', id_forn: 1689},  
+                { value: '3938561000087786641', text: 'FGTS 13º SALÁRIO', id_forn: 1690},
+                { value: '3938561000087786657', text: 'ASSISTÊNCIA MÉDICA', id_forn: 1694},
+                { value: '3938561000087786661', text: 'ASSISTÊNCIA ODONTOLÓGICA', id_forn: 1695},
+                { value: '3938561000087786665', text: 'SEGURO DE VIDA EM GRUPO', id_forn: 1696},
+                { value: '3938561000087786669', text: 'SERVIÇOS DE SAÚDE E SEGURANÇA DO TRABALHO', id_forn: 1697},
+                { value: '3938561000087786673', text: 'CURSO JOVEM APRENDIZ', id_forn: 1698},
+                { value: '3938561000087786677', text: 'TRANSPORTE DE FUNCIONÁRIOS', id_forn: 1699},
+                { value: '3938561000087786681', text: 'EMPRÉSTIMO CONSIGNADO', id_forn: 1700},
+                { value: '3938561000087786685', text: 'SISTEMA GESTÃO FOLHA DE PAGAMENTO', id_forn: 1701},
+                { value: '3938561000087786689', text: 'SISTEMA GESTÃO PONTO ELETRÔNICO', id_forn: 1702},
+                { value: '3938561000087786693', text: 'CONVÊNIO FARMÁCIA', id_forn: 1703}
                 // Adicione mais opções aqui conforme necessário
             ];
 
