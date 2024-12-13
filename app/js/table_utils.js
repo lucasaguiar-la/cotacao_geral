@@ -1634,14 +1634,17 @@ async function abrirModalCadastroFornecedor() {
             });
 
             // Validação dos campos
-            const requiredFields = ['Nome_do_fornecedor', 'Cpf_Cnpj_do_fornecedor'];
+            const requiredFields = ['Nome_do_fornecedor'];
+            if (formularioData['Tipo'] !== 'DEPARTAMENTO PESSOAL') {
+                requiredFields.push('Cpf_Cnpj_do_fornecedor');
+            }
+            
             const missingFields = requiredFields.filter(field => !formularioData[field]);
 
             if (missingFields.length) {
                 alert(`Por favor, preencha os campos obrigatórios: ${missingFields.join(', ')}.`);
                 return;
             }
-
             // Verifica se o CNPJ do fornecedor já existe na base de fornecedores
             const cnpjFornecedor = formularioData['Cpf_Cnpj_do_fornecedor'].replace(/\D/g, '');
             const fornecedorExistente = Array.from(globais.baseFornecedores.values()).find(fornecedor => fornecedor[2].replace(/\D/g, '') === cnpjFornecedor);
