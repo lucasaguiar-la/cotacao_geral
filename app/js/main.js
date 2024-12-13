@@ -1,33 +1,35 @@
 import {
-    addProductRow,
-    removeProductRow,
-    addSupplierColumn,
     atualizarOuvintesTabCot,
+    addSupplierColumn,
+    removeProductRow,
+    addProductRow,
     prenchTabCot,
 } from './table_utils.js'
 import {
+    buscarClassesOperacionais,
     buscarFornecedores,
     buscarCentrosCusto,
-    buscarClassesOperacionais
+    
 } from './dados_p_selects.js';
 import {
-    customModal,
+    desabilitarCampos,
     executar_apiZoho,
-    formatToBRL,
-    desabilitarCampos
+    customModal,
+    formatToBRL
 } from './utils.js'
 import {
-    adicionarCampoVenc,
-    removerCampoVenc,
-    mostrarCamposPagamento,
+    atualizarValorTotalClassificacoes,
+    atualizarValorTotalParcelas,
     adicionarLinhaClassificacao,
     removerLinhaClassificacao,
-    preencherDadosPDC,
-    setupPixValidation,
-    atualizarValorTotalParcelas,
-    atualizarValorTotalClassificacoes,
+    calcularValorTotalPagar,
     atualizarValorOriginal,
-    calcularValorTotalPagar
+    preencherListaAnexosV2,
+    mostrarCamposPagamento,
+    adicionarCampoVenc,
+    setupPixValidation,
+    preencherDadosPDC,
+    removerCampoVenc
 } from './forms_utils.js';
 import { CONFIG } from './config.js';
 import { criarBotao } from './metodos_filtragem.js';
@@ -63,18 +65,18 @@ initGenericItems().catch(error => {
 async function initGenericItems() {
 
     try {
-        // 1. Cria a Promise do allSettled
+        // 1. Executa searchPageParams e espera seu resultado
+        await searchPageParams();
+
+        // 2. Cria a Promise do allSettled
         const basesPromise = Promise.allSettled([
             buscarFornecedores().then(result => { globais.baseFornecedores = result; }),
             buscarCentrosCusto().then(result => { globais.baseCentrosCusto = result; }),
             buscarClassesOperacionais().then(result => { globais.baseClassesOperacionais = result; adicionarLinhaClassificacao(); })
         ]);
 
-        // 2. Executa searchPageParams e espera seu resultado
-        const paramsResult = await searchPageParams();
-
         // 3. Se não estiver na página criar_cotacao, aguarda as bases carregarem
-        if (globais.pag !== "criar_cotacao") {
+        if (!globais.pag.includes('criar_cotacao')) {
             await basesPromise;
         } else {
             // Se estiver na página criar_cotacao, executa em background
@@ -166,7 +168,7 @@ async function setupListenersAndInit() {
 
 async function executarProcessosParalelos() {
 
-    if (globais.pag != "criar_cotacao" && globais.pag != "criar_cotacao_DP") {
+    if (!globais.pag.includes('criar_cotacao')) {
         await ZOHO.CREATOR.init();
 
         // Executa processos em paralelo
@@ -176,7 +178,7 @@ async function executarProcessosParalelos() {
         ];
 
         await Promise.all(tarefas);
-        if(globais.pag != "editar_cotacao" && globais.pag != "editar_cotacao_DP") {
+        if(!globais.pag.includes('editar_cotacao')) {
 
             //desabilitarTodosElementosEditaveis();
             desabilitarCampos()
@@ -238,9 +240,11 @@ async function executarProcessosParalelos() {
         }
     }else
     {
+        preencherListaAnexosV2();
+        
         criarBotao({page: globais.pag});
 
-        if(globais.pag === "criar_cotacao_DP")
+        if(globais.pag.includes("_DP"))
         {
             // Remove todos os event listeners do botão com a classe save-btn
             const saveButton = document.querySelector('.save-btn');
@@ -251,7 +255,7 @@ async function executarProcessosParalelos() {
             newSaveButton.addEventListener('click', () => {
                 customModal({botao:newSaveButton, tipo: "criar_cotacao_DP", mensagem:"Deseja realmente salvar este registro?"});
             });
-
+            /*
             const entidadeSelect = document.getElementById('tipo');
             const opcoes = [
                 { value: '', text: 'Selecione...', disabled: true, selected: true, id_forn: null },
@@ -416,6 +420,7 @@ async function executarProcessosParalelos() {
                     atualizarOuvintesTabCot();
                 }
             });
+            */
         }
     }
     document.body.classList.remove('hidden');

@@ -218,8 +218,6 @@ export async function addSupplierColumn() {
         botaoCadastrarFornecedor.classList.add('criar-fornecedor-btn', 'add-btn', 'add-icon');
         botaoCadastrarFornecedor.addEventListener('click', async () => {
             const idNovoForn = await abrirModalCadastroFornecedor();
-            console.log("[RETORNOU DA FORNECEDOR]", idNovoForn);
-
             if (idNovoForn) {
                 let cFornecedores = `(ID==${idNovoForn})`;
 
@@ -1503,10 +1501,20 @@ async function abrirModalCadastroFornecedor() {
     // Criação do overlay do modal
     const overlay = document.createElement('div');
     overlay.classList.add('popup-overlay');
+    document.body.appendChild(overlay);
 
     // Criação do modal
     const modal = document.createElement('div');
     modal.classList.add('modal-cadastro-fornecedor'); // Classe para estilização
+    overlay.appendChild(modal);
+
+    // Criação do botão de fechar
+    const closeBtn = document.createElement('button');
+    closeBtn.classList.add('btn-fechar', 'close-icon', 'remove-btn');
+    closeBtn.onclick = () => {
+        document.body.removeChild(overlay);
+    };
+    modal.appendChild(closeBtn);
 
     // Cabeçalho do modal
     const cabecalho = document.createElement('h2');
@@ -1517,20 +1525,27 @@ async function abrirModalCadastroFornecedor() {
     // Formulário de cadastro
     const formulario = document.createElement('form');
     formulario.classList.add('form-colunas'); // Adiciona classe para colunas
+    modal.appendChild(formulario);
 
+
+    const tipo = globais.pag.includes("_DP") ? 'DEPARTAMENTO PESSOAL' : 'FORNECEDOR';
     // Campos do formulário
     const campos = [
-        { label: 'Nome:', name: 'Nome_do_fornecedor' },
-        { label: 'Cpf/Cnpj:', name: 'Cpf_Cnpj_do_fornecedor' },
-        { label: 'Serviços prestados:', name: 'Servicos_prestados' },
-        { label: 'Dados bancários:', name: 'Dados_bancarios' },
-        { label: 'E-mail:', name: 'E_mail' },
-        { label: 'Telefone:', name: 'Telefone' },
+        { label: 'Tipo', name: 'Tipo', display: 'none', initialContent: tipo},
+        { label: 'Nome:', name: 'Nome_do_fornecedor'},
+        { label: 'Cpf/Cnpj:', name: 'Cpf_Cnpj_do_fornecedor'},
+        { label: 'Serviços prestados:', name: 'Servicos_prestados'},
+        { label: 'Dados bancários:', name: 'Dados_bancarios'},
+        { label: 'E-mail:', name: 'E_mail'},
+        { label: 'Telefone:', name: 'Telefone'},
     ];
 
     campos.forEach(campo => {
         const divCampo = document.createElement('div');
+
         divCampo.classList.add('campo'); // Adiciona a classe 'campo' para o layout flexível
+
+        if(campo.display) divCampo.style.display = campo.display;
 
         const label = document.createElement('label');
         label.innerText = campo.label;
@@ -1538,7 +1553,8 @@ async function abrirModalCadastroFornecedor() {
         const input = document.createElement('input');
         input.type = 'text';
         input.name = campo.name;
-
+        input.value = campo.initialContent || '';
+        
         // Adiciona ouvintes de eventos para validação
         input.addEventListener('input', () => {
             switch (campo.name) {
@@ -1600,8 +1616,9 @@ async function abrirModalCadastroFornecedor() {
     botaoSalvar.type = 'button'; // Mantenha como 'button' para evitar envio do formulário
     botaoSalvar.innerText = 'Salvar';
     botaoSalvar.classList.add('botao-salvar', 'save-btn'); // Adiciona a classe para estilização
+    modal.appendChild(botaoSalvar);
 
-    // Retorna uma Promise
+    // Cria o onclick do botão de salvar
     return new Promise((resolve) => {
         botaoSalvar.onclick = () => {
             const formularioData = {};
@@ -1615,22 +1632,30 @@ async function abrirModalCadastroFornecedor() {
                     formularioData[input.name] = input.value; // Para outros inputs, armazena o valor
                 }
             });
+
             // Validação dos campos
-            if (!formularioData['Nome_do_fornecedor']) {
-                alert('Por favor, preencha o nome do fornecedor.');
-                return; // Cancela a ação de salvar
+            const requiredFields = ['Nome_do_fornecedor', 'Cpf_Cnpj_do_fornecedor'];
+            const missingFields = requiredFields.filter(field => !formularioData[field]);
+
+            if (missingFields.length) {
+                alert(`Por favor, preencha os campos obrigatórios: ${missingFields.join(', ')}.`);
+                return;
             }
-            if (!formularioData['Cpf_Cnpj_do_fornecedor']) {
-                alert('Por favor, preencha o CNPJ do fornecedor.');
-                return; // Cancela a ação de salvar
+
+            // Verifica se o CNPJ do fornecedor já existe na base de fornecedores
+            const cnpjFornecedor = formularioData['Cpf_Cnpj_do_fornecedor'].replace(/\D/g, '');
+            const fornecedorExistente = Array.from(globais.baseFornecedores.values()).find(fornecedor => fornecedor[2].replace(/\D/g, '') === cnpjFornecedor);
+
+            if (fornecedorExistente) {
+                alert(`O CNPJ ${formularioData['Cpf_Cnpj_do_fornecedor']} do fornecedor ${formularioData['Nome_do_fornecedor']} já existe na base de fornecedores.\n\nDados do fornecedor já existente:\n\n${Object.entries(fornecedorExistente).map(([key, value]) => `* ${key}: ${value}`).join('\n')}`);
+                return;
             }
-            
+
+            // Adiciona o fornecedor na base de fornecedores
             executar_apiZoho({ tipo: "add_reg", corpo: formularioData, nomeF: "Base_de_fornecedores_Laranjeiras" }).then((resp) => {
-                console.log("Resp => ", resp);
                 if (resp.code === 3000) {
                     console.log(resp);
                     document.body.removeChild(overlay); // Fecha o modal
-                    console.log("FECHOU O MODAL");
                     resolve(resp.data.ID); // Resolve a Promise com o ID
                 } else {
                     alert("Falha ao realizar o envio, tente novamente ou contate o adminsitrador do sistema!")
@@ -1638,12 +1663,6 @@ async function abrirModalCadastroFornecedor() {
                 }
             });
         };
-
-        // Adiciona o formulário ao modal
-        modal.appendChild(formulario);
-        modal.appendChild(botaoSalvar);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
     });
 }
 
@@ -1963,23 +1982,6 @@ async function pegarDadosClassificacao() {
     }
 
     return dadosClassificacao;
-}
-
-function pegarArquivosGaleria() {
-    const galeria = document.getElementById('gallery');
-    const arquivos = galeria.querySelectorAll('.novo-anexo');
-    const listaArquivos = [];
-  
-    arquivos.forEach((arquivo) => {
-      const arquivoObj = {
-        nome: arquivo.getAttribute('alt'),
-        url: arquivo.getAttribute('data-src'),
-        tipo: arquivo.getAttribute('data-type'),
-      };
-      listaArquivos.push(arquivoObj);
-    });
-  
-    return listaArquivos;
 }
 
 //================================================================//

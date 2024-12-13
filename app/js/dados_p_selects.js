@@ -31,14 +31,22 @@ const nomeRelClasseOperacional = "Laranj_Classes_operaicionais";
  * // ["Empresa ABC", "12.345.678/0001-90", "100.00", "30 dias", "Obs..."]
  */
 export async function buscarFornecedores() {
-    let cFornecedores = "(ID!=0)";
+    console.log("============BUSCANDO FORNECEDORES============");
+    console.log("globais.pag => ", globais.pag);
+    let cFornecedores = `(Tipo!="DEPARTAMENTO PESSOAL")`;
+    if (globais.pag.includes('_DP')) {
+        cFornecedores = `(Tipo=="DEPARTAMENTO PESSOAL")`;
+    }
+    console.log("cFornecedores => ", cFornecedores);
     
     try {
+
         const resp = await executar_apiZoho({
             tipo: "busc_reg_recursivo", 
             criterios: cFornecedores, 
             nomeR: nomeRelFornecedores
         });
+        console.log("resp => ", resp);
         
         let baseFornecedores = new Map();
         resp.forEach((item) => {

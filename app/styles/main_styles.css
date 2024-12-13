@@ -435,7 +435,7 @@ button:hover {
     width: 100%;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
-    max-height: 50vh;
+    max-height: 30vh;
     overflow-y: auto;
     border-radius: 5px;
     margin-top: 5px;
@@ -1212,7 +1212,6 @@ button:hover {
     background-color: #fff; /* Cor de fundo */
     border-radius: 8px; /* Bordas arredondadas */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
-    padding: 20px; /* Espaçamento interno */
     width: 650px; /* Largura do modal aumentada */
     max-width: 90%; /* Largura máxima */
     text-align: left; /* Alinhamento do texto à esquerda */
@@ -1245,20 +1244,19 @@ button:hover {
     border-radius: 4px; /* Bordas arredondadas */
     font-size: 90%; /* Tamanho da fonte */
 }
-.modal-cadastro-fornecedor button:hover {
-    background-color: #45a049; /* Cor ao passar o mouse */
-}
 
 .modal-cadastro-fornecedor .botao-salvar {
     display: block; /* Exibe o botão como bloco */
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 20px;
 }
 
 .form-colunas {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Cria 2 colunas de igual largura */
     gap: 15px; /* Espaçamento entre os campos */
+    padding: 20px; /* Espaçamento interno */
 }
 
 .gallery
