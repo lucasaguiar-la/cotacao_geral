@@ -75,12 +75,6 @@ export function preencherDadosPDC(resp) {
         selectEntidade.value = data.Entidade.ID;
     }
 
-    // Select do tipo
-    const selectTipo = formDadosPDC.querySelector('#tipo');
-    if (globais.pag === "editar_cotacao_DP") {
-        selectTipo.innerHTML = '';
-    }
-
     // Acessando as propriedades corretamente
     const tipoSolicitacaoID = data["Tipo_de_solicitacao.ID"];
     const tipoSolicitacaoDescr = data["Tipo_de_solicitacao.descr_tipo_compra"];
@@ -198,8 +192,7 @@ export function preencherDadosPDC(resp) {
 
     if (data.anexo_arquivos && data.anexo_arquivos.length > 0) {
         preencherListaAnexosV2(data.anexo_arquivos);
-    }else
-    {
+    } else {
         preencherListaAnexosV2();
     }
 
@@ -260,7 +253,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
 
         const camposParcelas = document.querySelectorAll('.parcela');
         const numPDCInput = camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]');
-        
+
         if (camposParcelas.length === 1 && !numPDCInput.value.includes('/')) {
             numPDCInput.value = `${numPDC}/01`;
         }
@@ -276,8 +269,17 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
         } else {
             novoInputNumPDC.value = numPDC; // Mantém o valor original se já tiver a parte /NN
         }
-    }
 
+        novoInputNumPDC.addEventListener('change', () => {
+            /*Verifica se o numero do PDC possui o / , caso possua, verifica a quantidade de caracteres depois da barra, caso tenha apenas 1 caractere, adiciona um zero a esquerda*/
+            if (novoInputNumPDC.value.includes('/')) {
+                const partes = novoInputNumPDC.value.split('/');
+                if (partes[1].length === 1) {
+                    novoInputNumPDC.value = `${partes[0]}/${partes[1].padStart(2, '0')}`;
+                }
+            }
+        })
+    }
     //====================CRIA O BOTÃO DE REMOVER====================//
     const removerButton = document.createElement('button');
     removerButton.type = 'button';
@@ -355,9 +357,160 @@ function atualizarLabels() {
     });
 }
 
-//============================================================================================//
-//====================FUNÇÕES PARA TRATAR CAMPOS DE CLASSIFICAÇÃO CONTÁBIL====================//
-//============================================================================================//
+//============================================================================================\\
+//====================FUNÇÕES PARA TRATAR CAMPOS DE CLASSIFICAÇÃO CONTÁBIL====================\\
+//============================================================================================\\
+
+export function adicionarLinhaClassificacao() {
+
+    const classFields = document.getElementById('camposClassificacao');
+
+    //====================Cria uma nova linha de classificação====================\\
+    const newRowClass = document.createElement('div');
+    newRowClass.classList.add('linha-classificacao');
+
+    //====================Classe para criar campos de classificação====================\\
+    class ClassContField {
+        constructor({ placeholder = null, inputType, inputName, id = null, options = null }) {
+            this.inputType = inputType;
+            this.inputName = inputName;
+            this.id = id;
+            this.options = options;
+            this.placeholder = placeholder;
+        }
+
+        create() {
+            //==========Criando o container geral do campo==========//
+            const field = document.createElement('div');
+            field.id = this.id;
+            field.classList.add('campo', 'dp-field-master-container');
+
+            const input = document.createElement('input');
+            input.type = this.inputType;
+            input.name = this.inputName;
+            input.classList.add('dp-field-input');
+            input.placeholder = this.placeholder || 'Selecione...';
+            field.appendChild(input);
+
+            function optFilter(inputField, optContainer) {
+                const filter = inputField.value.toUpperCase();
+
+                const options = optContainer.querySelectorAll('.dropdown-opcao');
+                options.forEach((option) => {
+                    const txtValue = option.textContent || option.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        option.style.display = '';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            }
+
+            //==========Criando o campo de pesquisa e as opções==========//
+            if (this.inputType === 'select') {
+
+                input.classList.add('dp-field-sel-btn');
+
+                //=====Criando o container das opções + pesquisa=====//
+                const optContainer = document.createElement('div');
+                optContainer.style.display = 'none';
+                optContainer.classList.add('dp-field-opt-container');
+                field.appendChild(optContainer);
+
+                input.addEventListener('blur', () => {
+                    const valorDigitado = input.value;
+                    const opcoes = this.options.map(([value, text]) => text);
+                    if (!opcoes.includes(valorDigitado)) {
+                        input.value = '';
+                        // Adiciona um atraso de 100ms antes de restaurar a visibilidade das opções
+                        setTimeout(() => {
+                            const optContainer = field.querySelector('.dp-field-opt-container');
+                            const options = optContainer.querySelectorAll('.dropdown-opcao');
+                            options.forEach((option) => {
+                                option.style.display = '';
+                            });
+                        }, 100);
+                    }
+                });
+
+                //=====Adicionando evento para alterar visualização container das opções + pesquisa=====//
+                input.addEventListener('click', () => {
+                    optContainer.style.display = 'block';
+                });
+
+                input.addEventListener('input', () => {
+                    optFilter(input, optContainer);
+                })
+
+                document.addEventListener('click', (ev) => {
+                    if (!optContainer.contains(ev.target) && !input.contains(ev.target)) {
+                        optContainer.style.display = 'none';
+                    }
+                });
+
+                //Criando o restante das opções//
+                this.options.forEach(([value, text]) => {
+                    const option = document.createElement('div');
+                    option.classList.add(`option-${this.inputName}`, 'dropdown-opcao');
+                    option.textContent = text;
+                    option.dataset.id_opcao = value;
+                    optContainer.appendChild(option);
+
+                    option.onclick = (ev) => {
+                        const trgt = ev.target;
+                        input.value = trgt.textContent;
+                        input.dataset.id_opcao = trgt.dataset.id_opcao;
+                        optContainer.style.display = 'none';
+                    }
+                });
+            } else {
+                if (this.inputType === 'number') {
+                    input.classList.add('input-number');
+                    input.type = 'text';
+                    input.name = this.inputName;
+                    input.addEventListener('blur', () => { formatToBRL(input); atualizarValorTotalClassificacoes(); });
+                }
+            }
+            return field;
+        }
+    }
+
+    //====================Buscando bases de classificação====================\\
+    const accOptions = [
+        ['CUSTEIO', 'CUSTEIO'],
+        ['INVESTIMENTO', 'INVESTIMENTO'],
+        ['FUNDO DE RESERVA', 'FUNDO DE RESERVA']
+    ];
+    const opClassOpt = Array.from(globais.baseClassesOperacionais.entries()).map(([id, dados]) => [
+        id,
+        `${dados.codigoClasse} - ${dados.nomeClasse}`
+    ]);
+    const accCenterOpt = Array.from(globais.baseCentrosCusto.entries()).map(([id, dados]) => [
+        id,
+        `${dados.codigoCentro} - ${dados.nomeCentro}`
+    ]);
+
+    const fieldsToCreate = [
+        { placeholder: 'Conta...', inputType: 'select', inputName: 'Conta_a_debitar', id: 'conta', options: accOptions },
+        { placeholder: 'Centro Custo...', inputType: 'select', inputName: 'Centro_de_custo', id: 'centro', options: accCenterOpt },
+        { placeholder: 'Classe Op...', inputType: 'select', inputName: 'Classe_operacional', id: 'classe', options: opClassOpt },
+        { placeholder: 'R$ 0.000,00', inputType: 'number', inputName: 'Valor', id: 'valor' }
+    ];
+
+    fieldsToCreate.forEach((field) => {
+        console.log("field options => ", field.options);
+        newRowClass.appendChild(new ClassContField({ placeholder: field.placeholder, inputType: field.inputType, inputName: field.inputName, id: field.id, options: field.options }).create());
+    });
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.classList.add('remover-classificacao', 'close-icon', 'remove-btn');
+    removeBtn.addEventListener('click', () => removerLinhaClassificacao(removeBtn));
+
+    newRowClass.appendChild(removeBtn);
+    classFields.appendChild(newRowClass);
+}
+
 /**
  * Adiciona uma nova linha de classificação contábil
  * 
@@ -369,7 +522,7 @@ function atualizarLabels() {
  * - Cria uma nova linha com todos os campos necessários
  * - Mantém a mesma estrutura e estilo das linhas existentes
  */
-export function adicionarLinhaClassificacao() {
+export function adicionarLinhaClassificacaoBkp() {
     const camposClassificacao = document.getElementById('camposClassificacao');
 
     // Verifica se o container está oculto e o torna visível
@@ -386,7 +539,6 @@ export function adicionarLinhaClassificacao() {
         const campo = document.createElement('div');
         campo.id = id;
         campo.classList.add('campo');
-
         let input;
         if (inputType === 'select') {
             input = document.createElement('select');
@@ -399,6 +551,12 @@ export function adicionarLinhaClassificacao() {
 
             // Adiciona as opções se fornecidas
             if (options) {
+                // Cria um campo de pesquisa para Classificação Contábil
+                const campoPesquisa = document.createElement('input');
+                campoPesquisa.type = 'text';
+                campoPesquisa.placeholder = 'Pesquisar...';
+                campoPesquisa.classList.add('campo-pesquisa-classificacao');
+                input.appendChild(campoPesquisa);
                 options.forEach(([value, text]) => {
                     const option = document.createElement('option');
                     option.value = value;
@@ -515,9 +673,63 @@ function preencherDadosClassificacao(classificacoes) {
         const ultimaLinha = formClassificacao.querySelector('.linha-classificacao:last-child');
 
         // Preenche os campos
-        const selectConta = ultimaLinha.querySelector('select[name="Conta_a_debitar"]');
-        const selectCentro = ultimaLinha.querySelector('select[name="Centro_de_custo"]');
-        const selectClasse = ultimaLinha.querySelector('select[name="Classe_operacional"]');
+        const selectConta = ultimaLinha.querySelector('.dp-field-input[name="Conta_a_debitar"]');
+        const selectCentro = ultimaLinha.querySelector('.dp-field-input[name="Centro_de_custo"]');
+        const selectClasse = ultimaLinha.querySelector('.dp-field-input[name="Classe_operacional"]');
+        const inputValor = ultimaLinha.querySelector('input[name="Valor"]');
+
+        // Extrai apenas o código antes do hífen para fazer o match
+        const codigoClasse = classe.split(' - ')[0].trim();
+        const codigoCentro = centro.split(' - ')[0].trim();
+
+        // Encontra e seleciona a opção correta em cada select
+        Array.from(selectCentro.parentNode.querySelectorAll('.dropdown-opcao')).forEach(option => {
+            if (option.textContent.startsWith(codigoCentro)) {
+                option.click();
+            }
+        });
+
+        Array.from(selectClasse.parentNode.querySelectorAll('.dropdown-opcao')).forEach(option => {
+            if (option.textContent.startsWith(codigoClasse)) {
+                option.click();
+            }
+        });
+
+        // Adiciona seleção da conta a debitar
+        Array.from(selectConta.parentNode.querySelectorAll('.dropdown-opcao')).forEach(option => {
+            if (option.textContent === conta.trim()) {
+                option.click();
+            }
+        });
+
+        // Formata e define o valor
+        inputValor.value = formatToBRL({ target: { value: valor } });
+    });
+}
+
+function preencherDadosClassificacaoBkp(classificacoes) {
+    const formClassificacao = document.querySelector('#form-classificacao');
+
+    // Limpa as linhas existentes
+    formClassificacao.querySelectorAll('.linha-classificacao').forEach(linha => {
+        linha.remove();
+    });
+
+    // Para cada classificação, cria uma nova linha
+    classificacoes.forEach(classificacao => {
+        // Extrai os valores do display_value
+        const [conta, centro, classe, valor, id] = classificacao.display_value.split('|SPLITKEY|');
+
+        // Adiciona uma nova linha
+        adicionarLinhaClassificacao();
+
+        // Pega a última linha adicionada
+        const ultimaLinha = formClassificacao.querySelector('.linha-classificacao:last-child');
+
+        // Preenche os campos
+        const selectConta = ultimaLinha.querySelector('input[name="Conta_a_debitar"]');
+        const selectCentro = ultimaLinha.querySelector('input[name="Centro_de_custo"]');
+        const selectClasse = ultimaLinha.querySelector('input[name="Classe_operacional"]');
         const inputValor = ultimaLinha.querySelector('input[name="Valor"]');
 
         // Extrai apenas o código antes do hífen para fazer o match
@@ -935,7 +1147,7 @@ export async function preencherListaAnexosV2(anexos) {
         loadingSpinner.className = 'customConfirm-loading-spinner';
 
         loadingSpinnerContainer.appendChild(loadingSpinner);
-    
+
         return loadingSpinnerContainer;
     }
 
@@ -987,7 +1199,7 @@ export async function preencherListaAnexosV2(anexos) {
                                 //==========CRIANDO UM PLACEHOLDER PARA OS ARQUIVOS QUE NÃO POSSUEM MINIATURAS==========//
                                 fileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
                             }
-                        }else{
+                        } else {
                             const cloneFileElement = fileElement.cloneNode(true);
                             cloneFileElement.style.width = '100px';
                             cloneFileElement.style.height = '100px';
@@ -1007,12 +1219,12 @@ export async function preencherListaAnexosV2(anexos) {
                         fileElement.style.display = 'block';
                         fileContainer.appendChild(fileElement);
                         newLoadingSpinner.remove();
-                        
+
                         clearInterval(checkSrcInterval);
                         resolve();
                     }
                 }, 100);
-                
+
             }))
         }
         await Promise.all(promises);
@@ -1044,13 +1256,13 @@ export async function preencherListaAnexosV2(anexos) {
     botaoAdicionar.style.padding = '10px 20px';
     botaoAdicionar.style.fontSize = '60px';
     botaoAdicionar.style.cursor = 'pointer';
-    botaoAdicionar.style.borderLeft =  '1px solid transparent';
-    botaoAdicionar.style.borderImage= 'linear-gradient(to bottom, transparent, gray, gray, gray, gray, gray, gray, transparent) 1';
+    botaoAdicionar.style.borderLeft = '1px solid transparent';
+    botaoAdicionar.style.borderImage = 'linear-gradient(to bottom, transparent, gray, gray, gray, gray, gray, gray, transparent) 1';
 
     // Cria um input do tipo file, escondido
     const inputFile = document.createElement('input');
     inputFile.type = 'file';
-    
+
     inputFile.style.display = 'none';
 
     // Evento para abrir o seletor de arquivos ao clicar no botão
@@ -1094,11 +1306,10 @@ export async function preencherListaAnexosV2(anexos) {
                 if (fileType === 'PDF') {
                     fileElement.setAttribute('data-type', 'iframe'); // Define como iframe no Fancybox
                     fileElement.src = 'https://via.placeholder.com/150?text=PDF';
-                }else
-                {
+                } else {
                     fileElement.src = blobUrl;
                 }
-                
+
             } else {
                 const cloneFileElement = fileElement.cloneNode(true);
                 cloneFileElement.classList.add('novo-anexo');
@@ -1106,8 +1317,8 @@ export async function preencherListaAnexosV2(anexos) {
                 cloneFileElement.style.height = '100px';
                 cloneFileElement.style.display = 'block';
                 cloneFileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
-                
-                
+
+
 
                 fileElement = document.createElement('a');
                 fileElement.display = 'none';

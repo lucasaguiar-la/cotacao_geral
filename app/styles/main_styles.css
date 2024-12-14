@@ -1,3 +1,4 @@
+/*==========ESTILO GERAL==========*/
 html,
 body {
     height: 100%;
@@ -59,7 +60,7 @@ select option[disabled] {
     color: #999999; /* ou qualquer outra cor que desejar */
 }
 
-/*==========SECAO 01==========*/
+/*==========SECAO DADOS DO PDC==========*/
 .form-compra, .form-pagamento, .form-dados-nf {
     font-family: Arial, sans-serif;
     color: #333;
@@ -415,18 +416,6 @@ button:hover {
 }
 
 /*======================TESTE==========================*/
-.dropdown-btn {
-    background-color: #fff;
-    padding: 12px 15px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    border-radius: 5px;
-    height: 100%;
-    width: 100%;
-    text-align: left;
-    transition: background-color 0.3s;
-}
 
 .dropdown-content {
     display: none;
@@ -441,6 +430,54 @@ button:hover {
     margin-top: 5px;
     padding-top: 60px;
 }
+
+
+/*======================ESTILOS DE CAMPO DE DROPDOWN GENÊRICO==========================*/
+
+.dp-field-master-container
+{
+
+}
+
+.dropdown-btn {
+    background-color: #fff;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    border-radius: 5px;
+    height: 100%;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.3s;
+}
+.dp-field-sel-btn
+{
+    background-color: #fff;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    border-radius: 5px;
+    height: 100%;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.3s;
+}
+
+.dp-field-opt-container
+{
+    background-color: #fff;
+    max-width: 100%;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    max-height: 25vh;
+    overflow-y: auto;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+/*======================FIM ESTILOS DE CAMPO DE DROPDOWN GENÊRICO==========================*/
 
 .opcoes-container {
     padding: 10px;
@@ -790,7 +827,7 @@ button:hover {
     grid-template-columns: 0.5fr 1fr 1fr 0.5fr auto;
     gap: 15px;
     padding: 4px 0;
-    align-items: center;
+    align-items: start;
 }
 
 .linha-classificacao .campo {
@@ -812,6 +849,7 @@ button:hover {
 .linha-classificacao select,
 .linha-classificacao input {
     width: 100%;
+    max-width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;

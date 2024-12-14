@@ -400,8 +400,6 @@ export async function addSupplierColumn() {
             }
         });
 
-
-
         // Popula o dropdown com os fornecedores
         globais.baseFornecedores.forEach((dadosFornecedor) => {
             const opcao = document.createElement('div');
@@ -1939,12 +1937,15 @@ async function pegarDadosClassificacao() {
         const classificacao = {};
 
         // Busca os selects e inputs da linha atual
-        const selects = linha.querySelectorAll('select');
-        const inputs = linha.querySelectorAll('input');
+        const selects = linha.querySelectorAll('input[type="select"]');
+        const inputs = linha.querySelectorAll('input[type="text"], input[type="number"]');
 
         // Adiciona os valores dos selects ao objeto da classificação
         selects.forEach(select => {
-            if (select.name && select.value) {
+            if (select.name && select.dataset.id_opcao) {
+                classificacao[select.name] = select.dataset.id_opcao;
+            }else
+            {
                 classificacao[select.name] = select.value;
             }
         });
@@ -1971,7 +1972,6 @@ async function pegarDadosClassificacao() {
     if (classificacoes.length > 0) {
         dadosClassificacao["Classificacao_contabil"] = classificacoes;
     }
-
     return dadosClassificacao;
 }
 

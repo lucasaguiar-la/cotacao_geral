@@ -148,12 +148,22 @@ export function criarBotao({page = null, removeExistingButtons = false})
                                 inputPDC.contentEditable = true; // Campo somente leitura
                                 inputPDC.name = 'Num_PDC_parcela';
 
+                                inputPDC.addEventListener('change', () => {
+                                    /*Verifica se o numero do PDC possui o / , caso possua, verifica a quantidade de caracteres depois da barra, caso tenha apenas 1 caractere, adiciona um zero a esquerda*/
+                                    if (inputPDC.value.includes('/')) {
+                                        const partes = inputPDC.value.split('/');
+                                        if (partes[1].length === 1) {
+                                            inputPDC.value = `${partes[0]}/${partes[1].padStart(2, '0')}`;
+                                        }
+                                    }
+                                })
+
                                 if (btnRemovParcela) {
                                     parcela.insertBefore(inputPDC, btnRemovParcela);
                                 } else {
                                     parcela.appendChild(inputPDC);
                                 }
-                                
+
                             });
                             overlay.remove(); // Fecha o modal
                             
