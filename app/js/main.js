@@ -40,6 +40,7 @@ class Globais {
             baseClassesOperacionais: new Map(),
             baseFornecedores: new Map(),
             baseCentrosCusto: new Map(),
+            idsCotacao: new Array(),
             arquivosGaleria: [],
             ...CONFIG.INITIAL_STATE,
             ...CONFIG.APPS
@@ -180,8 +181,7 @@ async function executarProcessosParalelos() {
         await Promise.all(tarefas);
         if(!globais.pag.includes('editar_cotacao')) {
 
-            //desabilitarTodosElementosEditaveis();
-            desabilitarCampos()
+            
             if (globais.pag == "aprovar_cotacao") {
                 criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
 
@@ -233,6 +233,8 @@ async function executarProcessosParalelos() {
             {
                 criarBotao({removeExistingButtons:true});
             }
+            //desabilitarTodosElementosEditaveis();
+            desabilitarCampos()
         }
         else 
         {

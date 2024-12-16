@@ -153,11 +153,12 @@ export function preencherDadosPDC(resp) {
                 return;
             }
 
-            const [dataStr, valor, numPDC] = dataObj.display_value.split('|SPLITKEY|');
-            const [dia, mes, ano] = dataStr.split('/');
-            const dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+            const [dataStr, valor, numPDC, parcCriada] = dataObj.display_value.split('|SPLITKEY|');
 
-            adicionarCampoVenc(dataFormatada, valor, numPDC);
+            const [dia, mes, ano] = dataStr.split('/') ;
+            const dataFormatada = dataStr !== ""? `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`: "";
+
+            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada);
         });
     }
 
@@ -217,7 +218,7 @@ export function preencherDadosPDC(resp) {
  * @description
  * - Cria um novo campo de data para parcelas de pagamento
  */
-export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
+export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null) {
     //const numPDC = getNumPDC ? getNumPDC() : null;
     numeroParcela++;
 
@@ -280,6 +281,14 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
             }
         })
     }
+
+    //====================CRIA UM CAMPO DE PARCELA CRIADA (BOOLEAN)====================//
+    const novoInputParcelaCriada = document.createElement('input');
+    novoInputParcelaCriada.type = 'checkbox';
+    novoInputParcelaCriada.name = 'parcela_criada';
+    novoInputParcelaCriada.classList.add('campo-datas', 'hidden');
+    if(parcCriada === true) novoInputParcelaCriada.setAttribute('checked', 'checked');
+
     //====================CRIA O BOTÃO DE REMOVER====================//
     const removerButton = document.createElement('button');
     removerButton.type = 'button';
@@ -296,6 +305,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null) {
     novoCampo.appendChild(novoLabel);
     novoCampo.appendChild(novoInput);
     novoCampo.appendChild(novoInputValor);
+    novoCampo.appendChild(novoInputParcelaCriada);
     if (novoInputNumPDC) novoCampo.appendChild(novoInputNumPDC);
     novoCampo.appendChild(removerButton);
 
@@ -498,7 +508,6 @@ export function adicionarLinhaClassificacao() {
     ];
 
     fieldsToCreate.forEach((field) => {
-        console.log("field options => ", field.options);
         newRowClass.appendChild(new ClassContField({ placeholder: field.placeholder, inputType: field.inputType, inputName: field.inputName, id: field.id, options: field.options }).create());
     });
 
@@ -684,20 +693,20 @@ function preencherDadosClassificacao(classificacoes) {
 
         // Encontra e seleciona a opção correta em cada select
         Array.from(selectCentro.parentNode.querySelectorAll('.dropdown-opcao')).forEach(option => {
-            if (option.textContent.startsWith(codigoCentro)) {
+            if (option.textContent.startsWith(codigoCentro) && codigoCentro !== '') {
                 option.click();
             }
         });
 
         Array.from(selectClasse.parentNode.querySelectorAll('.dropdown-opcao')).forEach(option => {
-            if (option.textContent.startsWith(codigoClasse)) {
+            if (option.textContent.startsWith(codigoClasse) && codigoClasse !== '') {
                 option.click();
             }
         });
 
         // Adiciona seleção da conta a debitar
-        Array.from(selectConta.parentNode.querySelectorAll('.dropdown-opcao')).forEach(option => {
-            if (option.textContent === conta.trim()) {
+        Array.from(selectConta.parentNode.querySelectorAll('.dropdown-opcao') ).forEach(option => {
+            if (option.textContent === conta.trim() && conta !== '') {
                 option.click();
             }
         });

@@ -1,7 +1,6 @@
 import { formatToBRL, converterStringParaDecimal, convertToNegative, restrictNumericInput, restrictIntegerInput, executar_apiZoho, customModal } from './utils.js';
 import { globais } from './main.js'
 import { atualizarValorTotalClassificacoes, atualizarValorTotalParcelas } from './forms_utils.js';
-let idsCotacao = new Array(); //Array para armazenar os ids das cotações
 
 const qlt = 4; //Total de linhas de totalizadores, considerando linha com botão de adicionar produto
 const ipcv = 3; //Indice da primeira coluna de valores (Valor unitário do primeiro fornecedor)
@@ -1061,7 +1060,7 @@ export function atualizarOuvintesTabDetlhesForn() {
 }
 
 //====================================================================================//
-//===========================PREENCHE A tab DE COTAÇÃOES===========================//
+//===========================PREENCHE A TAB DE COTAÇÃOES===========================//
 //====================================================================================//
 /**
  * Preenche a tab de cotações com os dados recebidos da API
@@ -1137,7 +1136,7 @@ export async function prenchTabCot(resp) {
             valoresDescontos.push(desconto);
         });
 
-        idsCotacao = [...new Set(data.map(item => item.ID))].sort((a, b) => a - b);
+        globais.idsCotacao = [...new Set(data.map(item => item.ID))].sort((a, b) => a - b);
 
         //=====Cria linhas dos produtos=====//
         idProdutos.forEach((idProduto, index) => {
@@ -1421,9 +1420,11 @@ export async function prenchTabCot(resp) {
                 const condPagCell = detailRow.insertCell();
                 const dadosFornecedor = data.find(item => item.id_fornecedor === fornecedorObj.id_fornecedor);
                 condPagCell.textContent = dadosFornecedor?.Condicoes_de_pagamento || '';
+                condPagCell.contentEditable = "true";
 
                 const obsCell = detailRow.insertCell();
                 obsCell.textContent = dadosFornecedor?.Observacoes || '';
+                obsCell.contentEditable = "true";
 
                 // Adiciona a classe 'forn-aprovado' se o fornecedor estiver aprovado
                 if (valoresAprovado[index] == 'true') {
@@ -1658,15 +1659,7 @@ async function abrirModalCadastroFornecedor() {
 //=========================================================================================//
 //===========================FUNÇÕES AUXILIARES PARA SALVAR TUDO===========================//
 //=========================================================================================//
-/**
- * Busca os dados do PDC.
- * 
- * @function pegarDadosPDC
- * @returns {Object} Os dados do PDC.
- * 
- * @description
- * Esta função busca os dados iniciais e detalhes do PDC a partir de formulários e os organiza em um objeto.
- */
+/*
 async function pegarDadosPDC() {
 
     //====================BUSCA OS DADOS INICIAIS DO PDC====================//
@@ -1737,15 +1730,6 @@ async function pegarDadosPDC() {
     return dadosIniciaisPdc;
 }
 
-/**
- * Busca os dados da tab de preços.
- * 
- * @function pegarDadostabPrecos
- * @returns {Object} Os dados da tab de preços e dados extras do PDC.
- * 
- * @description
- * Esta função busca os dados da tab de preços, incluindo os fornecedores, valores unitários, totais, frete, descontos e outros detalhes.
- */
 async function pegarDadostabPrecos() {
     //====================BUSCA OS DADOS DA TAB DE PREÇOS====================//
     const tab = document.getElementById('priceTable');
@@ -1864,15 +1848,6 @@ async function pegarDadostabPrecos() {
     };
 }
 
-/**
- * Busca os dados do formulário de Nota Fiscal.
- * 
- * @function pegarDadosNF
- * @returns {Object} Os dados do formulário de Nota Fiscal.
- * 
- * @description
- * Esta função busca os dados do formulário de Nota Fiscal e os organiza em um objeto.
- */
 async function pegarDadosNF() {
     //====================BUSCA OS DADOS DO FORMULÁRIO DE NOTA FISCAL====================//
     const formDdsNF = document.querySelector('#dados-nf');
@@ -1912,15 +1887,6 @@ async function pegarDadosNF() {
     return dadosNF;
 }
 
-/**
- * Busca os dados de classificação.
- * 
- * @function pegarDadosClassificacao
- * @returns {Object} Os dados de classificação.
- * 
- * @description
- * Esta função busca os dados de classificação a partir de um formulário e os organiza em um objeto.
- */
 async function pegarDadosClassificacao() {
     // Busca o formulário de classificação
     const formClassificacao = document.getElementById('form-classificacao');
@@ -1974,24 +1940,15 @@ async function pegarDadosClassificacao() {
     }
     return dadosClassificacao;
 }
+*/
 
 //================================================================//
 //===========================SALVA TUDO===========================//
 //================================================================//
-/**
- * Salva os dados da tab.
- * 
- * @function saveTableData
- * @param {Object} options - Opções para a função.
- * @param {String} options.tipo - Tipo de ação a ser realizada (editar ou criar).
- * @returns {Promise} Uma promessa que resolve após a conclusão da ação.
- * 
- * @description
- * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
- */
+/*
 export async function saveTableData({ tipo = null }) {
     if (globais.cotacaoExiste) {
-        for (const id of idsCotacao) {
+        for (const id of globais.idsCotacao) {
             let payload = {
                 data: {
                     Ativo: false
@@ -2000,7 +1957,7 @@ export async function saveTableData({ tipo = null }) {
             await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
         }
         globais.cotacaoExiste = false;
-        await saveTableData(globais.tipo);
+        //await saveTableData(globais.tipo);
 
     } else {
         const { dadostabPrecos, dadosExtrasPDC } = await pegarDadostabPrecos();
@@ -2068,3 +2025,4 @@ export async function saveTableData({ tipo = null }) {
         globais.cotacaoExiste = true;
     }
 }
+    */

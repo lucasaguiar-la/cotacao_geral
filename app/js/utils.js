@@ -1,4 +1,4 @@
-import { saveTableData } from './table_utils.js';
+import { saveTableData_V2 } from './save_utils.js';
 import { globais } from './main.js';
 
 /**
@@ -368,6 +368,14 @@ function createEl(tag, className = '', innerHTML = '') {
     return element;
 }
 
+
+
+
+
+
+
+
+
 /**
  * Cria e exibe um modal customizado com diferentes funcionalidades
  * 
@@ -592,6 +600,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             },
             'confirmar_recebimento': {
                 Status_geral: 'Recebimento confirmado'
+                /*Função splitar PDC*/
             },
             'solicitar_ajuste_ao_compras': {
                 Status_geral: 'Ajuste Solicitado Pelo Almoxarifado',
@@ -619,19 +628,24 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         // Verifica se o tipo está no mapa e cria o payload
         if (payloadMap[tipo]) {
             
-            const tiposValidos = [
-                "criar_cotacao_DP",
-                "editar_cotacao_DP",
-                "solicitar_aprovacao_sindico",
-                "finalizar_provisionamento",
-                "enviar_p_checagem_final",
-                "enviar_p_assinatura"
-            ];
-            if (tiposValidos.includes(tipo)) 
+            // Verifica se o tipo é valido//
+            ////{Ação:seprara por parcela}////
+            const tiposValidos = {
+                "criar_cotacao_DP":false,
+                "editar_cotacao_DP":false,
+                "solicitar_aprovacao_sindico":false,
+                "finalizar_provisionamento":false,
+                "enviar_p_checagem_final":false,
+                "enviar_p_assinatura":false,
+                "confirmar_recebimento": true
+            };
+            if (Object.keys(tiposValidos).includes(tipo)) 
             {
                 console.log("O TIPO É VÁLIDO");
-                await saveTableData({ tipo });
+                await saveTableData_V2(tiposValidos[tipo]);
             }
+
+
             console.log("PASSOU DO SAVEDATATABLE");
 
             payload = { data: [payloadMap[tipo]] };
@@ -644,7 +658,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             console.log("PASSOU DO TOGGLEELEMENTS");
             try {
                 console.log("TENTANDO SALVAR COTAÇÃO 2");
-                await saveTableData({ tipo });
+                await saveTableData_V2();
 
                 window.open(`${url}#Script:page.refresh`, '_top');
                 return;
@@ -732,14 +746,21 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     });
 }
 
+/*Não está sendo utilizada ainda, estou tentando refatorar*/
+/*
 export async function customModal2({action = '', saveContentType = '',alertModal = false, title = null, message}) {
 
-    /**
-     * POSSÍVEIS AÇÕES
-     * - alert
-     * - confirm
-     * 
-     */
+    ///Caracteristicas de um modal customizável:
+     // - Título (caso exista)
+     // - Mensagem
+     // - Formulário (caso exista)
+     // - Botões ("Não há", "ok" ou "sim ou não")
+     // Possíveis retornos:
+     // - "sim" ou "não"
+     // - "sim" ou "não" com conteúdo do formulário
+     // - null (Alerta, mas este não tem retorno)
+    ///
+
     //==========VARIÁVEIS DE APOIO E ELEMNTOS INICIAIS==========//
     const confirmText = "Ok";
     const cancelText = "Não";
@@ -869,7 +890,6 @@ export async function customModal2({action = '', saveContentType = '',alertModal
         loadingElement.style.display = show ? 'none' : 'flex';
     }
 }
-
 async function executePageActions({action = null, saveContentType = null, inputElValue = null})
 {   
     const initUrl = 'https://guillaumon.zohocreatorportal.com/';
@@ -1005,10 +1025,10 @@ async function executePageActions({action = null, saveContentType = null, inputE
         }
     }catch(err)
     {
-        /*APRESNTA A MENSAGEM DE OCORREU UM ERRO INESPERADO*/
         return `Ocorreu um erro inesperado, contate o administrador do sistema!\nErro: ${err}`;
     }
 }
+*/
 
 /**
  * Oculta todos os campos da página, exceto os especificados
@@ -1030,6 +1050,7 @@ export function desabilitarCampos() {
     let camposParaManterVisiveis;
     let botoesParaManterVisiveis;
     let formsParaManterVisiveis;
+    let aTagsParaManterVisiveis;
     if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
         camposParaManterVisiveis = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
         botoesParaManterVisiveis = ["add-parcela", "remover-parcela"];//classe
@@ -1043,6 +1064,7 @@ export function desabilitarCampos() {
         camposParaManterVisiveis = [];
         botoesParaManterVisiveis = [];
         formsParaManterVisiveis = [];
+        aTagsParaManterVisiveis = [];
     }
 
     // Seleciona todos os elementos de input, textarea e select
@@ -1095,6 +1117,18 @@ export function desabilitarCampos() {
         } else {
             elemento.contentEditable = false; // Desabilita para edição
             elemento.style.cursor = 'not-allowed'; // Altera o cursor para indicar que não é editável
+        }
+    });
+
+    // Seleciona todos os elementos a tag
+    const elementosComHref =  document.querySelectorAll('a');
+    elementosComHref.forEach(elemento => {
+        // Verifica se o elemento deve ser mantido visível
+        const temClasseVisivel = aTagsParaManterVisiveis.some(classe => elemento.classList.contains(classe));
+        if (temClasseVisivel) {
+            elemento.style.cursor = 'pointer'; // Altera o cursor para indicar que é clicável
+        } else {
+            elemento.style.cursor = 'not-allowed'; // Altera o cursor para indicar que não é clicável
         }
     });
 
