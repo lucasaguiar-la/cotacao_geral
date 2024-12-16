@@ -37,14 +37,12 @@
                         <option value="3938561000066182595">ASSOCIAÇÃO SERVIR</option>
                         <option value="3938561000066182591">CONDOMÍNIO LARANJEIRAS</option>
                     </select>
-                    <!--
                     <label for="tipo">Tipo:</label>
                     <select type="text" id="tipo" name="Tipo_de_solicitacao" class="tipo">
                         <option value="" disabled selected>Selecione um tipo de compra...</option>
                         <option value="3938561000077308645">PRODUTO</option>
                         <option value="3938561000086396081">SERVIÇO</option>
                     </select>
-                    -->
                     <div id="container-campos-texto">
                         <div class="campos-texto">
 
@@ -77,7 +75,7 @@
             <table id="priceTable" class="tabela">
                 <thead>
                     <tr>
-                        <th>Produto</th>
+                        <th>Item</th>
                         <th>Qtd.</th>
                         <th>Unid.</th>
                         <th></th>
@@ -215,13 +213,21 @@
                     -->
                     <label for="observacoes">Vencimento previsto:</label>
                     <div id="camposData">
+                        <!--
+                        <div class="titulos-parcela">
+                            <label for="numero_parcela">Parcela</label>
+                            <label for="Datas">Vencimento</label>
+                            <Label for="Valor">Valor</Label>
+                            <Label for="botao_remover"></Label>
+                        </div>
+                        -->
                         <div class="parcela">
-                            <label>Parcela nº 1:</label>
+                            <label name="numero_parcela">Parcela nº 1:</label>
                             <input type="date" name="Datas" placeholder="dd/mm/aaaa" class="campo-datas" />
                             <input type="text" name="Valor" class="input-number valor-parcela campo-datas"
                                 placeholder="R$ 0,00" />
+                            <button type="button" class="remover-parcela close-icon remove-btn" name="botao_remover"></button>
                             <input type="checkbox" name="parcela_criada" class="campo-datas hidden"/>
-                            <button type="button" class="remover-parcela close-icon remove-btn"></button>
                         </div>
                     </div>
                     <div id="botoes-e-totalizadores_parcelas">

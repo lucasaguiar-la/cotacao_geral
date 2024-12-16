@@ -368,14 +368,6 @@ function createEl(tag, className = '', innerHTML = '') {
     return element;
 }
 
-
-
-
-
-
-
-
-
 /**
  * Cria e exibe um modal customizado com diferentes funcionalidades
  * 
@@ -599,7 +591,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 Status_geral: 'Compra realizada'
             },
             'confirmar_recebimento': {
-                Status_geral: 'Recebimento confirmado'
+                Status_geral: 'Separado em parcelas'
                 /*Função splitar PDC*/
             },
             'solicitar_ajuste_ao_compras': {
@@ -642,9 +634,13 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             if (Object.keys(tiposValidos).includes(tipo)) 
             {
                 console.log("O TIPO É VÁLIDO");
-                await saveTableData_V2(tiposValidos[tipo]);
+                let status = null;
+                if(tipo ==="confirmar_recebimento")
+                {
+                    status = "Recebimento confirmado";
+                }
+                await saveTableData_V2(status, tiposValidos[tipo]);
             }
-
 
             console.log("PASSOU DO SAVEDATATABLE");
 
@@ -1047,31 +1043,24 @@ async function executePageActions({action = null, saveContentType = null, inputE
  */
 export function desabilitarCampos() {
 
-    let camposParaManterVisiveis;
-    let botoesParaManterVisiveis;
-    let formsParaManterVisiveis;
-    let aTagsParaManterVisiveis;
+    let camposParaManterHabilitados = [];
+    let botoesParaManterHabilitados = [];
+    let formsParaManterHabilitados = [];
+    let aTagsParaManterHabilitados = [];
+
     if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
-        camposParaManterVisiveis = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
-        botoesParaManterVisiveis = ["add-parcela", "remover-parcela"];//classe
-        formsParaManterVisiveis = ["form-pagamento", "dados-nf"];//forms
+        camposParaManterHabilitados = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
+        botoesParaManterHabilitados = ["add-parcela", "remover-parcela"];//classe
+        formsParaManterHabilitados = ["form-pagamento", "dados-nf"];//forms
     } else if (globais.pag === "criar_numero_de_PDC") {
-        camposParaManterVisiveis = ["Num_PDC_parcela"];
-        botoesParaManterVisiveis = [];
-        formsParaManterVisiveis = [];
-    }
-    else {
-        camposParaManterVisiveis = [];
-        botoesParaManterVisiveis = [];
-        formsParaManterVisiveis = [];
-        aTagsParaManterVisiveis = [];
+        camposParaManterHabilitados = ["Num_PDC_parcela"];
     }
 
     // Seleciona todos os elementos de input, textarea e select
     const campos = document.querySelectorAll('input, textarea, select');
     campos.forEach(elemento => {
         // Verifica se o elemento deve ser mantido visível
-        if (!camposParaManterVisiveis.includes(elemento.name)) {
+        if (!camposParaManterHabilitados.includes(elemento.name)) {
             elemento.disabled = true;
             elemento.readOnly = true; // Adiciona o atributo readonly
             elemento.style.cursor = 'not-allowed';
@@ -1082,7 +1071,7 @@ export function desabilitarCampos() {
         if (!botao.closest('.save-btn-container') && !botao.classList.contains('toggle-section')) {
 
             // Verifica se o botão deve ser mantido visível
-            const deveManterVisivel = botoesParaManterVisiveis.some(classe => botao.classList.contains(classe));
+            const deveManterVisivel = botoesParaManterHabilitados.some(classe => botao.classList.contains(classe));
             if (!deveManterVisivel) {
                 const computedStyle = getComputedStyle(botao);
                 const placeholder = document.createElement('div'); // Cria um elemento vazio
@@ -1108,7 +1097,7 @@ export function desabilitarCampos() {
     const elementosEditaveis = document.querySelectorAll('[contenteditable="true"], [contenteditable="false"]');
     elementosEditaveis.forEach(elemento => {
         // Verifica se o elemento deve ser mantido visível
-        const temClasseVisivel = camposParaManterVisiveis.some(classe => elemento.classList.contains(classe));
+        const temClasseVisivel = camposParaManterHabilitados.some(classe => elemento.classList.contains(classe));
         if (temClasseVisivel) {
 
             elemento.contentEditable = true; // Habilita para edição
@@ -1124,7 +1113,7 @@ export function desabilitarCampos() {
     const elementosComHref =  document.querySelectorAll('a');
     elementosComHref.forEach(elemento => {
         // Verifica se o elemento deve ser mantido visível
-        const temClasseVisivel = aTagsParaManterVisiveis.some(classe => elemento.classList.contains(classe));
+        const temClasseVisivel = aTagsParaManterHabilitados.some(classe => elemento.classList.contains(classe));
         if (temClasseVisivel) {
             elemento.style.cursor = 'pointer'; // Altera o cursor para indicar que é clicável
         } else {
@@ -1133,7 +1122,7 @@ export function desabilitarCampos() {
     });
 
     // Habilita campos nos formulários que devem ser mantidos visíveis
-    formsParaManterVisiveis.forEach(formClass => {
+    formsParaManterHabilitados.forEach(formClass => {
         const formulario = document.querySelector(`#${formClass}`);
         if (formulario) {
             const camposFormulario = formulario.querySelectorAll('input, textarea, select');

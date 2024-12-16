@@ -75,6 +75,7 @@ export function preencherDadosPDC(resp) {
         selectEntidade.value = data.Entidade.ID;
     }
 
+    const selectTipo = formDadosPDC.querySelector('#tipo');
     // Acessando as propriedades corretamente
     const tipoSolicitacaoID = data["Tipo_de_solicitacao.ID"];
     const tipoSolicitacaoDescr = data["Tipo_de_solicitacao.descr_tipo_compra"];
@@ -113,7 +114,7 @@ export function preencherDadosPDC(resp) {
         textareaJustificativa.value = data.Justificativa;
     }
 
-    // =====[SESSÃO 3]=====//
+    // =====[SESSÃO DE FORMAS DE PAGAMENTO]=====//
     const formPagamento = document.querySelector('#form-pagamento');
 
     // Forma de Pagamento
@@ -138,7 +139,7 @@ export function preencherDadosPDC(resp) {
         if (data.Favorecido) inputFavorecidoDeposito.value = data.Favorecido;
     }
 
-    // Preenche as datas de vencimento
+    // =====[LINHAS DE PARCELAS]=====//
     if (data.Datas && Array.isArray(data.Datas)) {
         const camposData = document.getElementById('camposData');
 
@@ -175,7 +176,6 @@ export function preencherDadosPDC(resp) {
     if (data.Data_emissao_N_Fiscal) {
         const [dia, mes, ano] = data.Data_emissao_N_Fiscal.split('/');
         inputDataEmissaoNF.value = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-
     }
 
     if (data.Numero_N_Fiscal) inputNumeroNF.value = data.Numero_N_Fiscal;
@@ -196,7 +196,6 @@ export function preencherDadosPDC(resp) {
     } else {
         preencherListaAnexosV2();
     }
-
 
     preencherDadosClassificacao(data.Classificacao_contabil);
 
@@ -251,10 +250,10 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     //====================CRIA UM CAMPO DE NÚMERO DO PDC====================//
     let novoInputNumPDC;
     if (numPDC) {
-
+        console.log("numPDC => ", numPDC);
         const camposParcelas = document.querySelectorAll('.parcela');
-        const numPDCInput = camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]');
-
+        const numPDCInput = camposParcelas.length > 0 ? camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]') : null;
+        
         if (camposParcelas.length === 1 && !numPDCInput.value.includes('/')) {
             numPDCInput.value = `${numPDC}/01`;
         }
@@ -305,8 +304,8 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     novoCampo.appendChild(novoLabel);
     novoCampo.appendChild(novoInput);
     novoCampo.appendChild(novoInputValor);
-    novoCampo.appendChild(novoInputParcelaCriada);
     if (novoInputNumPDC) novoCampo.appendChild(novoInputNumPDC);
+    novoCampo.appendChild(novoInputParcelaCriada);
     novoCampo.appendChild(removerButton);
 
     //====================ADICIONA O NOVO CAMPO AO CONTAINER DE CAMPOS====================//
@@ -504,7 +503,7 @@ export function adicionarLinhaClassificacao() {
         { placeholder: 'Conta...', inputType: 'select', inputName: 'Conta_a_debitar', id: 'conta', options: accOptions },
         { placeholder: 'Centro Custo...', inputType: 'select', inputName: 'Centro_de_custo', id: 'centro', options: accCenterOpt },
         { placeholder: 'Classe Op...', inputType: 'select', inputName: 'Classe_operacional', id: 'classe', options: opClassOpt },
-        { placeholder: 'R$ 0.000,00', inputType: 'number', inputName: 'Valor', id: 'valor' }
+        { placeholder: 'R$ 0,00', inputType: 'number', inputName: 'Valor', id: 'valor' }
     ];
 
     fieldsToCreate.forEach((field) => {
@@ -1195,10 +1194,10 @@ export async function preencherListaAnexosV2(anexos) {
 
                 const checkSrcInterval = setInterval(() => {
                     if (imgEl && imgEl.src && imgEl.src !== "") {
+                        console.log("fileName => ", fileName);
                         //==========ADICIONANDO ARQUIVOS EM SEUS RESPECTIVOS FORMATOS==========//
                         const initUrl = 'https://guillaumon.zohocreatorportal.com';
                         if (typesToView.includes(fileType)) {
-                            fileElement.setAttribute('data-src', imgEl.src);
                             fileElement.src = imgEl.src;
                             fileElement.setAttribute('data-download-src', imgEl.src);
                             if (fileType === 'PDF') {
@@ -1217,12 +1216,12 @@ export async function preencherListaAnexosV2(anexos) {
 
                             //==========CRIANDO UM PLACEHOLDER PARA OS ARQUIVOS QUE NÃO POSSUEM MINIATURAS==========//
                             cloneFileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
-
                             fileElement = document.createElement('a');
                             fileElement.href = `${initUrl}${newAnexo}`;
                             fileElement.download = `${initUrl}${newAnexo}`;
                             fileElement.appendChild(cloneFileElement);
                         }
+                        fileElement.setAttribute('data-src', imgEl.src);
 
                         //==========ADICIONANDO O ELEMENTO A GALERIA==========//
                         fileElement.style.display = 'block';

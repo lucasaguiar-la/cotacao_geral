@@ -730,6 +730,7 @@ button:hover {
 }
 
 .parcela,
+.titulos-parcela,
 .campos-iniciais-nf{
     display: flex;
     align-items: center;
