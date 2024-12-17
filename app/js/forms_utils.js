@@ -1,6 +1,7 @@
 import { globais } from './main.js';
 import { formatToBRL, converterStringParaDecimal } from './utils.js';
 let numeroParcela = 1;
+let numParcelaInicial = 1;
 
 /**
  * Mostra/oculta campos de pagamento com base na forma de pagamento selecionada
@@ -154,12 +155,12 @@ export function preencherDadosPDC(resp) {
                 return;
             }
 
-            const [dataStr, valor, numPDC, parcCriada] = dataObj.display_value.split('|SPLITKEY|');
+            const [dataStr, valor, numPDC, parcCriada, numParc] = dataObj.display_value.split('|SPLITKEY|');
 
             const [dia, mes, ano] = dataStr.split('/') ;
             const dataFormatada = dataStr !== ""? `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`: "";
 
-            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada);
+            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada, numParc);
         });
     }
 
@@ -220,7 +221,8 @@ export function preencherDadosPDC(resp) {
  * @description
  * - Cria um novo campo de data para parcelas de pagamento
  */
-export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null) {
+export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null, numParcela =  null) {
+    console.log("CRIANDO NOVO CAMPO DE VENCIMENTO");
     //const numPDC = getNumPDC ? getNumPDC() : null;
     numeroParcela++;
 
@@ -230,7 +232,9 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
 
     //====================CRIA O RÓTULO PARA O CAMPO DE DATA====================//
     const novoLabel = document.createElement('label');
-    novoLabel.innerText = `Parcela nº ${numeroParcela}:`;
+    novoLabel.innerText = `Parcela nº ${numParcela === null?numeroParcela:numParcela}:`;
+    console.log("NUMERO PARCELA: ", numParcela);
+    if(numParcela !== null) numParcelaInicial = parseInt(numParcela);
 
     //====================CRIA O CAMPO DE DATA====================//
     const novoInput = document.createElement('input');
@@ -355,8 +359,12 @@ export function removerCampoVenc(elemento) {
  */
 function atualizarLabels() {
     const parcelas = document.querySelectorAll('#camposData .parcela');
+    console.log("ATUALIZANDO LABELS");
     parcelas.forEach((parcela, index) => {
-        parcela.querySelector('label').innerText = `Parcela nº ${index + 1}:`;
+        console.log("Numéro parcela => ", numeroParcela);
+        console.log("index => ", index);
+        //let newNumParc = numeroParcela + index - 1;
+        parcela.querySelector('label').innerText = `Parcela nº ${numParcelaInicial + index}:`;
         /*
         // Atualiza o campo de número do PDC
         const inputNumPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
@@ -364,7 +372,7 @@ function atualizarLabels() {
             const numPDC = globais.numPDC; // Supondo que globais.numPDC contém o número do PDC
             inputNumPDC.value = `${numPDC}/${String(index + 1).padStart(2, '0')}`;
         }
-            */
+        */
     });
 }
 
@@ -860,7 +868,7 @@ export function popularSelects(classificacoes, centrosCusto) {
 export function atualizarValorTotalClassificacoes() {
 
     const labelTotal = document.getElementById('valor-total-classificacoes');
-    if (globais.idFornAprovado) {
+    if (globais.idFornAprovado && !globais.valor_orcado) {
         const table = document.getElementById('priceTable');
         const headerRow = table.rows[0];
         const totalRow = table.rows[table.rows.length - 2];
@@ -895,7 +903,29 @@ export function atualizarValorTotalClassificacoes() {
             labelTotal.classList.add('valor-diferente');
             labelTotal.classList.remove('valor-igual');
         }
-    } else {
+    } else if(globais.valor_orcado)
+    {   
+        let total = globais.valor_orcado;
+
+        const valoresClassificacoes = document.querySelectorAll('#form-classificacao input[name="Valor"]');
+        valoresClassificacoes.forEach(input => {
+
+            const valor = converterStringParaDecimal(input.value).toFixed(2) || 0;
+            total -= valor; // Reduz o valor da classificação do total
+            total = parseFloat(total).toFixed(2); // Converte total para número antes de usar toFixed
+        });
+
+
+        labelTotal.innerText = formatToBRL(total);
+
+        if (total == 0) {
+            labelTotal.classList.add('valor-igual');
+            labelTotal.classList.remove('valor-diferente');
+        } else {
+            labelTotal.classList.add('valor-diferente');
+            labelTotal.classList.remove('valor-igual');
+        }
+    }else {
         labelTotal.innerText = "-";
         labelTotal.classList.add('valor-diferente');
         labelTotal.classList.remove('valor-igual');
@@ -1055,7 +1085,7 @@ export function atualizarValorTotalParcelas() {
 
     const labelTotal = document.getElementById('valor-total-parcelas');
 
-    if (globais.idFornAprovado) {
+    if (globais.idFornAprovado && !globais.valor_orcado) {
         const colIndex = Array.from(headerRow.cells).findIndex(cell => cell.dataset.id_forn === globais.idFornAprovado); // Encontra o índice da coluna do fornecedor aprovado
 
         if (colIndex !== -1) {
@@ -1088,6 +1118,27 @@ export function atualizarValorTotalParcelas() {
             labelTotal.classList.remove('valor-igual');
 
         }
+    } else if(globais.valor_orcado)
+    {   
+        let total = globais.valor_orcado;
+
+        const valoresParcelas = document.querySelectorAll('#camposData input[name="Valor"]');
+        valoresParcelas.forEach(input => {
+            const valor = converterStringParaDecimal(input.value).toFixed(2) || 0;
+            total -= valor; // Reduz o valor da parcela do total
+            total = total.toFixed(2);
+        });
+        labelTotal.innerText = formatToBRL(total);
+
+        // Compara os valores
+        if (total == 0) {
+            labelTotal.classList.add('valor-igual');
+            labelTotal.classList.remove('valor-diferente');
+        } else {
+            labelTotal.classList.add('valor-diferente');
+            labelTotal.classList.remove('valor-igual');
+        }
+
     } else {
         labelTotal.innerText = "-";
         labelTotal.classList.add('valor-diferente');
@@ -1107,8 +1158,13 @@ export function atualizarValorOriginal() {
 
 // Função para calcular o total do fornecedor aprovado
 function calcularTotalFornecedorAprovado() {
-    const parcela = document.getElementsByClassName('parcela');
-    const total = converterStringParaDecimal(parcela.getElementsByClassName('valor-parcela').value);
+    const parcelaElements = document.getElementsByClassName('parcela');
+    if (parcelaElements.length === 0) return 0;
+
+    const valorParcelaElements = parcelaElements[0].getElementsByClassName('valor-parcela');
+    if (valorParcelaElements.length === 0) return 0;
+
+    const total = converterStringParaDecimal(valorParcelaElements[0].value);
     return total;
 }
 
@@ -1273,7 +1329,6 @@ export async function preencherListaAnexosV2(anexos) {
         p.textContent = 'Não há anexos...';
         pContainer.appendChild(p);
         galleryElement.appendChild(pContainer);
-
     }
 
     const btnContainer = document.createElement('div');
@@ -1377,4 +1432,3 @@ export async function preencherListaAnexosV2(anexos) {
     btnContainer.appendChild(botaoAdicionar);
     galleryElement.appendChild(btnContainer);
 }
-
