@@ -1,6 +1,6 @@
 import { formatToBRL, converterStringParaDecimal, convertToNegative, restrictNumericInput, restrictIntegerInput, executar_apiZoho, customModal } from './utils.js';
 import { globais } from './main.js'
-import { atualizarValorTotalClassificacoes, atualizarValorTotalParcelas } from './forms_utils.js';
+import { atualizarValorTotalClassificacoes, atualizarValorTotalParcelas, atualizarValorOrcado } from './forms_utils.js';
 
 const qlt = 4; //Total de linhas de totalizadores, considerando linha com botão de adicionar produto
 const ipcv = 3; //Indice da primeira coluna de valores (Valor unitário do primeiro fornecedor)
@@ -114,6 +114,7 @@ export function removeProductRow(button) {
         return "Não é possível remover a última linha."
     }
     calcularTotais();
+    atualizarValorOrcado();
     atualizarValorTotalParcelas();
     atualizarValorTotalClassificacoes();
 }
@@ -306,6 +307,7 @@ export async function addSupplierColumn() {
                                     globais.idFornAprovado = null;
                                 }
                                 atualizarValorTotalParcelas();
+                                atualizarValorOrcado();
                                 atualizarValorTotalClassificacoes();
                             });
 
@@ -477,6 +479,7 @@ export async function addSupplierColumn() {
                         globais.selectedCheckbox = null;
                         globais.idFornAprovado = null;
                     }
+                    atualizarValorOrcado();
                     atualizarValorTotalParcelas();
                     atualizarValorTotalClassificacoes();
                 });
@@ -915,6 +918,7 @@ export function atualizarOuvintesTabCot() {
     tab.querySelectorAll('.numeric-cell').forEach(celula => {
         celula.addEventListener('input', () => {
             restrictNumericInput(celula);
+            atualizarValorOrcado();
             atualizarValorTotalParcelas();
             atualizarValorTotalClassificacoes();
         });
@@ -951,6 +955,7 @@ export function atualizarOuvintesTabCot() {
                     celula.addEventListener('blur', () => {
                         formatToBRL(celula);
                         calcularTotais();
+                        atualizarValorOrcado();
                         atualizarValorTotalParcelas();
                         atualizarValorTotalClassificacoes();
                     });
@@ -972,6 +977,7 @@ export function atualizarOuvintesTabCot() {
                         }
 
                         calculateTotalPrices(i);
+                        atualizarValorOrcado();
                         atualizarValorTotalParcelas();
                         atualizarValorTotalClassificacoes();
                     });
@@ -1010,6 +1016,7 @@ export function atualizarOuvintesTabCot() {
                         }
 
                         calculateTotalPrices(i);
+                        atualizarValorOrcado();
                         atualizarValorTotalParcelas();
                         atualizarValorTotalClassificacoes();
                     });
@@ -1019,6 +1026,7 @@ export function atualizarOuvintesTabCot() {
                 if (j !== 2) {
                     celula.addEventListener('blur', () => {
                         calcularTotais();
+                        atualizarValorOrcado();
                         atualizarValorTotalParcelas();
                         atualizarValorTotalClassificacoes();
                     });
@@ -1309,6 +1317,7 @@ export async function prenchTabCot(resp) {
                             globais.selectedCheckbox = null;
                             globais.idFornAprovado = null;
                         }
+                        atualizarValorOrcado();
                         atualizarValorTotalParcelas();
                         atualizarValorTotalClassificacoes();
 

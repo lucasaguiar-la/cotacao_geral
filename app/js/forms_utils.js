@@ -203,6 +203,7 @@ export function preencherDadosPDC(resp) {
 
     atualizarValorOriginal();
     calcularValorTotalPagar();
+    atualizarValorOrcado();
     atualizarValorTotalParcelas();
     atualizarValorTotalClassificacoes();
 }
@@ -1004,6 +1005,31 @@ export function setupPixValidation() {
             chavePix.classList.remove('invalid');
         }
     });
+
+}
+
+
+export function atualizarValorOrcado()
+{
+    const table = document.getElementById('priceTable');
+    const headerRow = table.rows[0]; // Primeira linha do cabeçalho
+    const totalRow = table.rows[table.rows.length - 2]; // Última linha (linha de total)
+
+    if (globais.idFornAprovado) {
+        const colIndex = Array.from(headerRow.cells).findIndex(cell => cell.dataset.id_forn === globais.idFornAprovado); // Encontra o índice da coluna do fornecedor aprovado
+
+        if (colIndex !== -1) {
+            // Obtém o valor total do fornecedor na linha de total
+            const valorTotalFornecedor = totalRow.cells[colIndex - 2].innerText; // +1 para pegar a célula correta
+
+            globais.valor_orcado = converterStringParaDecimal(valorTotalFornecedor).toFixed(2) || 0; // Inicializa o total com o valor do fornecedor aprovado
+        } else {
+            
+            globais.valor_orcado = 0;
+        }
+    } else {
+        globais.valor_orcado = 0;
+    }
 }
 
 /**

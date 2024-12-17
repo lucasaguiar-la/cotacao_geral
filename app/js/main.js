@@ -20,6 +20,7 @@ import {
 import {
     atualizarValorTotalClassificacoes,
     atualizarValorTotalParcelas,
+    atualizarValorOrcado,
     adicionarLinhaClassificacao,
     removerLinhaClassificacao,
     calcularValorTotalPagar,
@@ -428,6 +429,7 @@ async function executarProcessosParalelos() {
     }
     document.body.classList.remove('hidden');
     atualizarOuvintesTabCot();
+    atualizarValorOrcado();
     atualizarValorTotalParcelas();
     atualizarValorTotalClassificacoes();
 
