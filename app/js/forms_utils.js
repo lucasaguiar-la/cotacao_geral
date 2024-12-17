@@ -1,7 +1,7 @@
 import { globais } from './main.js';
 import { formatToBRL, converterStringParaDecimal } from './utils.js';
 let numeroParcela = 1;
-let numParcelaInicial = 1;
+let numParcelaInicial = null;
 
 /**
  * Mostra/oculta campos de pagamento com base na forma de pagamento selecionada
@@ -66,7 +66,11 @@ export function preencherDadosPDC(resp) {
     const data = resp.data[0];
     globais.idPDC = data.ID;
     globais.numPDC = data.Numero_do_PDC;
-
+    if(data.Perfil_responsavel)
+    {
+        globais.perfilResponsavel = data.Perfil_responsavel
+    }
+    
     //==========SESSÃO 1==========//
     const formDadosPDC = document.querySelector('#dados-PDC');
 
@@ -234,7 +238,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     const novoLabel = document.createElement('label');
     novoLabel.innerText = `Parcela nº ${numParcela === null?numeroParcela:numParcela}:`;
     console.log("NUMERO PARCELA: ", numParcela);
-    if(numParcela !== null) numParcelaInicial = parseInt(numParcela);
+    if(numParcela !== null && numParcelaInicial === null) numParcelaInicial = parseInt(numParcela);
 
     //====================CRIA O CAMPO DE DATA====================//
     const novoInput = document.createElement('input');
@@ -364,7 +368,7 @@ function atualizarLabels() {
         console.log("Numéro parcela => ", numeroParcela);
         console.log("index => ", index);
         //let newNumParc = numeroParcela + index - 1;
-        parcela.querySelector('label').innerText = `Parcela nº ${numParcelaInicial + index}:`;
+        parcela.querySelector('label').innerText = `Parcela nº ${(numParcelaInicial !== null?numParcelaInicial:1) + index}:`;
         /*
         // Atualiza o campo de número do PDC
         const inputNumPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
@@ -1216,7 +1220,19 @@ export async function preencherListaAnexosV2(anexos) {
             "close"
         ],
         download: true,
-        enableDownload: true
+        enableDownload: true,
+        beforeClose: function() {
+            var scrollPosition = document.querySelector('.meu-body').scrollTop;
+            console.log("scrollPosition1: ", scrollPosition);
+            window.sessionStorage.setItem('scrollPosition', scrollPosition);
+          },
+          afterClose: function() {
+            var scrollPosition = window.sessionStorage.getItem('scrollPosition');
+            setTimeout(function() {
+                console.log("scrollPosition2: ", scrollPosition);
+                document.body.scrollTop = parseInt(scrollPosition);
+            }, 100);
+          }
     };
 
     function createLoadingSpinner() {

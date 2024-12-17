@@ -244,7 +244,6 @@ async function executarProcessosParalelos() {
     }else
     {
         preencherListaAnexosV2();
-        
         criarBotao({page: globais.pag});
 
         if(globais.pag.includes("_DP"))
@@ -258,6 +257,8 @@ async function executarProcessosParalelos() {
             newSaveButton.addEventListener('click', () => {
                 customModal({botao:newSaveButton, tipo: "criar_cotacao_DP", mensagem:"Deseja realmente salvar este registro?"});
             });
+
+            globais.perfilResponsavel = "Depto. Pessoal";
 
             /*SELECIONAVA O FORNECEDOR A PARTIR DO CAMPO TIPO, MUDOU PARA BOTÃO DE ADD FORN, SE NÃO DEU ERRO PODE EXCLUIR
             const entidadeSelect = document.getElementById('tipo');
@@ -425,6 +426,21 @@ async function executarProcessosParalelos() {
                 }
             });
             */
+        }else if(globais.pag.includes("controladoria"))
+        {
+            // Remove todos os event listeners do botão com a classe save-btn
+            const saveButton = document.querySelector('.save-btn');
+            const newSaveButton = saveButton.cloneNode(true); // Clona o botão para preservar o estado
+            saveButton.parentNode.replaceChild(newSaveButton, saveButton); // Substitui o botão original
+
+            // Adiciona um novo evento de clique
+            newSaveButton.addEventListener('click', () => {
+                customModal({botao:newSaveButton, tipo: "criar_cotacao_controladoria", mensagem:"Deseja realmente salvar este registro?"});
+            });
+            globais.perfilResponsavel = "Controladoria";
+        }else
+        {
+            globais.perfilResponsavel = "Comprador";
         }
     }
     document.body.classList.remove('hidden');

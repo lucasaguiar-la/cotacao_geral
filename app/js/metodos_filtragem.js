@@ -35,8 +35,10 @@ export function criarBotao({page = null, removeExistingButtons = false})
         switch (page) {
             case "criar_cotacao":
             case "editar_cotacao":
+            case "criar_cotacao_controladoria":
+            case "editar_cotacao_controladoria":
                 configurarBotao('approve-sindico-btn adjust-btn', 'Sol. Aprov. Síndico', "solicitar_aprovacao_sindico", null, "Deseja solicitar a aprovação do síndico?");
-                if (page === "editar_cotacao") setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
+                if (page === "editar_cotacao" || page === "editar_cotacao_controladoria") setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
             case "aprovar_cotacao":
                 configurarBotao('approve-btn', 'Aprovar', "aprov_cot", "Aprovar proposta", "Tem certeza que deseja APROVAR a proposta do fornecedor selecionado?");

@@ -8,6 +8,7 @@ export const CONFIG = {
         nomeFormPDC: "PDC_Digital"
     },
     INITIAL_STATE: {
+        perfilResponsavel: null,
         selectedCheckbox: null,
         cotacaoExiste: false,
         pag: 'criar_cotacao',

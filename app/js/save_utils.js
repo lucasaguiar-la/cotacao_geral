@@ -44,8 +44,10 @@ async function meshData(status = null) {
     const [priceTableData, extraDataPDC] = pegarDadostabPrecos();
     const initialDataPDC = pegarDadosPDC_V2();
     const classData = pegarDadosClassificacao_V2();
-    const allDataPDC = { ...initialDataPDC, extraDataPDC, ...classData, ...NFData };
+    console.log("NFDdata => ", NFData);
+    const allDataPDC = { ...initialDataPDC, ...extraDataPDC, ...classData, ...NFData };
     if (status !== null) allDataPDC.Status_geral = status;
+    console.log("allDataPDC => ", JSON.stringify(allDataPDC));
     const newPDCs = new Map();
     newPDCs.set(0, { 'priceTableData': priceTableData, 'PDCsData': allDataPDC, 'Files': {} });
     return newPDCs
@@ -144,7 +146,10 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
             dadosIniciaisPdc["Numero_do_PDC"] = vencimentos[0].Num_PDC_parcela;
         }
     }
-
+    if(globais.perfilResponsavel != null)
+    {
+        dadosIniciaisPdc["Perfil_responsavel"] = globais.perfilResponsavel;
+    }
     return dadosIniciaisPdc;
 }
 
@@ -190,7 +195,7 @@ function pegarDadosClassificacao_V2(qtdParc = 1) {
             if (input.name && input.value) {
                 // Se for um campo de valor, converte para decimal
                 if (input.classList.contains('input-number')) {
-                    classificacao[input.name] = converterStringParaDecimal(input.value) / qtdParc;
+                    classificacao[input.name] = converterStringParaDecimal(converterStringParaDecimal(input.value) / qtdParc);
                 } else {
                     classificacao[input.name] = input.value;
                 }
@@ -219,10 +224,12 @@ function pegarDadosClassificacao_V2(qtdParc = 1) {
  * @description
  * Esta função busca os dados do formulário de Nota Fiscal e os organiza em um objeto.
  */
-async function pegarDadosNF() {
+function pegarDadosNF() {
     //====================BUSCA OS DADOS DO FORMULÁRIO DE NOTA FISCAL====================//
+    console.log("PEGANDO DADOS DA NOTA FISCAL");
     const formDdsNF = document.querySelector('#dados-nf');
     const dadosNF = {};
+
 
     // Obter todos os elementos do formulário
     const elementosNF = formDdsNF.elements;
@@ -239,6 +246,8 @@ async function pegarDadosNF() {
         }
     }
 
+
+
     // Adiciona os dados dos tds usando o atributo name como chave
     const valorOriginal = document.querySelector('#valor-original');
     const totalDescontos = document.querySelector('#descontos-total');
@@ -253,7 +262,7 @@ async function pegarDadosNF() {
     if (valorTotalPagar && valorTotalPagar.hasAttribute('name')) {
         dadosNF[valorTotalPagar.getAttribute('name')] = converterStringParaDecimal(valorTotalPagar.textContent || '');
     }
-
+    console.log("dadosNF => ", JSON.stringify(dadosNF));
     return dadosNF;
 }
 
@@ -336,7 +345,7 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                 const fornecedorAprovado = cabecalho1.cells[j + ipcv].querySelector('input[type="checkbox"]').checked;
                 if (fornecedorAprovado) {
                     dadosExtras["Beneficiario"] = fornecedor;
-                    dadosExtras["Valor_orcado"] = valorTotalGeral / qtdParc;
+                    dadosExtras["Valor_orcado"] = converterStringParaDecimal((valorTotalGeral / qtdParc) || 0);
                 }
                 const dadosLinha = {
                     id_produto: idProduto,
@@ -444,8 +453,6 @@ function downloadFile(file) {
 }
 */
 
-
-
 //================================================================//
 //===========================SALVA TUDO===========================//
 //================================================================//
@@ -461,7 +468,9 @@ function downloadFile(file) {
  * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
  */
 export async function saveTableData_V2(status = null, sepPorParc = false) {
+    console.log("SALVANDO COTAÇÃO");
     if (globais.cotacaoExiste) {
+        console.log("COTACAO EXISTE");
         if (sepPorParc === false) {
             for (const id of globais.idsCotacao) {
                 let payload = {
@@ -478,10 +487,13 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
         await saveTableData_V2(status, sepPorParc);
 
     } else {
+        console.log("COTACAO NÃO EXISTE");
         const PDCsToSave = sepPorParc ? await splitDataByInstallments(status) : await meshData(status);
+        console.log("PDCsToSave => ", PDCsToSave);
+        console.log("sepPorParc => ", sepPorParc);
         if (sepPorParc === true) globais.tipo = 'criar_pdc';
         for (let i = 0; i < PDCsToSave.size; i++) {
-
+            console.log("PDCsToSave.get(i) => ", JSON.stringify(PDCsToSave.get(i)));
             //====================CRIA O REGISTRO DO PDC====================//
             const pdcData = PDCsToSave.get(i);
             const dadostabPrecos = pdcData.priceTableData;
@@ -491,22 +503,26 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
             let respPDC;
             let idNovoPDC = null;
             if (globais.tipo === 'editar_pdc') {
+                console.log("É EDIÇÃO DE PDC!");
                 let payload = {
                     data: dadosPDC
                 };
 
                 respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
             } else {
+                console.log("É CRIAÇÃO DE PDC!");
+                console.log("DADOS DO PDC ===> ", JSON.stringify(dadosPDC, null, 2));
                 respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
 
+                
                 // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
-
                 if (respPDC.code === 3000) {
                     if(globais.idPDC === null) globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
                     idNovoPDC = respPDC.data.ID;
                 }
                 
             }
+            console.log("respPDC => ", respPDC);
 
             //====================CRIA O REGISTRO DOS ARQUIVOS GALERIA================//
             const qtdFiles = sepPorParc === true ? Object.keys(arquivos).length : globais.arquivosGaleria.length;

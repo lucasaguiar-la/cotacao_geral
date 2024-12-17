@@ -417,7 +417,8 @@ function createEl(tag, className = '', innerHTML = '') {
  * });
  */
 export async function customModal({botao = null, tipo = null, titulo = null, mensagem,confirmText = 'Confirmar',cancelText = 'Cancelar',loadingText = 'Carregando, aguarde...'}) {
-    
+    console.log("Entrou no customModal");
+    console.log("tipo => ", tipo);
     if(tipo === null){
         tipo = 'editar_pdc';
     }
@@ -565,6 +566,12 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             {
                 Status_geral: 'Propostas criadas DP'
             },
+            "criar_cotacao_controladoria":{
+                Status_geral: 'Propostas criadas controladoria'
+            },
+            "editar_cotacao_controladoria":{
+                Status_geral: 'Propostas criadas controladoria'
+            },
             'solicitar_aprovacao_sindico': {
                 Status_geral: 'Aguardando aprovação de uma proposta'
             },
@@ -620,18 +627,24 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             const tiposValidos = {
                 "criar_cotacao_DP":false,
                 "editar_cotacao_DP":false,
+                "criar_cotacao_controladoria":false,
+                "editar_cotacao_controladoria":false,
                 "solicitar_aprovacao_sindico":false,
                 "finalizar_provisionamento":false,
                 "enviar_p_checagem_final":false,
                 "enviar_p_assinatura":false,
                 "confirmar_recebimento": true
             };
+
             if (Object.keys(tiposValidos).includes(tipo)) 
             {
                 let status = null;
-                if(tipo ==="confirmar_recebimento")
+                if(tipo === "confirmar_recebimento")
                 {
                     status = "Recebimento confirmado";
+                }if(tipo === "criar_cotacao_controladoria" || tipo === "editar_cotacao_controladoria")
+                {
+                    status = "Propostas criadas controladoria";
                 }
                 await saveTableData_V2(status, tiposValidos[tipo]);
             }
@@ -642,7 +655,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
             toggleElements(false);
             try {
-
+                console.log("TENTANDO SALVAR COTACAO")
                 await saveTableData_V2();
 
                 window.open(`${url}#Script:page.refresh`, '_top');
