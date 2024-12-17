@@ -50,10 +50,8 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 
         // Função de criar registro
         async function criar_reg(ddsCriacao) {
-            console.log("ENTROU NA FUNÇÂO CRIAR REGISTROS")
 
             ddsCriacao = { "data": ddsCriacao };
-            console.log("Dados criação => ", ddsCriacao);
             const config = {
                 appName: globais.nomeApp,
                 formName: nomeF,
@@ -118,8 +116,6 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
                 fieldName: 'Arquivos',
                 file: corpo
             }
-
-            console.log("config =============>", JSON.stringify(config));
 
             return await recOps.uploadFile(config);
         }
@@ -616,7 +612,6 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             }
         };
 
-        console.log("ESTÁ EXECUTANDO A CUSTOM MODAL");
         // Verifica se o tipo está no mapa e cria o payload
         if (payloadMap[tipo]) {
             
@@ -633,7 +628,6 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             };
             if (Object.keys(tiposValidos).includes(tipo)) 
             {
-                console.log("O TIPO É VÁLIDO");
                 let status = null;
                 if(tipo ==="confirmar_recebimento")
                 {
@@ -642,18 +636,13 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 await saveTableData_V2(status, tiposValidos[tipo]);
             }
 
-            console.log("PASSOU DO SAVEDATATABLE");
-
             payload = { data: [payloadMap[tipo]] };
 
-            console.log("payload => ", payload);
-
         } else if (tipo === 'salvar_cot' || tipo === 'editar_pdc') {
-            console.log("TENTANDO SALVAR COTAÇÃO");
+
             toggleElements(false);
-            console.log("PASSOU DO TOGGLEELEMENTS");
             try {
-                console.log("TENTANDO SALVAR COTAÇÃO 2");
+
                 await saveTableData_V2();
 
                 window.open(`${url}#Script:page.refresh`, '_top');
@@ -665,22 +654,18 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 return;
             }
         } else if (tipo === 'remover_fornecedor' || tipo === 'remover_produto') {
-            console.log("REMOVENDO PRODUTO");
             overlay.remove();
             return Promise.resolve(true);
         }
 
         try {
-            console.log("ATUALIZANDO REGISTROS");
-            console.log(payload);
             const resposta = await executar_apiZoho({ 
                 tipo: "atualizar_reg", 
                 ID: globais.idPDC, 
                 corpo: payload,
                 nomeR: globais.nomeRelPDC
             });
-            console.log(JSON.stringify(resposta));
-            
+
             // Fecha o modal após sucesso
             if (resposta && resposta.code === 3000) {
                 overlay.remove();
@@ -1121,13 +1106,12 @@ export function desabilitarCampos() {
         }
     });
 
-    // Habilita campos nos formulários que devem ser mantidos visíveis
+    // Habilita campos nos formulários que devem ser mantidos Habilitados
     formsParaManterHabilitados.forEach(formClass => {
         const formulario = document.querySelector(`#${formClass}`);
         if (formulario) {
             const camposFormulario = formulario.querySelectorAll('input, textarea, select');
             camposFormulario.forEach(campo => {
-                console.log("CAMPO => ", campo.classList);
                 campo.disabled = false; // Habilita o campo
                 campo.readOnly = false; // Remove o atributo readonly
                 // Altera o cursor dependendo do tipo de campo

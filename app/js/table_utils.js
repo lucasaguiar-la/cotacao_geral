@@ -99,7 +99,6 @@ export function addProductRow() {
  * - Exibe alerta se tentar remover a última linha da tab
  */
 export function removeProductRow(button) {
-    console.log("[REMOVENDO LINHA DE PRODUTO");
     // Obtém referência ao corpo da tab de preços
     const table = document.getElementById('priceTable');
     const tbody = table.getElementsByTagName('tbody')[0];
@@ -221,8 +220,6 @@ export async function addSupplierColumn() {
                         criterios: cFornecedores,
                         nomeR: "Base_de_fornecedores_Laranjeiras_Report"
                     }).then((resp) => {
-                        console.log("[Buscou o novo fornecedor]");
-                        console.log("Resultado da busca => ", resp);
                         resp.forEach((item) => {
                             globais.baseFornecedores.set(item.ID, [
                                 item["Numero_do_fornecedor"],
@@ -236,9 +233,6 @@ export async function addSupplierColumn() {
 
                         // Busca o fornecedor na base de fornecedores usando o ID retornado
                         const dadosFornecedor = globais.baseFornecedores.get(idNovoForn); // Supondo que globais.baseFornecedores é um Map
-                        console.log("novoFornecedor => ", dadosFornecedor);
-
-
                         if (dadosFornecedor) {
 
                             const nomeCompletoFornecedor = dadosFornecedor[1];
@@ -616,7 +610,6 @@ export async function addSupplierColumn() {
  * - Usa o ID do fornecedor armazenado no dataset para garantir remoção correta
  */
 export function removeSupplierColumn(button) {
-    console.log("[REMOVENDO COLUNA DE FORNECEDOR");
     const table = document.getElementById('priceTable');
     const headerRow1 = table.rows[0];
     const headerRow2 = table.rows[1];
@@ -626,8 +619,6 @@ export function removeSupplierColumn(button) {
     const headerCell = button.closest('th');
     const colIndex = Array.from(headerRow1.cells).indexOf(headerCell);
     const supplierId = headerCell.dataset.id_forn;
-
-    console.log("Header cell => ", headerCell);
 
     // Função auxiliar para remover célula com verificação de índice válido
     const safeDeleteCell = (row, index) => {
@@ -665,8 +656,8 @@ export function removeSupplierColumn(button) {
     const otherRows = otherTable.getElementsByTagName('tbody')[0].rows;
 
     for (let i = 0; i < otherRows.length; i++) {
+
         const fornecedorCell = otherRows[i].cells[0];
-        console.log(fornecedorCell.dataset.id_forn);
         if (fornecedorCell?.dataset.id_forn === supplierId) {
             otherTable.getElementsByTagName('tbody')[0].deleteRow(i);
             break;
@@ -1253,7 +1244,6 @@ export async function prenchTabCot(resp) {
             let foundChecked = false;
             fornecedores.forEach((fornecedorObj, index) => {
                 //Cria a célula com o nome do fornecedor//
-                console.log("[FORNECEDOR OBJECT] => ", JSON.stringify(fornecedorObj));
                 const celulaCabecalho = document.createElement('th');
                 celulaCabecalho.dataset.id_forn = fornecedorObj.id_fornecedor;
                 celulaCabecalho.colSpan = 2;
@@ -1644,7 +1634,6 @@ async function abrirModalCadastroFornecedor() {
             // Adiciona o fornecedor na base de fornecedores
             executar_apiZoho({ tipo: "add_reg", corpo: formularioData, nomeF: "Base_de_fornecedores_Laranjeiras" }).then((resp) => {
                 if (resp.code === 3000) {
-                    console.log(resp);
                     document.body.removeChild(overlay); // Fecha o modal
                     resolve(resp.data.ID); // Resolve a Promise com o ID
                 } else {

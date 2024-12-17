@@ -462,11 +462,10 @@ async function processarDadosCotacao() {
         criterios: cCot, 
         nomeR: globais.nomeRelCot 
     });
-    console.log("cCot => ", cCot);
-    console.log(JSON.stringify(respCot));
+
     if (respCot.code == 3000) {
 
-        await prenchTabCot(respCot);
+        prenchTabCot(respCot);
         atualizarValorOriginal();
         calcularValorTotalPagar();
     } else {

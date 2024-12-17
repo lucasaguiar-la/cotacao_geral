@@ -13,6 +13,7 @@ export const CONFIG = {
         pag: 'criar_cotacao',
         classificacoes: null,
         idFornAprovado: null,
+        valor_orcado: null,
         centrosCusto: null,
         numPDC_temp: null,
         numPDC: null,

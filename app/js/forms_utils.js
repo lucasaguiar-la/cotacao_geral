@@ -196,6 +196,8 @@ export function preencherDadosPDC(resp) {
     } else {
         preencherListaAnexosV2();
     }
+    //====================CAMPO DE APOIO, VALOR ORÇADO====================//
+    globais.valor_orcado = data.Valor_orcado;
 
     preencherDadosClassificacao(data.Classificacao_contabil);
 
@@ -250,7 +252,6 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     //====================CRIA UM CAMPO DE NÚMERO DO PDC====================//
     let novoInputNumPDC;
     if (numPDC) {
-        console.log("numPDC => ", numPDC);
         const camposParcelas = document.querySelectorAll('.parcela');
         const numPDCInput = camposParcelas.length > 0 ? camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]') : null;
         
@@ -1073,21 +1074,15 @@ export function atualizarValorTotalParcelas() {
 //=========================================================//
 // Função para atualizar o valor original com o total do fornecedor aprovado
 export function atualizarValorOriginal() {
-    const totalFornecedor = calcularTotalFornecedorAprovado(); // Função que você deve implementar
+    const totalFornecedor = calcularTotalFornecedorAprovado();
     const valorOriginalCell = document.getElementById('valor-original');
     valorOriginalCell.innerText = formatToBRL(totalFornecedor);
 }
 
 // Função para calcular o total do fornecedor aprovado
 function calcularTotalFornecedorAprovado() {
-    const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
-    let total = 0;
-    const totalCells = table.querySelectorAll('.total-fornecedor');
-
-    totalCells.forEach(cell => {
-        total += converterStringParaDecimal(cell.innerText) || 0;
-    });
-
+    const parcela = document.getElementsByClassName('parcela');
+    const total = converterStringParaDecimal(parcela.getElementsByClassName('valor-parcela').value);
     return total;
 }
 
@@ -1189,12 +1184,12 @@ export async function preencherListaAnexosV2(anexos) {
                 let fileElement = document.createElement('img');
                 fileElement.classList.add('anexo-no-zoho');
                 fileElement.setAttribute('data-fancybox', 'gallery');
+                fileElement.setAttribute('file-name', fileName);
                 fileElement.alt = 'Minitatura da imagem ou PDF';
                 fileElement.style.display = 'none';
 
                 const checkSrcInterval = setInterval(() => {
                     if (imgEl && imgEl.src && imgEl.src !== "") {
-                        console.log("fileName => ", fileName);
                         //==========ADICIONANDO ARQUIVOS EM SEUS RESPECTIVOS FORMATOS==========//
                         const initUrl = 'https://guillaumon.zohocreatorportal.com';
                         if (typesToView.includes(fileType)) {
@@ -1254,7 +1249,6 @@ export async function preencherListaAnexosV2(anexos) {
         galleryElement.appendChild(pContainer);
 
     }
-    console.log("CRIANDO OS BOTÕES");
 
     const btnContainer = document.createElement('div');
     btnContainer.classList.add('btn-container', 'gallery-item');
@@ -1349,11 +1343,10 @@ export async function preencherListaAnexosV2(anexos) {
         }
     });
 
-    console.log("INICIANDO O FANCYBOX");
     //==========INICIANDO O FANCYBOX==========//
     await $('[data-fancybox="gallery"]').fancybox(elLibConfig);
-    // Adiciona o botão e o input ao DOM
-    console.log("ADICIONANDO OS ELEMENTOS AO DOM");
+
+    // Adiciona o botão e o input ao DOM;
     btnContainer.appendChild(inputFile);
     btnContainer.appendChild(botaoAdicionar);
     galleryElement.appendChild(btnContainer);

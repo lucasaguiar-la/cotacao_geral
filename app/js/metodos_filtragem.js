@@ -3,7 +3,6 @@ import { customModal } from './utils.js';
 
 export function criarBotao({page = null, removeExistingButtons = false})
 {
-    console.log("[ENTROU NA CRIAR BOTÃO]", page);
     //==========BUSCA O CONTAINER DOS BOTÕES, SE NECESSÁRIO, REMOVE OS BOTÕES EXISTENTES==========//
     const saveBtnContainer = document.querySelector('.save-btn-container');
         

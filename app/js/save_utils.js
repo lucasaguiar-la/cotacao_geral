@@ -1,4 +1,4 @@
-import {converterStringParaDecimal, executar_apiZoho} from './utils.js';
+import { converterStringParaDecimal, executar_apiZoho } from './utils.js';
 import { globais } from './main.js'
 
 const qlt = 4; //Total de linhas de totalizadores, considerando linha com botão de adicionar produto
@@ -6,9 +6,7 @@ const ipcv = 3; //Indice da primeira coluna de valores (Valor unitário do prime
 //===============================================================================================//
 //===========================DIVIDE O PDC EM SUAS RESPECTIVAS PARCELAS===========================//
 //===============================================================================================//
-async function splitDataByInstallments(status = null)
-{   
-    console.log("SPLITANDO PARA SALVAR TUDO");
+async function splitDataByInstallments(status = null) {
     const installments = document.querySelectorAll('.parcela');
     const numInstallments = installments.length;
 
@@ -18,46 +16,38 @@ async function splitDataByInstallments(status = null)
     const NFData = pegarDadosNF();
 
     installments.forEach((installment, index) => {
-        console.log("installment => ", installment);
         const isCreated = installment.querySelector('input[name="parcela_criada"]').hasAttribute('checked');
-        console.log("isCreated => ", isCreated);
-        if(!isCreated)
-        {   
-            const currTempPDC = numInstallments > 1?`${globais.numPDC_temp}/${(index + 1).toString().padStart(2, '0')}`:globais.numPDC_temp;
+        if (!isCreated) {
+            const currTempPDC = numInstallments > 1 ? `${globais.numPDC_temp}/${(index + 1).toString().padStart(2, '0')}` : globais.numPDC_temp;
 
             const initialDataPDC = pegarDadosPDC_V2(index, currTempPDC);
-            const currPDCInstallment = initialDataPDC.Num_PDC_parcela?initialDataPDC.Num_PDC_parcela:globais.numPDC;
-            console.log("initialDataPDC => ", initialDataPDC);
+            const currPDCInstallment = initialDataPDC.Num_PDC_parcela ? initialDataPDC.Num_PDC_parcela : globais.numPDC;
 
             const [priceTableData, extraDataPDC] = pegarDadostabPrecos(currTempPDC, currPDCInstallment, numInstallments);
-            
+
 
             const classData = pegarDadosClassificacao_V2(numInstallments);
-            console.log("classData => ", classData);
-            
-            const allDataPDC = {...initialDataPDC, ...extraDataPDC, ...classData, ...NFData};
+            const allDataPDC = { ...initialDataPDC, ...extraDataPDC, ...classData, ...NFData };
             allDataPDC.num_PDC_temp = currTempPDC;
-            if(status !== null) allDataPDC.Status_geral = status;
-            console.log("allDataPDC => ", allDataPDC);
+            if (status !== null) allDataPDC.Status_geral = status;
 
-            newPDCs.set(index, {'priceTableData': priceTableData, 'PDCsData':allDataPDC, 'Files': {...files}});
-            
+            newPDCs.set(index, { 'priceTableData': priceTableData, 'PDCsData': allDataPDC, 'Files': { ...files } });
+
         }
     })
     return newPDCs
 }
 
-async function meshData(status = null)
-{   
-    
+async function meshData(status = null) {
+
     const NFData = pegarDadosNF();
     const [priceTableData, extraDataPDC] = pegarDadostabPrecos();
     const initialDataPDC = pegarDadosPDC_V2();
     const classData = pegarDadosClassificacao_V2();
-    const allDataPDC = {...initialDataPDC, extraDataPDC, ...classData, ...NFData};
-    if(status !== null) allDataPDC.Status_geral = status;
+    const allDataPDC = { ...initialDataPDC, extraDataPDC, ...classData, ...NFData };
+    if (status !== null) allDataPDC.Status_geral = status;
     const newPDCs = new Map();
-    newPDCs.set(0, {'priceTableData': priceTableData, 'PDCsData':allDataPDC, 'Files': {}});   
+    newPDCs.set(0, { 'priceTableData': priceTableData, 'PDCsData': allDataPDC, 'Files': {} });
     return newPDCs
 }
 
@@ -92,7 +82,7 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
             dadosIniciaisPdc[elemento.name] = elemento.value;
         }
     }
-    dadosIniciaisPdc["id_temp"] = currTempPDC? currTempPDC:globais.numPDC_temp;
+    dadosIniciaisPdc["id_temp"] = currTempPDC ? currTempPDC : globais.numPDC_temp;
 
     //====================BUSCA OS DADOS DETALHES DO PDC====================//
     const formDdsDetalhes = document.querySelector('#form-pagamento');
@@ -101,8 +91,6 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
     const parcelas = indiceParc !== null ? [formDdsDetalhes.querySelectorAll('.parcela')[indiceParc]] : formDdsDetalhes.querySelectorAll('.parcela');
 
     const vencimentos = [];
-    console.log("indice => ", indiceParc);
-    console.log("Parcelas => ", parcelas);
 
     parcelas.forEach(parcela => {
         const dataInput = parcela.querySelector('input[type="date"]');
@@ -120,7 +108,7 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
         if (numPDC?.value) {
             vencimentoObj["Num_PDC_parcela"] = numPDC.value;
         }
-        vencimentoObj["parcela_criada"] = indiceParc?true:false;
+        vencimentoObj["parcela_criada"] = indiceParc ? true : false;
 
         // Adiciona o objeto ao array apenas se tiver pelo menos uma propriedade
         if (Object.keys(vencimentoObj).length > 0) {
@@ -147,7 +135,6 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
         if (vencimentos[0].Vencimento_previsto) {
             dadosIniciaisPdc["Vencimento_previsto"] = vencimentos[0].Vencimento_previsto;
         }
-        console.log("Adicionando número do PDC => ", vencimentos[0].Num_PDC_parcela);
         if (vencimentos[0].Num_PDC_parcela) {
             dadosIniciaisPdc["Numero_do_PDC"] = vencimentos[0].Num_PDC_parcela;
         }
@@ -188,8 +175,7 @@ function pegarDadosClassificacao_V2(qtdParc = 1) {
         selects.forEach(select => {
             if (select.name && select.dataset.id_opcao) {
                 classificacao[select.name] = select.dataset.id_opcao;
-            }else
-            {
+            } else {
                 classificacao[select.name] = select.value;
             }
         });
@@ -345,7 +331,7 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                 const fornecedorAprovado = cabecalho1.cells[j + ipcv].querySelector('input[type="checkbox"]').checked;
                 if (fornecedorAprovado) {
                     dadosExtras["Beneficiario"] = fornecedor;
-                    dadosExtras["Valor_orcado"] = valorTotalGeral/qtdParc;
+                    dadosExtras["Valor_orcado"] = valorTotalGeral / qtdParc;
                 }
                 const dadosLinha = {
                     id_produto: idProduto,
@@ -361,8 +347,8 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                     Total_geral: valorTotalGeral,
                     Condicoes_de_pagamento: condicaoPagamento,
                     Observacoes: observacao,
-                    numero_de_PDC: currPDC? currPDC:globais.numPDC,
-                    num_PDC_temp: currTempPDC? currTempPDC:globais.numPDC_temp,
+                    numero_de_PDC: currPDC ? currPDC : globais.numPDC,
+                    num_PDC_temp: currTempPDC ? currTempPDC : globais.numPDC_temp,
                     Aprovado: fornecedorAprovado,
                     Versao: 1,
                     Ativo: true
@@ -375,8 +361,8 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                 Produto: produto,
                 Quantidade: quantidade,
                 Unidade: unidade,
-                numero_de_PDC: currPDC? currPDC:globais.numPDC,
-                num_PDC_temp: currTempPDC? currTempPDC:globais.numPDC_temp,
+                numero_de_PDC: currPDC ? currPDC : globais.numPDC,
+                num_PDC_temp: currTempPDC ? currTempPDC : globais.numPDC_temp,
                 Versao: 1,
                 Ativo: true,
             };
@@ -386,142 +372,15 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
     return [dados, dadosExtras];
 }
 
-
-
-//================================================================//
-//===========================SALVA TUDO===========================//
-//================================================================//
-/**
- * Salva os dados da tab.
- * 
- * @function saveTableData
- * @param {Object} options - Opções para a função.
- * @param {String} options.tipo - Tipo de ação a ser realizada (editar ou criar).
- * @returns {Promise} Uma promessa que resolve após a conclusão da ação.
- * 
- * @description
- * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
- */
-export async function saveTableData_V2(status = null, sepPorParc = false) {
-    console.log("SALVANDO");
-    if (globais.cotacaoExiste) {
-        if(sepPorParc === false)
-        {
-            console.log("COTACAO EXISTE");
-            for (const id of globais.idsCotacao) {
-                let payload = {
-                    data: {
-                        Ativo: false
-                    }
-                };
-                await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
-            }
-            globais.cotacaoExiste = false;
-        }else
-        {
-            globais.cotacaoExiste = false;
-        }
-        await saveTableData_V2(status, sepPorParc);
-
-    } else {
-        console.log("COTAÇÃO NÃO EXISTE");
-        const PDCsToSave = sepPorParc ? await splitDataByInstallments(status):await meshData(status);
-        if(sepPorParc === true ) globais.tipo = 'criar_pdc';
-        console.log("PDCsToSave => ", JSON.stringify(Object.fromEntries(PDCsToSave), null, 2));
-        console.log("PDCsToSave.length => ", PDCsToSave.size);
-        for (let i = 0; i < PDCsToSave.size; i++) {
-            console.log("PERCORRENDO PDCs PARA SALVAR");
-
-            //====================CRIA O REGISTRO DO PDC====================//
-            const pdcData = PDCsToSave.get(i);
-            console.log(pdcData);
-            const dadostabPrecos = pdcData.priceTableData;
-            const dadosPDC = pdcData.PDCsData;
-            const arquivos = pdcData.Files;
-
-            console.log("dadostabPrecos => ", dadostabPrecos);
-            console.log("dadosPDC => ", dadosPDC);
-            console.log("arquivos => ", arquivos);
-            let respPDC;
-            if (globais.tipo === 'editar_pdc') {
-                let payload = {
-                    data: dadosPDC
-                };
-
-                respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
-            } else {
-                respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
-
-                // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
-
-                if (respPDC.code === 3000 && globais.idPDC === null) {
-                    globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
-                }
-            }
-
-            //====================CRIA O REGISTRO DOS ARQUIVOS GALERIA================//
-            const qtdFiles = sepPorParc === true?Object.keys(arquivos).length:globais.arquivosGaleria.length;
-            console.log("Quant arquivos => ", qtdFiles);
-
-            if(qtdFiles > 0) {
-                const dataList = [];
-    
-                for (let i = 0; i < qtdFiles; i++) {
-                    dataList.push({ PDC_Digital: globais.idPDC});
-                }
-    
-                const respFilesRec = await executar_apiZoho({ tipo: "add_reg", corpo: dataList, nomeF: "laranj_arquivos_pdc" });
-                console.log("resFilesRec ================>", JSON.stringify(respFilesRec));
-    
-                if (respFilesRec.result.every(item => item.code === 3000)){
-    
-                    const idArquivos = respFilesRec.result.map(item => item.data.ID);
-                    
-                    let indexFile = 0;
-                    for (const id of idArquivos) {
-                        let blob;
-                        if(sepPorParc === true)
-                        {
-                            blob = arquivos[indexFile++].data;
-                        }else
-                        {
-                            blob = globais.arquivosGaleria[indexFile++];
-                        }
-                        console.log("<<<<<<<<<<<<<<<<<<<<BLOB>>>>>>>>>>>>>>>>>>>>>");
-                        console.log(blob);
-    
-                        const respFileUpload = await executar_apiZoho({ tipo: "subir_arq", nomeR: "laranj_arquivos_pdc_Report", ID: id, corpo:  blob});
-                        if (respFileUpload.code !== 3000) {
-                            console.log("Erro ao subir o arquivo, erro: ", respFileUpload);
-                            console.log("Arquivo: ", blob);
-                            break;
-                        }
-                        console.log("RespFileUpload => ", respFileUpload);
-                    }
-
-                }else {
-                    console.log("Erro ao criar o registro de arquivos, erro: ", respFilesRec);
-                    console.log("Arquivo: ", blob);
-                }
-            }
-
-            //====================CRIA O REGISTRO DA COTAÇÃO====================//
-            const json = JSON.stringify(dadostabPrecos, null, 2);
-            let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
-
-            globais.cotacaoExiste = true;
-        }
-    }
-}
-
 //=================================================================================================//
 //===========================BUSCA OS ARQUIVOS PARA CARREGAR NO NOVO PDC===========================//
 //=================================================================================================//
 async function getGalleryFiles() {
+
     return await new Promise((resolve, reject) => {
-        console.log("<<<<<<<<<BUSCANDO ARQUIVOS>>>>>>>>>>")
+
         const apGalleryItems = document.querySelectorAll('.gallery-item');
-        const galleryItems = Array.prototype.slice.call(apGalleryItems, 0, -2);     
+        const galleryItems = Array.prototype.slice.call(apGalleryItems, 0, -2);
         const files = Array.from(galleryItems).map(item => {
             if (item.firstChild) {
                 const dataSrc = item.firstChild.getAttribute('data-src');
@@ -550,8 +409,6 @@ function getItemType(base64String) {
 }
 
 function getItemData(base64String) {
-    console.log("<<<<<<<<<<BASE 64>>>>>>>>>>");
-    console.log(base64String);
     const fileType = getItemType(base64String);
     const fileContent = atob(base64String.replace(`data:${fileType};base64,`, ''));
     const fileContentArray = new Uint8Array(fileContent.length);
@@ -564,19 +421,131 @@ function getItemData(base64String) {
         lastModified: new Date().getTime(),
         size: fileContentArray.length,
     });
-    
+    /*
     setTimeout(() => {
         downloadFile(file);
     }, 100);
-
+    */
     return file;
-  }
+}
 
-  function downloadFile(file) {
+function downloadFile(file) {
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
     link.href = url;
     link.download = file.name;
     link.click();
     URL.revokeObjectURL(url);
-  }
+}
+
+
+
+//================================================================//
+//===========================SALVA TUDO===========================//
+//================================================================//
+/**
+ * Salva os dados da tab.
+ * 
+ * @function saveTableData
+ * @param {Object} options - Opções para a função.
+ * @param {String} options.tipo - Tipo de ação a ser realizada (editar ou criar).
+ * @returns {Promise} Uma promessa que resolve após a conclusão da ação.
+ * 
+ * @description
+ * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
+ */
+export async function saveTableData_V2(status = null, sepPorParc = false) {
+    if (globais.cotacaoExiste) {
+        if (sepPorParc === false) {
+            for (const id of globais.idsCotacao) {
+                let payload = {
+                    data: {
+                        Ativo: false
+                    }
+                };
+                await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
+            }
+            globais.cotacaoExiste = false;
+        } else {
+            globais.cotacaoExiste = false;
+        }
+        await saveTableData_V2(status, sepPorParc);
+
+    } else {
+        const PDCsToSave = sepPorParc ? await splitDataByInstallments(status) : await meshData(status);
+        if (sepPorParc === true) globais.tipo = 'criar_pdc';
+        for (let i = 0; i < PDCsToSave.size; i++) {
+
+            //====================CRIA O REGISTRO DO PDC====================//
+            const pdcData = PDCsToSave.get(i);
+            const dadostabPrecos = pdcData.priceTableData;
+            const dadosPDC = pdcData.PDCsData;
+            const arquivos = pdcData.Files;
+
+            let respPDC;
+            let idNovoPDC = null;
+            if (globais.tipo === 'editar_pdc') {
+                let payload = {
+                    data: dadosPDC
+                };
+
+                respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
+            } else {
+                respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
+
+                // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
+
+                if (respPDC.code === 3000) {
+                    if(globais.idPDC === null) globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
+                    idNovoPDC = respPDC.data.ID;
+                }
+                
+            }
+
+            //====================CRIA O REGISTRO DOS ARQUIVOS GALERIA================//
+            const qtdFiles = sepPorParc === true ? Object.keys(arquivos).length : globais.arquivosGaleria.length;
+
+            if (qtdFiles > 0) {
+                const dataList = [];
+
+                for (let i = 0; i < qtdFiles; i++) {
+                    dataList.push({ PDC_Digital: idNovoPDC !== null? idNovoPDC : globais.idPDC});
+                }
+
+                const respFilesRec = await executar_apiZoho({ tipo: "add_reg", corpo: dataList, nomeF: "laranj_arquivos_pdc" });
+
+                if (respFilesRec.result.every(item => item.code === 3000)) {
+
+                    const idArquivos = respFilesRec.result.map(item => item.data.ID);
+
+                    let indexFile = 0;
+                    for (const id of idArquivos) {
+                        let blob;
+                        if (sepPorParc === true) {
+                            blob = arquivos[indexFile++].data;
+                        } else {
+                            blob = globais.arquivosGaleria[indexFile++];
+                        }
+
+                        const respFileUpload = await executar_apiZoho({ tipo: "subir_arq", nomeR: "laranj_arquivos_pdc_Report", ID: id, corpo: blob });
+                        if (respFileUpload.code !== 3000) {
+                            console.log("Erro ao subir o arquivo, erro: ", respFileUpload);
+                            console.log("Arquivo: ", blob);
+                            break;
+                        }
+                    }
+
+                } else {
+                    console.log("Erro ao criar o registro de arquivos, erro: ", respFilesRec);
+                    console.log("Arquivo: ", blob);
+                }
+            }
+
+            //====================CRIA O REGISTRO DA COTAÇÃO====================//
+            const json = JSON.stringify(dadostabPrecos, null, 2);
+            let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
+
+            globais.cotacaoExiste = true;
+        }
+    }
+}
