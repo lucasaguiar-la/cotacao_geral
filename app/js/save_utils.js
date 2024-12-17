@@ -93,11 +93,16 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
     const vencimentos = [];
 
     parcelas.forEach(parcela => {
+        const numParc = parcela.querySelector('label')
         const dataInput = parcela.querySelector('input[type="date"]');
         const valorInput = parcela.querySelector('input[name="Valor"]');
         const numPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
 
+
         const vencimentoObj = {};
+        if (numParc?.textContent) {
+            vencimentoObj["Numero_da_parcela"] = parseInt(numParc.textContent.match(/\d+/)[0]);
+        }
         if (dataInput?.value) {
             const [ano, mes, dia] = dataInput.value.split('-');
             vencimentoObj["Vencimento_previsto"] = `${dia}/${mes}/${ano}`;
@@ -428,7 +433,7 @@ function getItemData(base64String) {
     */
     return file;
 }
-
+/*FOI UTILIZADA APENAS PAR TESTES
 function downloadFile(file) {
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
@@ -437,6 +442,7 @@ function downloadFile(file) {
     link.click();
     URL.revokeObjectURL(url);
 }
+*/
 
 
 
