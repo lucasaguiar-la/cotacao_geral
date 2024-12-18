@@ -105,6 +105,13 @@ select option[disabled] {
     grid-column-end: 3;
 }
 
+.check-pag-antecipado
+{
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 350px;
+}
+
 .form-compra label, 
 .form-pagamento label, 
 .form-classificacao label,
@@ -114,6 +121,18 @@ select option[disabled] {
     margin-bottom: 5px;
     display: block;
     font-size: 100%;
+}
+
+.form-pagamento .label-pag-antecipado
+{
+    font-weight: normal;
+    margin-top: 5px;
+}
+
+.check-pag-antecipado:has(input[type="checkbox"]:checked)::after {
+    content: "(A primeira parcela será enviada para pagamento assim que a compra for confirmada.)";
+    display: block;
+    width:100%;
 }
 
 .form-compra textarea,

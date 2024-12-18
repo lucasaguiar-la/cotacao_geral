@@ -149,8 +149,16 @@ export function preencherDadosPDC(resp) {
         const camposData = document.getElementById('camposData');
 
         // Remove campos existentes
-        while (camposData.firstChild) {
-            camposData.removeChild(camposData.firstChild);
+        while (camposData.children[1]) {
+            camposData.removeChild(camposData.children[1]);
+        }
+
+        // Marca o pagamento antecipado, caso seja true
+        console.log("data.pag_antecipado => ", data.pag_antecipado);
+        console.log("typeof data.pag_antecipado => ", typeof data.pag_antecipado);
+        if (data.pag_antecipado == "true"){
+            const inputPagAntecipado = camposData.querySelector('#pag_antecipado');
+            inputPagAntecipado.setAttribute('checked', true);
         }
 
         // Adiciona campos para cada data
@@ -296,7 +304,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     novoInputParcelaCriada.type = 'checkbox';
     novoInputParcelaCriada.name = 'parcela_criada';
     novoInputParcelaCriada.classList.add('campo-datas', 'hidden');
-    if(parcCriada === true) novoInputParcelaCriada.setAttribute('checked', 'checked');
+    if(parcCriada == 'true') novoInputParcelaCriada.setAttribute('checked', 'checked');
 
     //====================CRIA O BOTÃO DE REMOVER====================//
     const removerButton = document.createElement('button');

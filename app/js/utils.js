@@ -423,6 +423,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         tipo = 'editar_pdc';
     }
 
+    const pgtoAnt = document.getElementById('pag_antecipado').checked;
     /*
     if(globais.pag === "criar_cotacao_DP" || globais.pag === "editar_cotacao_DP")
     {
@@ -517,6 +518,51 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
     // Handlers dos botões
     const handleConfirm = async () => {
+
+        function getDates(){
+            let listDatas = [];
+            const formDdsDetalhes = document.querySelector('#form-pagamento');
+            const parcelas = formDdsDetalhes.querySelectorAll('.parcela');
+
+            let indiceParcela = 0;
+            parcelas.forEach(parcela => {
+                const numParc = parcela.querySelector('label');
+                const dataInput = parcela.querySelector('input[type="date"]');
+                const valorInput = parcela.querySelector('input[name="Valor"]');
+                const numPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
+                
+                const dadosParcela = {};
+                if(numParc?.textContent)
+                {
+                    dadosParcela.Numero_da_parcela = parseInt(numParc.textContent.match(/\d+/)[0])
+                }
+                if(pgtoAnt && indiceParcela === 0)
+                {
+                    dadosParcela.parcela_criada = true
+                }else
+                {
+                    dadosParcela.parcela_criada = false
+                }
+                if(dataInput?.value){
+                    const [ano, mes, dia] = dataInput.value.split('-');
+                    dadosParcela.Vencimento_previsto = `${dia}/${mes}/${ano}`
+                }
+                if(valorInput?.value){
+                    dadosParcela.Valor = converterStringParaDecimal(valorInput.value)
+                }
+                if(numPDC?.value)
+                {
+                    dadosParcela.Num_PDC_parcela = numPDC.value
+                }
+                
+                listDatas.push(dadosParcela);
+                indiceParcela++;
+            })
+            return listDatas;
+        }
+
+
+
         if (inputElement && !inputElement.value.trim()) {
             // Remove mensagem de erro anterior se existir
             const existingError = popup.querySelector('.customConfirm-error-message');
@@ -591,7 +637,9 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 Status_geral: 'Lançado no orçamento'
             },
             'confirmar_compra': {
-                Status_geral: 'Compra realizada'
+                Status_geral: 'Compra realizada',
+                pag_antecipado: false,
+                Datas: null
             },
             'confirmar_recebimento': {
                 Status_geral: 'Separado em parcelas'
@@ -621,7 +669,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
         // Verifica se o tipo está no mapa e cria o payload
         if (payloadMap[tipo]) {
-            
+
             // Verifica se o tipo é valido//
             ////{Ação:seprara por parcela}////
             const tiposValidos = {
@@ -633,6 +681,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 "finalizar_provisionamento":false,
                 "enviar_p_checagem_final":false,
                 "enviar_p_assinatura":false,
+                "confirmar_compra": pgtoAnt?true:false,
                 "confirmar_recebimento": true
             };
 
@@ -642,14 +691,17 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 if(tipo === "confirmar_recebimento")
                 {
                     status = "Recebimento confirmado";
-                }if(tipo === "criar_cotacao_controladoria" || tipo === "editar_cotacao_controladoria")
+                }else if(tipo === "criar_cotacao_controladoria" || tipo === "editar_cotacao_controladoria")
                 {
                     status = "Propostas criadas controladoria";
+                }else if(tipo === "confirmar_compra")
+                {
+                    status = "Enviado para checagem final";
                 }
                 await saveTableData_V2(status, tiposValidos[tipo]);
             }
 
-            payload = { data: [payloadMap[tipo]] };
+            payload = { data: [{ ...payloadMap[tipo], Datas: getDates() }] };
 
         } else if (tipo === 'salvar_cot' || tipo === 'editar_pdc') {
 
@@ -672,12 +724,14 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         }
 
         try {
+            console.log("PAYLOAD => ", JSON.stringify(payload));
             const resposta = await executar_apiZoho({ 
                 tipo: "atualizar_reg", 
                 ID: globais.idPDC, 
                 corpo: payload,
                 nomeR: globais.nomeRelPDC
             });
+            console.log("RESPOSTA => ", JSON.stringify(resposta));
 
             // Fecha o modal após sucesso
             if (resposta && resposta.code === 3000) {
@@ -1049,7 +1103,7 @@ export function desabilitarCampos() {
     if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
         camposParaManterHabilitados = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
         botoesParaManterHabilitados = ["add-parcela", "remover-parcela"];//classe
-        formsParaManterHabilitados = ["form-pagamento", "dados-nf"];//forms
+        formsParaManterHabilitados = ["form-pagamento", "dados-nf", "form-classificacao"];//forms
     } else if (globais.pag === "criar_numero_de_PDC") {
         camposParaManterHabilitados = ["Num_PDC_parcela"];
     }

@@ -211,9 +211,13 @@
                         </div>
                     </div>
                     -->
-                    <label for="observacoes">Vencimento previsto:</label>
+                    <label for="camposData" style="padding-top: 50px;">Vencimento previsto:</label>
                     <div id="camposData">
-                        <!--
+                        <div class="check-pag-antecipado">
+                            <input type="checkbox" name="pag_antecipado" id="pag_antecipado">
+                            <label for="pag_antecipado" class="label-pag-antecipado">Pagamento de sinal</label>
+                        </div>
+                        <!-- 
                         <div class="titulos-parcela">
                             <label for="numero_parcela">Parcela</label>
                             <label for="Datas">Vencimento</label>
@@ -223,7 +227,7 @@
                         -->
                         <div class="parcela">
                             <label name="numero_parcela">Parcela nº 1:</label>
-                            <input type="date" name="Datas" placeholder="dd/mm/aaaa" class="campo-datas" />
+                            <input type="date" name="Datas" placeholder="Venc. prev. (dd/mm/aaaa)" class="campo-datas" />
                             <input type="text" name="Valor" class="input-number valor-parcela campo-datas"
                                 placeholder="R$ 0,00" />
                             <button type="button" class="remover-parcela close-icon remove-btn" name="botao_remover"></button>

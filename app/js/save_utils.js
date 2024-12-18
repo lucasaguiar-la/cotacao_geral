@@ -3,38 +3,69 @@ import { globais } from './main.js'
 
 const qlt = 4; //Total de linhas de totalizadores, considerando linha com botão de adicionar produto
 const ipcv = 3; //Indice da primeira coluna de valores (Valor unitário do primeiro fornecedor)
-//===============================================================================================//
-//===========================DIVIDE O PDC EM SUAS RESPECTIVAS PARCELAS===========================//
-//===============================================================================================//
+
+//==================================================================================================//
+//===========================MESCLA OS DADOS DO PDC, TOTAL OU POR PARCELA===========================//
+//==================================================================================================//
 async function splitDataByInstallments(status = null) {
-    const installments = document.querySelectorAll('.parcela');
+    console.log("<<<<<<<<<<SPLITANDO DADOS>>>>>>>>>>");
+    console.log("1. status => ", status);
+
+    const pgtoAnt = document.getElementById('pag_antecipado').checked;
+    console.log("2. pgtoAnt => ", pgtoAnt);
+    let installments =[];
+    if(globais.pag === "confirmar_compra" && pgtoAnt === true)
+    {
+        installments = [document.querySelectorAll('.parcela')[0]];
+    }else
+    {
+        installments = document.querySelectorAll('.parcela');
+    }
+    console.log("3. installments => ", installments);
     const numInstallments = installments.length;
+    console.log("4. numInstallments => ", numInstallments);
 
-    const files = await getGalleryFiles();
+
     const newPDCs = new Map();
-
+    console.log("----------BUSCANDO DADOS----------");
+    const files = await getGalleryFiles();
+    console.log("1. files => ", files);
     const NFData = pegarDadosNF();
-
+    console.log("2. NFData => ", NFData);
+    console.log("----------PERCORRENDO PARCELAS----------");
     installments.forEach((installment, index) => {
+        console.log("1. installment => ", installment);
         const isCreated = installment.querySelector('input[name="parcela_criada"]').hasAttribute('checked');
+        console.log("2. isCreated => ", isCreated);
+
         if (!isCreated) {
-            const currTempPDC = numInstallments > 1 ? `${globais.numPDC_temp}/${(index + 1).toString().padStart(2, '0')}` : globais.numPDC_temp;
+
+
+            const currTempPDC = numInstallments > 1 || pgtoAnt === true? `${globais.numPDC_temp}/${(index + 1).toString().padStart(2, '0')}` : globais.numPDC_temp;
+            console.log("3. currTempPDC => ", currTempPDC);
 
             const initialDataPDC = pegarDadosPDC_V2(index, currTempPDC);
-            const currPDCInstallment = initialDataPDC.Num_PDC_parcela ? initialDataPDC.Num_PDC_parcela : globais.numPDC;
+            
+            const currPDCInstallment = initialDataPDC.Datas[0].Num_PDC_parcela? initialDataPDC.Datas[0].Num_PDC_parcela : globais.numPDC;
+            console.log("4. initialDataPDC.Num_PDC_parcela => ", initialDataPDC.Datas[0].Num_PDC_parcela);
+            console.log("4. currPDCInstallment => ", currPDCInstallment);
+            console.log("5. initialDataPDC => ", JSON.stringify(initialDataPDC));
 
             const [priceTableData, extraDataPDC] = pegarDadostabPrecos(currTempPDC, currPDCInstallment, numInstallments);
-
+            console.log("6. priceTableData => ", JSON.stringify(priceTableData));
+            console.log("7. extraDataPDC => ", JSON.stringify(extraDataPDC));
 
             const classData = pegarDadosClassificacao_V2(numInstallments);
+            console.log("8. classData => ", JSON.stringify(classData));
+
             const allDataPDC = { ...initialDataPDC, ...extraDataPDC, ...classData, ...NFData };
-            allDataPDC.num_PDC_temp = currTempPDC;
             if (status !== null) allDataPDC.Status_geral = status;
-
+            console.log("9. allDataPDC => ", JSON.stringify(Array.from(allDataPDC)));
             newPDCs.set(index, { 'priceTableData': priceTableData, 'PDCsData': allDataPDC, 'Files': { ...files } });
-
         }
     })
+    console.log("<<<<<<<<<<DADOS SPLITADOS>>>>>>>>>>");
+    console.log("10. newPDCs => ", newPDCs);
     return newPDCs
 }
 
@@ -53,9 +84,9 @@ async function meshData(status = null) {
     return newPDCs
 }
 
-//=========================================================================================//
-//===========================FUNÇÕES AUXILIARES PARA SALVAR TUDO===========================//
-//=========================================================================================//
+//===========================================================================//
+//===========================BUSCA OS DADOS DO PDC===========================//
+//===========================================================================//
 /**
  * Busca os dados do PDC.
  * 
@@ -95,11 +126,10 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
     const vencimentos = [];
 
     parcelas.forEach(parcela => {
-        const numParc = parcela.querySelector('label')
+        const numParc = parcela.querySelector('label');
         const dataInput = parcela.querySelector('input[type="date"]');
         const valorInput = parcela.querySelector('input[name="Valor"]');
         const numPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
-
 
         const vencimentoObj = {};
         if (numParc?.textContent) {
@@ -123,17 +153,45 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
         }
     });
 
-
-    //ACREDITO QUE ISSO AQUI NÃO ESTEJA SERVINDO DE NADA
     // Adiciona outros campos do formulário
     const elementosDetalhes = formDdsDetalhes.elements;
     for (let elemento of elementosDetalhes) {
+        if(!elemento.classList.contains("campo-datas"))
+        {
+            if(elemento.type !== 'radio')
+            {
+                if(elemento.checked)
+                {
+                    dadosIniciaisPdc[elemento.name] = elemento.checked;
+                }else
+                {
+                    dadosIniciaisPdc[elemento.name] = elemento.value;
+                }
+            }else if(elemento.checked)
+            {
+                dadosIniciaisPdc[elemento.name] = elemento.value;
+            }
+        }
 
+
+
+
+/*
         if (!elemento.classList.contains("campo-datas") &&
             (elemento.type !== 'radio' || elemento.checked)) {
-            dadosIniciaisPdc[elemento.name] = elemento.value;
+
+                if(elemento.checked)
+                {
+                    dadosIniciaisPdc[elemento.name] = elemento.checked;
+                }else
+                {
+                    dadosIniciaisPdc[elemento.name] = elemento.value;
+                }
+            
         }
+                */
     }
+        
 
     // Adiciona as parcelas ao objeto final
     if (vencimentos.length > 0) {
@@ -153,6 +211,9 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
     return dadosIniciaisPdc;
 }
 
+//================================================================================//
+//====================BUSCA OS DADOS DA CLASSIFICAÇÃO CONTÁBIL====================//
+//================================================================================//
 /**
  * Busca os dados de classificação.
  * 
@@ -215,6 +276,9 @@ function pegarDadosClassificacao_V2(qtdParc = 1) {
     return dadosClassificacao;
 }
 
+//===================================================================================//
+//====================BUSCA OS DADOS DO FORMULÁRIO DE NOTA FISCAL====================//
+//===================================================================================//
 /**
  * Busca os dados do formulário de Nota Fiscal.
  * 
@@ -225,7 +289,6 @@ function pegarDadosClassificacao_V2(qtdParc = 1) {
  * Esta função busca os dados do formulário de Nota Fiscal e os organiza em um objeto.
  */
 function pegarDadosNF() {
-    //====================BUSCA OS DADOS DO FORMULÁRIO DE NOTA FISCAL====================//
     console.log("PEGANDO DADOS DA NOTA FISCAL");
     const formDdsNF = document.querySelector('#dados-nf');
     const dadosNF = {};
@@ -266,6 +329,9 @@ function pegarDadosNF() {
     return dadosNF;
 }
 
+//====================================================================================//
+//====================BUSCA OS DADOS DA TABELA DE PREÇOS (COTAÇÃO)====================//
+//====================================================================================//
 /**
  * Busca os dados da tab de preços.
  * 
@@ -396,12 +462,15 @@ async function getGalleryFiles() {
         const apGalleryItems = document.querySelectorAll('.gallery-item');
         const galleryItems = Array.prototype.slice.call(apGalleryItems, 0, -2);
         const files = Array.from(galleryItems).map(item => {
-            if (item.firstChild) {
+            if (item.firstChild && item.firstChild.hasAttribute('data-src')) {
                 const dataSrc = item.firstChild.getAttribute('data-src');
                 return {
                     type: getItemType(dataSrc),
                     data: getItemData(dataSrc),
                 };
+            }else 
+            {
+                return{};
             }
         });
 
@@ -442,16 +511,6 @@ function getItemData(base64String) {
     */
     return file;
 }
-/*FOI UTILIZADA APENAS PAR TESTES
-function downloadFile(file) {
-    const url = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file.name;
-    link.click();
-    URL.revokeObjectURL(url);
-}
-*/
 
 //================================================================//
 //===========================SALVA TUDO===========================//
@@ -468,9 +527,11 @@ function downloadFile(file) {
  * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
  */
 export async function saveTableData_V2(status = null, sepPorParc = false) {
-    console.log("SALVANDO COTAÇÃO");
+    console.log("<<<<<<<<<<SALVANDO COTAÇÃO>>>>>>>>>>");
+    console.log("1. status => ", status);
+    console.log("2. sepPorParc => ", sepPorParc);
     if (globais.cotacaoExiste) {
-        console.log("COTACAO EXISTE");
+        console.log("----------COTACAO EXISTE----------");
         if (sepPorParc === false) {
             for (const id of globais.idsCotacao) {
                 let payload = {
@@ -487,18 +548,24 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
         await saveTableData_V2(status, sepPorParc);
 
     } else {
-        console.log("COTACAO NÃO EXISTE");
+        console.log("----------COTACAO NÃO EXISTE----------");
         const PDCsToSave = sepPorParc ? await splitDataByInstallments(status) : await meshData(status);
-        console.log("PDCsToSave => ", PDCsToSave);
-        console.log("sepPorParc => ", sepPorParc);
         if (sepPorParc === true) globais.tipo = 'criar_pdc';
         for (let i = 0; i < PDCsToSave.size; i++) {
-            console.log("PDCsToSave.get(i) => ", JSON.stringify(PDCsToSave.get(i)));
+
             //====================CRIA O REGISTRO DO PDC====================//
-            const pdcData = PDCsToSave.get(i);
+            const chave = Array.from(PDCsToSave.keys())[i];
+            const pdcData = PDCsToSave.get(chave);
             const dadostabPrecos = pdcData.priceTableData;
             const dadosPDC = pdcData.PDCsData;
-            const arquivos = pdcData.Files;
+            const arquivos = Object.keys(pdcData.Files).reduce((acc, curr) => {
+                if (pdcData.Files[curr].data) acc[curr] = pdcData.Files[curr];
+                return acc;
+            }, {});
+
+            console.log("1. dadostabPrecos => ", dadostabPrecos);
+            console.log("2. dadosPDC => ", dadosPDC);
+            console.log("3. arquivos => ", arquivos);
 
             let respPDC;
             let idNovoPDC = null;

@@ -193,10 +193,20 @@ async function executarProcessosParalelos() {
             } else if (globais.pag === "criar_numero_de_PDC") 
             {
                 criarBotao({page:globais.pag});
+                //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
+                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+                if (checkboxPagamentoAntecipado) {
+                    checkboxPagamentoAntecipado.classList.add("hidden");
+                }
 
             }else if(globais.pag === "receber_compra")
             {
                 criarBotao({page:globais.pag, removeExistingButtons: true});
+                //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
+                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+                if (checkboxPagamentoAntecipado) {
+                    checkboxPagamentoAntecipado.classList.add("hidden");
+                }
 
             }else if(globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final" )
             {
@@ -221,10 +231,18 @@ async function executarProcessosParalelos() {
                     camposNF.querySelector('.campos-iniciais-nf').classList.remove("hidden");
                 }
                 criarBotao({page:globais.pag});
+                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+                if (checkboxPagamentoAntecipado) {
+                    checkboxPagamentoAntecipado.classList.add("hidden");
+                }
 
 
             }else if (globais.pag == "autorizar_pagamento_subsindico" || globais.pag == "autorizar_pagamento_sindico" || globais.pag == "confirmar_todas_as_assinaturas") {
                 criarBotao({page: globais.pag, removeExistingButtons: true});
+                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+                if (checkboxPagamentoAntecipado) {
+                    checkboxPagamentoAntecipado.classList.add("hidden");
+                }
 
             }else if(globais.pag === "arquivar_cotacao")
             {
@@ -259,6 +277,20 @@ async function executarProcessosParalelos() {
             });
 
             globais.perfilResponsavel = "Depto. Pessoal";
+
+            const tipoElement = document.querySelector('select[name="Tipo_de_solicitacao"]');
+            const tipoLabel = tipoElement.previousElementSibling;
+            if (tipoElement && tipoLabel) {
+                tipoElement.style.display = 'none'; 
+                tipoLabel.style.display = 'none';
+            }
+
+            //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
+            const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+            if (checkboxPagamentoAntecipado) {
+                checkboxPagamentoAntecipado.classList.add("hidden");
+            }
+            
 
             /*SELECIONAVA O FORNECEDOR A PARTIR DO CAMPO TIPO, MUDOU PARA BOTÃO DE ADD FORN, SE NÃO DEU ERRO PODE EXCLUIR
             const entidadeSelect = document.getElementById('tipo');
@@ -438,6 +470,12 @@ async function executarProcessosParalelos() {
                 customModal({botao:newSaveButton, tipo: "criar_cotacao_controladoria", mensagem:"Deseja realmente salvar este registro?"});
             });
             globais.perfilResponsavel = "Controladoria";
+
+            //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
+            const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+            if (checkboxPagamentoAntecipado) {
+                checkboxPagamentoAntecipado.classList.add("hidden");
+            }
         }else
         {
             globais.perfilResponsavel = "Comprador";
@@ -461,7 +499,8 @@ async function processarDadosPDC() {
     });
 
     if (respPDC.code == 3000) {
-        
+        console.log("DADOS DO PDC");
+        console.log(JSON.stringify(respPDC.data, null, 2));
         globais.tipo = 'editar_pdc';
         preencherDadosPDC(respPDC);
     }
