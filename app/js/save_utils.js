@@ -638,3 +638,39 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
         }
     }
 }
+
+export async function saveTableData_V3()
+{
+    /**
+     * Salvamentos possíveis:
+     * - Dados iniciais do PDC
+     * - Toda a tabela de cotação
+     * - Tabela do fornecedor aprovado
+     * - Detalhes dos fornecedores
+     * - Dados de forma de pagamento
+     * - Dados de parcelas (Sem separar)
+     * - Dados de parcelas separando as marcadas (Pagamento de sinal)
+     * - Dados de parcelas separando as não separadas (Compra recebida)
+     * - Dados de nota fiscal
+     * - Dados de retenção
+     * - Dados de classificação (Sem separar)
+     * - Dados de classificação separando as marcadas (Pagamento de sinal)
+     * - Dados de classificação separando as não separadas (Compra recebida)
+     * - Anexos novos e removidos
+     * - Duplicar anexos (Pagamento de sinal)
+     * - Duplicar anexos (Compra recebida)
+     * - Alterar Status
+     * 
+     * Tipos de salvamento
+     * - Salvar nova cotação
+     * - Salvar cotação existente
+     * - Solicitar aprovação do síndico (Precisa salvar, pode ser nova o existente)
+     * - Aprovar cotação (Síndico)
+     * - Concluir provisionamento
+     * - Comprar
+     * - Receber compra
+     * - Enviar p/ checagem final
+     * - Enviar p/ assinatura
+     * - Assinar
+     */
+}
