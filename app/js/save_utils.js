@@ -13,12 +13,10 @@ async function splitDataByInstallments(status = null) {
 
     const pgtoAnt = document.getElementById('pag_antecipado').checked;
     console.log("2. pgtoAnt => ", pgtoAnt);
-    let installments =[];
-    if(globais.pag === "confirmar_compra" && pgtoAnt === true)
-    {
+    let installments = [];
+    if (globais.pag === "confirmar_compra" && pgtoAnt === true) {
         installments = [document.querySelectorAll('.parcela')[0]];
-    }else
-    {
+    } else {
         installments = document.querySelectorAll('.parcela');
     }
     console.log("3. installments => ", installments);
@@ -39,14 +37,12 @@ async function splitDataByInstallments(status = null) {
         console.log("2. isCreated => ", isCreated);
 
         if (!isCreated) {
-
-
-            const currTempPDC = numInstallments > 1 || pgtoAnt === true? `${globais.numPDC_temp}/${(index + 1).toString().padStart(2, '0')}` : globais.numPDC_temp;
+            const currTempPDC = numInstallments > 1 || pgtoAnt === true ? `${globais.numPDC_temp}/${(index + 1).toString().padStart(2, '0')}` : globais.numPDC_temp;
             console.log("3. currTempPDC => ", currTempPDC);
 
             const initialDataPDC = pegarDadosPDC_V2(index, currTempPDC);
-            
-            const currPDCInstallment = initialDataPDC.Datas[0].Num_PDC_parcela? initialDataPDC.Datas[0].Num_PDC_parcela : globais.numPDC;
+
+            const currPDCInstallment = initialDataPDC.Datas[0].Num_PDC_parcela ? initialDataPDC.Datas[0].Num_PDC_parcela : globais.numPDC;
             console.log("4. initialDataPDC.Num_PDC_parcela => ", initialDataPDC.Datas[0].Num_PDC_parcela);
             console.log("4. currPDCInstallment => ", currPDCInstallment);
             console.log("5. initialDataPDC => ", JSON.stringify(initialDataPDC));
@@ -104,6 +100,9 @@ async function meshData(status = null) {
  */
 function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
     //====================BUSCA OS DADOS INICIAIS DO PDC====================//
+    console.log("<<<<<<<<<<<<<<<<<<<<<<PEGANDO DADOS DO PDC>>>>>>>>>>>>>>>>>>>>>>>>");
+    console.log("indice parcela => ", indiceParc);
+    console.log("currPDC => ", currTempPDC);
     const formDdsInicais = document.querySelector('#dados-PDC');
     const dadosIniciaisPdc = {};
 
@@ -122,7 +121,6 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
 
     // Obter todos os elementos do formulário
     const parcelas = indiceParc !== null ? [formDdsDetalhes.querySelectorAll('.parcela')[indiceParc]] : formDdsDetalhes.querySelectorAll('.parcela');
-
     const vencimentos = [];
 
     parcelas.forEach(parcela => {
@@ -130,6 +128,7 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
         const dataInput = parcela.querySelector('input[type="date"]');
         const valorInput = parcela.querySelector('input[name="Valor"]');
         const numPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
+        
 
         const vencimentoObj = {};
         if (numParc?.textContent) {
@@ -143,9 +142,19 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
             vencimentoObj["Valor"] = converterStringParaDecimal(valorInput.value);
         }
         if (numPDC?.value) {
+            console.log("Num PDC parc => ", numPDC.value);
             vencimentoObj["Num_PDC_parcela"] = numPDC.value;
+            
         }
-        vencimentoObj["parcela_criada"] = indiceParc ? true : false;
+        console.log("indiceParc2 => ", indiceParc);
+        if(indiceParc !== null)
+        {
+            console.log("----------ENTROU NO IF----------");
+            vencimentoObj["parcela_criada"] = true;
+        }else{
+            console.log("----------ENTROU NO ELSE----------");
+            vencimentoObj["parcela_criada"] = false;
+        }
 
         // Adiciona o objeto ao array apenas se tiver pelo menos uma propriedade
         if (Object.keys(vencimentoObj).length > 0) {
@@ -156,19 +165,14 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
     // Adiciona outros campos do formulário
     const elementosDetalhes = formDdsDetalhes.elements;
     for (let elemento of elementosDetalhes) {
-        if(!elemento.classList.contains("campo-datas"))
-        {
-            if(elemento.type !== 'radio')
-            {
-                if(elemento.checked)
-                {
+        if (!elemento.classList.contains("campo-datas")) {
+            if (elemento.type !== 'radio') {
+                if (elemento.checked) {
                     dadosIniciaisPdc[elemento.name] = elemento.checked;
-                }else
-                {
+                } else {
                     dadosIniciaisPdc[elemento.name] = elemento.value;
                 }
-            }else if(elemento.checked)
-            {
+            } else if (elemento.checked) {
                 dadosIniciaisPdc[elemento.name] = elemento.value;
             }
         }
@@ -176,10 +180,10 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
 
 
 
-/*
+        /*
         if (!elemento.classList.contains("campo-datas") &&
             (elemento.type !== 'radio' || elemento.checked)) {
-
+        
                 if(elemento.checked)
                 {
                     dadosIniciaisPdc[elemento.name] = elemento.checked;
@@ -191,7 +195,7 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
         }
                 */
     }
-        
+
 
     // Adiciona as parcelas ao objeto final
     if (vencimentos.length > 0) {
@@ -201,11 +205,11 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
             dadosIniciaisPdc["Vencimento_previsto"] = vencimentos[0].Vencimento_previsto;
         }
         if (vencimentos[0].Num_PDC_parcela) {
-            dadosIniciaisPdc["Numero_do_PDC"] = vencimentos[0].Num_PDC_parcela;
+            dadosIniciaisPdc["Numero_do_PDC"] = indiceParc == null?globais.numPDC:vencimentos[0].Num_PDC_parcela;
+            console.log("Numero do PDC => ", vencimentos[0].Num_PDC_parcela);
         }
     }
-    if(globais.perfilResponsavel != null)
-    {
+    if (globais.perfilResponsavel != null) {
         dadosIniciaisPdc["Perfil_responsavel"] = globais.perfilResponsavel;
     }
     return dadosIniciaisPdc;
@@ -413,6 +417,7 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                     dadosExtras["Beneficiario"] = fornecedor;
                     dadosExtras["Valor_orcado"] = converterStringParaDecimal((valorTotalGeral / qtdParc) || 0);
                 }
+
                 const dadosLinha = {
                     id_produto: idProduto,
                     id_fornecedor: idFornecedor,
@@ -468,9 +473,8 @@ async function getGalleryFiles() {
                     type: getItemType(dataSrc),
                     data: getItemData(dataSrc),
                 };
-            }else 
-            {
-                return{};
+            } else {
+                return {};
             }
         });
 
@@ -581,13 +585,13 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
                 console.log("DADOS DO PDC ===> ", JSON.stringify(dadosPDC, null, 2));
                 respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
 
-                
+
                 // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
                 if (respPDC.code === 3000) {
-                    if(globais.idPDC === null) globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
+                    if (globais.idPDC === null) globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
                     idNovoPDC = respPDC.data.ID;
                 }
-                
+
             }
             console.log("respPDC => ", respPDC);
 
@@ -598,7 +602,7 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
                 const dataList = [];
 
                 for (let i = 0; i < qtdFiles; i++) {
-                    dataList.push({ PDC_Digital: idNovoPDC !== null? idNovoPDC : globais.idPDC});
+                    dataList.push({ PDC_Digital: idNovoPDC !== null ? idNovoPDC : globais.idPDC });
                 }
 
                 const respFilesRec = await executar_apiZoho({ tipo: "add_reg", corpo: dataList, nomeF: "laranj_arquivos_pdc" });
@@ -639,38 +643,32 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
     }
 }
 
-export async function saveTableData_V3()
-{
+
+export async function salvarPDC() {
+
+}
+
+export async function tratarSalvamentoPDC({ acao = null }) {
+    //TODOS OS DADOS//
     /**
-     * Salvamentos possíveis:
-     * - Dados iniciais do PDC
-     * - Toda a tabela de cotação
-     * - Tabela do fornecedor aprovado
-     * - Detalhes dos fornecedores
-     * - Dados de forma de pagamento
-     * - Dados de parcelas (Sem separar)
-     * - Dados de parcelas separando as marcadas (Pagamento de sinal)
-     * - Dados de parcelas separando as não separadas (Compra recebida)
-     * - Dados de nota fiscal
-     * - Dados de retenção
-     * - Dados de classificação (Sem separar)
-     * - Dados de classificação separando as marcadas (Pagamento de sinal)
-     * - Dados de classificação separando as não separadas (Compra recebida)
-     * - Anexos novos e removidos
-     * - Duplicar anexos (Pagamento de sinal)
-     * - Duplicar anexos (Compra recebida)
-     * - Alterar Status
-     * 
-     * Tipos de salvamento
-     * - Salvar nova cotação
-     * - Salvar cotação existente
-     * - Solicitar aprovação do síndico (Precisa salvar, pode ser nova o existente)
-     * - Aprovar cotação (Síndico)
-     * - Concluir provisionamento
-     * - Comprar
-     * - Receber compra
-     * - Enviar p/ checagem final
-     * - Enviar p/ assinatura
-     * - Assinar
+     * Dados iniciais do PDC
+     * Toda a tabela de cotação
+     * Tabela do fornecedor aprovado
+     * Detalhes dos fornecedores
+     * Dados de forma de pagamento
+     * Dados de parcelas (Sem separar)
+     * Dados de parcelas separando as marcadas (Pagamento de sinal)
+     * Dados de parcelas separando as não separadas (Compra recebida)
+     * Dados de nota fiscal
+     * Dados de retenção
+     * Dados de classificação (Sem separar)
+     * Dados de classificação separando as marcadas (Pagamento de sinal)
+     * Dados de classificação separando as não separadas (Compra recebida)
+     * Anexos novos e removidos
+     * Duplicar anexos (Pagamento de sinal)
+     * Duplicar anexos (Compra recebida)
+     * Alterar Status
      */
+
+
 }

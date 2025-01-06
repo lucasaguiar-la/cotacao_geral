@@ -519,7 +519,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     // Handlers dos botões
     const handleConfirm = async () => {
 
-        function getDates(){
+        function getDates(t = null){
             let listDatas = [];
             const formDdsDetalhes = document.querySelector('#form-pagamento');
             const parcelas = formDdsDetalhes.querySelectorAll('.parcela');
@@ -536,7 +536,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 {
                     dadosParcela.Numero_da_parcela = parseInt(numParc.textContent.match(/\d+/)[0])
                 }
-                if(pgtoAnt && indiceParcela === 0)
+                if(pgtoAnt && indiceParcela === 0 && t === "confirmar_compra")
                 {
                     dadosParcela.parcela_criada = true
                 }else
@@ -639,7 +639,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             'confirmar_compra': {
                 Status_geral: 'Compra realizada',
                 pag_antecipado: false,
-                Datas: null
+                Datas: getDates(tipo)
             },
             'confirmar_recebimento': {
                 Status_geral: 'Separado em parcelas'
@@ -701,7 +701,8 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 await saveTableData_V2(status, tiposValidos[tipo]);
             }
 
-            payload = { data: [{ ...payloadMap[tipo], Datas: getDates() }] };
+            payload = { data: [{ ...payloadMap[tipo]}] };
+            //payload = { data: [{ ...payloadMap[tipo], Datas: getDates(tipo) }] };
 
         } else if (tipo === 'salvar_cot' || tipo === 'editar_pdc') {
 

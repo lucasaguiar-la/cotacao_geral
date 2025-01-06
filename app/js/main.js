@@ -182,7 +182,6 @@ async function executarProcessosParalelos() {
         await Promise.all(tarefas);
         if(!globais.pag.includes('editar_cotacao')) {
 
-            
             if (globais.pag == "aprovar_cotacao") {
                 criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
 
@@ -235,7 +234,6 @@ async function executarProcessosParalelos() {
                 if (checkboxPagamentoAntecipado) {
                     checkboxPagamentoAntecipado.classList.add("hidden");
                 }
-
 
             }else if (globais.pag == "autorizar_pagamento_subsindico" || globais.pag == "autorizar_pagamento_sindico" || globais.pag == "confirmar_todas_as_assinaturas") {
                 criarBotao({page: globais.pag, removeExistingButtons: true});
