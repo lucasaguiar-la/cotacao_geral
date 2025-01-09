@@ -1,5 +1,5 @@
 import { globais } from './main.js';
-import { formatToBRL, converterStringParaDecimal } from './utils.js';
+import { formatToBRL_V2, converterStringParaDecimal } from './utils.js';
 let numeroParcela = 1;
 let numParcelaInicial = null;
 
@@ -146,6 +146,9 @@ export function preencherDadosPDC(resp) {
 
     // =====[LINHAS DE PARCELAS]=====//
     if (data.Datas && Array.isArray(data.Datas)) {
+        console.log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+        console.log("||||||||||||||||||||||PREENCHENDO CAMPOS DE DATA||||||||||||||||||||||");
+        console.log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
         const camposData = document.getElementById('camposData');
 
         // Remove campos existentes
@@ -162,6 +165,9 @@ export function preencherDadosPDC(resp) {
         }
 
         // Adiciona campos para cada data
+        const qtdParcelas = data.Datas ? data.Datas.length : 0;
+        console.log("qtdParcelas => ", qtdParcelas);
+
         data.Datas.forEach((dataObj, index) => {
             if (!dataObj.display_value) {
                 return;
@@ -171,8 +177,9 @@ export function preencherDadosPDC(resp) {
 
             const [dia, mes, ano] = dataStr.split('/') ;
             const dataFormatada = dataStr !== ""? `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`: "";
-
-            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada, numParc);
+            console.log("dataObj.display_value => ", dataObj.display_value);
+            console.log("numPDC => ", numPDC);
+            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada, numParc, qtdParcelas);
         });
     }
 
@@ -192,11 +199,11 @@ export function preencherDadosPDC(resp) {
     }
 
     if (data.Numero_N_Fiscal) inputNumeroNF.value = data.Numero_N_Fiscal;
-    if (data.INSS) inputInss.value = formatToBRL(data.INSS);
-    if (data.ISS) inputIss.value = formatToBRL(data.ISS);
-    if (data.PIS_COFINS_CSSL) inputPisConfinsCssl.value = formatToBRL(data.PIS_COFINS_CSSL);
-    if (data.Desconto_comercial_ou_parcela) inputDescontoComercial.value = formatToBRL(data.Desconto_comercial_ou_parcela);
-    if (data.Acrescimo_tarifa_bancaria) inputAcrescimo.value = formatToBRL(data.Acrescimo_tarifa_bancaria);
+    if (data.INSS) inputInss.value = formatToBRL_V2(data.INSS);
+    if (data.ISS) inputIss.value = formatToBRL_V2(data.ISS);
+    if (data.PIS_COFINS_CSSL) inputPisConfinsCssl.value = formatToBRL_V2(data.PIS_COFINS_CSSL);
+    if (data.Desconto_comercial_ou_parcela) inputDescontoComercial.value = formatToBRL_V2(data.Desconto_comercial_ou_parcela);
+    if (data.Acrescimo_tarifa_bancaria) inputAcrescimo.value = formatToBRL_V2(data.Acrescimo_tarifa_bancaria);
 
     // Mostra os campos relevantes baseado na forma de pagamento
     const formaPagamentoSelecionada = formPagamento.querySelector('input[name="Forma_de_pagamento"]:checked');
@@ -233,10 +240,10 @@ export function preencherDadosPDC(resp) {
  * @description
  * - Cria um novo campo de data para parcelas de pagamento
  */
-export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null, numParcela =  null) {
+export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null, numParcela =  null, qtdParc = 1) {
     console.log("CRIANDO NOVO CAMPO DE VENCIMENTO");
     //const numPDC = getNumPDC ? getNumPDC() : null;
-    numeroParcela++;
+    if(numParcela !== 1) numeroParcela++;
 
     //====================CRIA UM NOVO CONTAINER PARA O CAMPO DE DATA E O BOTÃO DE REMOVER====================//
     const novoCampo = document.createElement('div');
@@ -260,19 +267,22 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     novoInputValor.name = 'Valor';
     novoInputValor.classList.add('input-number', 'valor-parcela');
     novoInputValor.placeholder = 'R$ 0,00';
-    if (valor) novoInputValor.value = formatToBRL(valor);
+    if (valor) novoInputValor.value = formatToBRL_V2(valor);
     novoInputValor.addEventListener('blur', () => {
-        formatToBRL(novoInputValor);
+        formatToBRL_V2(novoInputValor);
         atualizarValorTotalParcelas();
     });
 
     //====================CRIA UM CAMPO DE NÚMERO DO PDC====================//
     let novoInputNumPDC;
     if (numPDC) {
+        console.log("GERANDO PDC ----------------->")
+        console.log("qtdParc => ", qtdParc);
+        console.log("numPDC => ", numPDC);
         const camposParcelas = document.querySelectorAll('.parcela');
         const numPDCInput = camposParcelas.length > 0 ? camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]') : null;
         
-        if (camposParcelas.length === 1 && !numPDCInput.value.includes('/')) {
+        if (camposParcelas.length === 1 && !numPDCInput.value.includes('/') && qtdParc > 1) {
             numPDCInput.value = `${numPDC}/01`;
         }
 
@@ -282,7 +292,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
         novoInputNumPDC.classList.add('campo-datas', "num-pdc");
         // Verifica se numPDC já possui a parte /NN
 
-        if (!numPDC.includes('/')) {
+        if (!numPDC.includes('/') && qtdParc > 1) {
             novoInputNumPDC.value = `${numPDC}/${String(numeroParcela).padStart(2, '0')}`;
         } else {
             novoInputNumPDC.value = numPDC; // Mantém o valor original se já tiver a parte /NN
@@ -371,10 +381,7 @@ export function removerCampoVenc(elemento) {
  */
 function atualizarLabels() {
     const parcelas = document.querySelectorAll('#camposData .parcela');
-    console.log("ATUALIZANDO LABELS");
     parcelas.forEach((parcela, index) => {
-        console.log("Numéro parcela => ", numeroParcela);
-        console.log("index => ", index);
         //let newNumParc = numeroParcela + index - 1;
         parcela.querySelector('label').innerText = `Parcela nº ${(numParcelaInicial !== null?numParcelaInicial:1) + index}:`;
         /*
@@ -499,7 +506,7 @@ export function adicionarLinhaClassificacao() {
                     input.classList.add('input-number');
                     input.type = 'text';
                     input.name = this.inputName;
-                    input.addEventListener('blur', () => { formatToBRL(input); atualizarValorTotalClassificacoes(); });
+                    input.addEventListener('blur', () => { formatToBRL_V2(input); atualizarValorTotalClassificacoes(); });
                 }
             }
             return field;
@@ -600,7 +607,7 @@ export function adicionarLinhaClassificacaoBkp() {
             if (inputType === 'number') {
                 input.classList.add('input-number');
                 input.type = 'text';
-                input.addEventListener('blur', () => { formatToBRL(input); atualizarValorTotalClassificacoes(); });
+                input.addEventListener('blur', () => { formatToBRL_V2(input); atualizarValorTotalClassificacoes(); });
             }
         }
         input.name = inputName;
@@ -733,7 +740,7 @@ function preencherDadosClassificacao(classificacoes) {
         });
 
         // Formata e define o valor
-        inputValor.value = formatToBRL({ target: { value: valor } });
+        inputValor.value = formatToBRL_V2({ target: { value: valor } });
     });
 }
 
@@ -789,7 +796,7 @@ function preencherDadosClassificacaoBkp(classificacoes) {
         });
 
         // Formata e define o valor
-        inputValor.value = formatToBRL({ target: { value: valor } });
+        inputValor.value = formatToBRL_V2({ target: { value: valor } });
     });
 }
 
@@ -814,7 +821,7 @@ export function initClassificacaoForm(classificacoes, centrosCusto) {
     camposValor.forEach(campo => {
         campo.type = 'text';
         campo.addEventListener('blur', function () {
-            formatToBRL(this);
+            formatToBRL_V2(this);
         });
     });
 
@@ -901,7 +908,7 @@ export function atualizarValorTotalClassificacoes() {
             });
 
 
-            labelTotal.innerText = formatToBRL(total);
+            labelTotal.innerText = formatToBRL_V2(total);
 
             if (total == 0) {
                 labelTotal.classList.add('valor-igual');
@@ -928,7 +935,7 @@ export function atualizarValorTotalClassificacoes() {
         });
 
 
-        labelTotal.innerText = formatToBRL(total);
+        labelTotal.innerText = formatToBRL_V2(total);
 
         if (total == 0) {
             labelTotal.classList.add('valor-igual');
@@ -1113,7 +1120,7 @@ export function atualizarValorTotalParcelas() {
                 total -= valor; // Reduz o valor da parcela do total
                 total = total.toFixed(2);
             });
-            labelTotal.innerText = formatToBRL(total);
+            labelTotal.innerText = formatToBRL_V2(total);
 
             // Compara os valores
             if (total == 0) {
@@ -1140,7 +1147,7 @@ export function atualizarValorTotalParcelas() {
             total -= valor; // Reduz o valor da parcela do total
             total = total.toFixed(2);
         });
-        labelTotal.innerText = formatToBRL(total);
+        labelTotal.innerText = formatToBRL_V2(total);
 
         // Compara os valores
         if (total == 0) {
@@ -1165,7 +1172,7 @@ export function atualizarValorTotalParcelas() {
 export function atualizarValorOriginal() {
     const totalFornecedor = calcularTotalFornecedorAprovado();
     const valorOriginalCell = document.getElementById('valor-original');
-    valorOriginalCell.innerText = formatToBRL(totalFornecedor);
+    valorOriginalCell.innerText = formatToBRL_V2(totalFornecedor);
 }
 
 // Função para calcular o total do fornecedor aprovado
@@ -1193,7 +1200,7 @@ export function calcularValorTotalPagar() {
     // Atualiza o valor total de descontos no campo "campos-ret-total-desc"
     const totalDescElements = document.getElementsByClassName('campos-ret-total-desc');
     if (totalDescElements.length > 0) {
-        totalDescElements[0].innerText = formatToBRL(totalDescontos); // Acessa o primeiro elemento da coleção
+        totalDescElements[0].innerText = formatToBRL_V2(totalDescontos); // Acessa o primeiro elemento da coleção
     }
 
     // Inicializa o valor total a pagar com o valor original
@@ -1209,7 +1216,7 @@ export function calcularValorTotalPagar() {
 
     // Atualiza o valor total a pagar com os acréscimos
     const valorTotalFinal = valorTotalPagar + totalAcrescimos;
-    document.getElementById('valor-total-pagar').innerText = formatToBRL(valorTotalFinal);
+    document.getElementById('valor-total-pagar').innerText = formatToBRL_V2(valorTotalFinal);
 }
 
 export async function preencherListaAnexosV2(anexos) {

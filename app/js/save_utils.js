@@ -205,7 +205,7 @@ function pegarDadosPDC_V2(indiceParc = null, currTempPDC = null) {
             dadosIniciaisPdc["Vencimento_previsto"] = vencimentos[0].Vencimento_previsto;
         }
         if (vencimentos[0].Num_PDC_parcela) {
-            dadosIniciaisPdc["Numero_do_PDC"] = indiceParc == null?globais.numPDC:vencimentos[0].Num_PDC_parcela;
+            dadosIniciaisPdc["Numero_do_PDC"] = indiceParc == null && vencimentos[0].Num_PDC_parcela.includes("/")?globais.numPDC:vencimentos[0].Num_PDC_parcela;
             console.log("Numero do PDC => ", vencimentos[0].Num_PDC_parcela);
         }
     }
@@ -393,7 +393,7 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
         const linha = corpoTab[i];
         const idProduto = linha.dataset.id_produto;
         const produto = linha.cells[0]?.innerText || '';
-        const quantidade = parseInt(linha.cells[1]?.innerText || '');
+        const quantidade = converterStringParaDecimal(linha.cells[1]?.innerText || '0');
         const unidade = linha.cells[2]?.innerText || '';
 
         if (fornecedores.length > 0) {
@@ -412,7 +412,7 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                 const condicaoPagamento = linhasDetalhes[j].cells[1]?.innerText || '';
                 const observacao = linhasDetalhes[j].cells[2]?.innerText || '';
 
-                const fornecedorAprovado = cabecalho1.cells[j + ipcv].querySelector('input[type="checkbox"]').checked;
+                const fornecedorAprovado = cabecalho1.cells[j + ipcv].querySelector('input[type="checkbox"]')?.checked || fornecedores.length === 1;
                 if (fornecedorAprovado) {
                     dadosExtras["Beneficiario"] = fornecedor;
                     dadosExtras["Valor_orcado"] = converterStringParaDecimal((valorTotalGeral / qtdParc) || 0);
@@ -568,7 +568,7 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
             }, {});
 
             console.log("1. dadostabPrecos => ", dadostabPrecos);
-            console.log("2. dadosPDC => ", dadosPDC);
+            console.log("2. dadosPDC => ", JSON.stringify(dadosPDC, null, 2));
             console.log("3. arquivos => ", arquivos);
 
             let respPDC;

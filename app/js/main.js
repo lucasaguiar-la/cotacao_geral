@@ -15,7 +15,7 @@ import {
     desabilitarCampos,
     executar_apiZoho,
     customModal,
-    formatToBRL
+    formatToBRL_V2
 } from './utils.js'
 import {
     atualizarValorTotalClassificacoes,
@@ -122,10 +122,10 @@ async function setupListenersAndInit() {
         "remover-parcela": { handler: (elemento) => removerCampoVenc(elemento), type: 'click' },
         "add-classificacao": { handler: () => adicionarLinhaClassificacao(), type: 'click' },
         "remover-classificacao": { handler: (elemento) => removerLinhaClassificacao(elemento), type: 'click' },
-        "valor-parcela": { handler: (elemento) => { formatToBRL(elemento); atualizarValorTotalParcelas();}, type: 'blur' },
-        "valor-classificacao": { handler: (elemento) => { formatToBRL(elemento); atualizarValorTotalClassificacoes();}, type: 'blur' },
-        "campos-ret-desc":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL(elemento);}, type: 'blur'},
-        "campos-ret-acr":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL(elemento);}, type: 'blur'},
+        "valor-parcela": { handler: (elemento) => { formatToBRL_V2(elemento); atualizarValorTotalParcelas();}, type: 'blur' },
+        "valor-classificacao": { handler: (elemento) => { formatToBRL_V2(elemento); atualizarValorTotalClassificacoes();}, type: 'blur' },
+        "campos-ret-desc":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL_V2(elemento);}, type: 'blur'},
+        "campos-ret-acr":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL_V2(elemento);}, type: 'blur'},
         "": { handler: (elemento) => handleEnterKeyNavigation(elemento), type: 'keydown' }
     };
 
@@ -170,7 +170,7 @@ async function setupListenersAndInit() {
 
 async function executarProcessosParalelos() {
 
-    if (!globais.pag.includes('criar_cotacao')) {
+    if (!globais.pag.includes('criar_cotacao')) { 
         await ZOHO.CREATOR.init();
 
         // Executa processos em paralelo
@@ -323,7 +323,7 @@ async function executarProcessosParalelos() {
 
 async function processarDadosPDC() {
     //const cPDC = "(" + (globais.numPDC ? `numero_de_PDC=="${globais.numPDC}"` : (globais.numPDC_temp ? `id_temp=="${globais.numPDC_temp}"` : "ID==0")) + ")";
-    const cPDC = "(" + globais.numPDC_temp?`id_temp=="${globais.numPDC_temp}")`:"ID==0)";
+    const cPDC = "(" + globais.numPDC_temp?`id_temp=="${globais.numPDC_temp}"&&Status_geral!="Separado em parcelas")`:"ID==0)";
     const respPDC = await executar_apiZoho({ 
         tipo: "busc_reg", 
         criterios: cPDC, 

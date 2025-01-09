@@ -162,7 +162,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
  * formatToBRL("-1234.56") // retorna "-1.234,56"
  * formatToBRL(elementoHTML) // atualiza o texto do elemento
  */
-export function formatToBRL(v) {
+function formatToBRL(v) {
     if (!v) return "0,00";
 
     let av; //Apoio ao valor
@@ -207,6 +207,52 @@ export function formatToBRL(v) {
     }
 }
 
+export function formatToBRL_V2(v, nd = 2) {
+    
+    if (!v) return "0,00";//Se for vazio, volta 0,00
+
+    let av; //Apoio ao valor
+    let int = false; //Flag para inteiro
+    let isNeg = false; //Flag para negativo
+
+    //Busca o valor do evento e verifica se é um inteiro
+    const elemento = v.target || v;
+    if ((typeof elemento == "string" || typeof elemento == "number")) {
+        av = converterStringParaDecimal(elemento, nd);
+    } else {
+        av = elemento.innerText || elemento.value;
+        int = elemento.classList?.contains("integer-cell") || false;
+    }
+
+    // Verifica se é negativo
+    if (av.toString().startsWith('-')) {
+        isNeg = true;
+        av = av.toString().substring(1);
+    }
+    // Ajusta o tipo (Inteiro ou decimal) e adiciona os zeros
+    av = int ? av : converterStringParaDecimal(av, nd);
+    av = av.toString().split('.')[1] && av.toString().split('.')[1].length >= nd ? av : `${av}${'0'.repeat(nd - (av.toString().split('.')[1] || '').length)}`;
+
+    let avc = (av.toString().split('.')[1] || '').length == 1 ? (`${av}0`).replace(/[^0-9]/g, '') : av.toString().replace(/[^0-9]/g, '');
+    // Separa a parte inteira e a parte decimal
+    let pi = (avc.slice(0, -nd) || (int ? '' : '0')).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    let pd = avc.slice(-nd);
+    // Cria o valor final em formato de BRL
+    let vf = int ? `${pi}${pd}` : `${pi},${pd}`;
+
+    // Adiciona o sinal negativo de volta se necessário
+    if (isNeg) {
+        vf = `-${vf}`;
+    }
+    if (v.innerText || v.value) {
+        const target = 'value' in v ? 'value' : 'innerText';
+        v[target] = vf;
+        return;
+    } else {
+        return vf;
+    }
+}
+
 /**
  * Converte uma string em um valor decimal, removendo caracteres não numéricos
  * e padronizando a formatação
@@ -220,7 +266,7 @@ export function formatToBRL(v) {
  * converterStringParaDecimal("ABC123.12") // retorna 123.12
  * converterStringParaDecimal(elementoHTML) // atualiza o innerText e retorna o valor
  */
-export function converterStringParaDecimal(valor) {
+export function converterStringParaDecimal(valor, nd = 2) {
     // Verifica se é um elemento HTML
     const isElement = valor && typeof valor === 'object' && 'innerText' in valor;
     const valorOriginal = isElement ? valor.innerText : valor;
@@ -254,9 +300,9 @@ export function converterStringParaDecimal(valor) {
         numeroLimpo = numeroLimpo.replace(',', '.');
     }
 
-    // Converte para número e fixa em 2 casas decimais
+    // Converte para número e fixa em nd casas decimais
     let numeroFinal = parseFloat(numeroLimpo);
-    numeroFinal = isNaN(numeroFinal) ? 0.00 : Number(numeroFinal.toFixed(2));
+    numeroFinal = isNaN(numeroFinal) ? 0.00 : Number(numeroFinal.toFixed(nd));
 
     // Aplica o sinal negativo se necessário
     if (isNegative) {
@@ -266,8 +312,8 @@ export function converterStringParaDecimal(valor) {
     // Se for um elemento HTML, atualiza o innerText com o valor formatado
     if (isElement) {
         valor.innerText = numeroFinal.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits: nd,
+            maximumFractionDigits: nd
         });
     }
 
@@ -520,6 +566,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     const handleConfirm = async () => {
 
         function getDates(t = null){
+            console.log("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ESTÁ USANDO O GETDATES//////////////////////////////////")
             let listDatas = [];
             const formDdsDetalhes = document.querySelector('#form-pagamento');
             const parcelas = formDdsDetalhes.querySelectorAll('.parcela');
@@ -560,8 +607,6 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             })
             return listDatas;
         }
-
-
 
         if (inputElement && !inputElement.value.trim()) {
             // Remove mensagem de erro anterior se existir
@@ -1187,4 +1232,59 @@ export function desabilitarCampos() {
             });
         }
     });
+}
+
+export function validateFields(action) {
+    let all = {};
+    let atLeastOne = {};
+
+    switch (action) {
+        case 'solicitar_aprovacao_sindico':
+            all = {
+                'Entidade': 'name',
+                'Tipo_de_solicitacao': 'name',
+                'Descricao_da_compra': 'name',
+                'Utilizacao': 'name',
+                'id_forn': 'dataset',
+                'tipo-pag': 'name',
+                'Datas': 'name',
+                'Valor': 'name',
+                'Conta_a_debitar': 'name',
+                'Centro_de_custo': 'name',
+                'Classe_operacional': 'name',
+                'Valor': 'name',
+            };
+            atLeastOne = {
+                'supplier-checkbox': 'class',
+            };
+            break;
+        case '':
+            break;
+        default:
+            break;
+    }
+
+    for (let [key, value] of Object.entries(all)) {
+        if (value === 'name') {
+            const campos = document.querySelectorAll(`[name="${key}"]`);
+            if ([...campos].some(campo => campo.value.trim() === '')) {
+                return false;
+            }
+        } else if (value === 'dataset') {
+            if (!document.querySelector(`[data-${key}]`)) {
+                return false;
+            }
+        }
+    }
+
+    for (let [key, value] of Object.entries(atLeastOne)) {
+        if (value === 'class') {
+            const elements = document.querySelectorAll(`.${key}`);
+            if (![...elements].some(element => element.checked || element.value.trim() !== '')) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

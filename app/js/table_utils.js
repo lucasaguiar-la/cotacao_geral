@@ -1,4 +1,12 @@
-import { formatToBRL, converterStringParaDecimal, convertToNegative, restrictNumericInput, restrictIntegerInput, executar_apiZoho, customModal } from './utils.js';
+import { 
+    formatToBRL_V2, 
+    converterStringParaDecimal, 
+    convertToNegative, 
+    restrictNumericInput, 
+    restrictIntegerInput, 
+    executar_apiZoho, 
+    customModal 
+} from './utils.js';
 import { globais } from './main.js'
 import { atualizarValorTotalClassificacoes, atualizarValorTotalParcelas, atualizarValorOrcado } from './forms_utils.js';
 
@@ -46,9 +54,9 @@ export function addProductRow() {
             // Coluna de descrição do produto
             newCell.contentEditable = "true";
         } else if (i === 1) {
-            // Coluna de quantidade (apenas números inteiros)
+            // Coluna de quantidade
             newCell.contentEditable = "true";
-            newCell.classList.add('numeric-cell', 'integer-cell', 'quantidade');
+            newCell.classList.add('numeric-cell', 'quantidade');
         } else if (i === rowCount - 1) {
             // Última coluna - botão de remoção
             const removeButton = document.createElement('button');
@@ -731,7 +739,7 @@ export function calculateTotalPrices(rowIndex) {
 
         if (unitPriceCell && totalPriceCell) {
             const unitPrice = converterStringParaDecimal(unitPriceCell.innerText); //Converte o valor unitário para um número decimal
-            totalPriceCell.innerText = formatToBRL((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
+            totalPriceCell.innerText = formatToBRL_V2((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
         }
 
     }
@@ -769,7 +777,7 @@ function calcularTotais() {
             vt += (converterStringParaDecimal(valorTotalCell.textContent || '0') || 0);
         }
         const valorTotal = (vt + vlrsFrete + vlrsDesconto).toFixed(2);
-        totalCell.textContent = formatToBRL(valorTotal);
+        totalCell.textContent = formatToBRL_V2(valorTotal);
     });
 }
 
@@ -827,7 +835,11 @@ export function handlePasteEventPriceTable(event) {
                 value = parseInt(value);
             }
             else if (cell.classList.contains('numeric-cell')) {
-                value = formatToBRL(value);
+                if (cell.classList.contains('quantidade')) {
+                    value = formatToBRL_V2(value, 3);
+                }else{
+                    value = formatToBRL_V2(value);
+                }
             }
 
             cell.innerText = value;
@@ -953,7 +965,7 @@ export function atualizarOuvintesTabCot() {
                 // Tratamento específico para linhas de totalizadores
                 if (j > 0) { // Células após a célula com título da linha
                     celula.addEventListener('blur', () => {
-                        formatToBRL(celula);
+                        formatToBRL_V2(celula);
                         calcularTotais();
                         atualizarValorOrcado();
                         atualizarValorTotalParcelas();
@@ -964,7 +976,7 @@ export function atualizarOuvintesTabCot() {
                 // Tratamento para linhas normais de produtos
                 if (j === 1) { // Coluna de quantidade
                     celula.addEventListener('blur', (event) => {
-                        formatToBRL(celula);
+                        formatToBRL_V2(celula, 3);
 
                         if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
                             const valorAtual = converterStringParaDecimal(event.target.dataset.valorOriginal) || 0; // Obtém o valor original
@@ -1000,7 +1012,7 @@ export function atualizarOuvintesTabCot() {
                     });
 
                     celula.addEventListener('blur', (event) => {
-                        formatToBRL(celula);
+                        formatToBRL_V2(celula);
 
                         // Verifica se a célula possui a classe "valor-unit"
                         if (celula.classList.contains('valor-unit') && (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")) {
@@ -1011,7 +1023,7 @@ export function atualizarOuvintesTabCot() {
                             if (novoValor > valorAtual + vlrTolerancia) {
                                 event.target.innerText = event.target.dataset.valorOriginal; // Reverte para o valor original
                                 // Exibe modal de aviso com apenas um botão de OK
-                                showAlertModal(`Este valor não pode ser maior que o valor atual + tolerância de ${formatToBRL(vlrTolerancia)}!`);
+                                showAlertModal(`Este valor não pode ser maior que o valor atual + tolerância de ${formatToBRL_V2(vlrTolerancia)}!`);
                             }
                         }
 
@@ -1154,10 +1166,10 @@ export async function prenchTabCot(resp) {
 
             //QUANTIDADE//
             const quantidadeCell = newRow.insertCell(1);
-            quantidadeCell.classList.add('numeric-cell', 'integer-cell', 'quantidade');
+            quantidadeCell.classList.add('numeric-cell', 'quantidade');
             quantidadeCell.innerText = objProduto[0].Quantidade || '';
             quantidadeCell.contentEditable = 'true';
-            quantidadeCell.addEventListener('input', restrictIntegerInput);
+            quantidadeCell.addEventListener('input', restrictNumericInput);
 
             //UNIDADE//
             const unidadeCell = newRow.insertCell(2);
@@ -1179,8 +1191,8 @@ export async function prenchTabCot(resp) {
                 const valoresFornProd = objProduto.filter(item => item.Fornecedor === fornecedorObj.Fornecedor);
                 //Preenche os valores
                 if (valoresFornProd.length > 0) {
-                    valorUnitarioCell.innerText = formatToBRL(valoresFornProd[0].Valor_unitario || '');
-                    valorTotalCell.innerText = formatToBRL(valoresFornProd[0].Valor_total || '');
+                    valorUnitarioCell.innerText = formatToBRL_V2(valoresFornProd[0].Valor_unitario || '');
+                    valorTotalCell.innerText = formatToBRL_V2(valoresFornProd[0].Valor_total || '');
                 }
             });
 
@@ -1368,7 +1380,7 @@ export async function prenchTabCot(resp) {
 
                 //=====ADICIONA A CELULA DE FRETE=====//
                 const cellFrete = document.createElement('td');
-                cellFrete.innerText = formatToBRL(valoresFrete[index] || '0,00');
+                cellFrete.innerText = formatToBRL_V2(valoresFrete[index] || '0,00');
                 cellFrete.classList.add('numeric-cell');
                 cellFrete.colSpan = 2;
                 cellFrete.contentEditable = "true";
@@ -1378,7 +1390,7 @@ export async function prenchTabCot(resp) {
 
                 //=====ADICIONA A CELULA DE DESCONTO=====//
                 const cellDescontos = document.createElement('td');
-                cellDescontos.innerText = formatToBRL(valoresDescontos[index] || '0,00');
+                cellDescontos.innerText = formatToBRL_V2(valoresDescontos[index] || '0,00');
                 cellDescontos.classList.add('numeric-cell');
                 cellDescontos.addEventListener('blur', () => calcularTotais());
                 cellDescontos.colSpan = 2;
@@ -1392,7 +1404,7 @@ export async function prenchTabCot(resp) {
                     .reduce((acc, item) => acc + (parseFloat(item.Valor_total) || 0), 0);
 
                 const cellTotal = document.createElement('td');
-                cellTotal.innerText = formatToBRL(totalFornecedor);
+                cellTotal.innerText = formatToBRL_V2(totalFornecedor);
                 cellTotal.classList.add('numeric-cell', "total-fornecedor");
                 cellTotal.colSpan = 2;
                 cellTotal.contentEditable = "true";
