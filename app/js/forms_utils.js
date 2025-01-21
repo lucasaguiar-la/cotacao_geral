@@ -1313,7 +1313,7 @@ export async function preencherListaAnexosV2(anexos) {
                                 fileElement.removeAttribute('data-download-src');
                                 fileElement.setAttribute('data-download-url', `${initUrl}${newAnexo}`);
                                 //==========CRIANDO UM PLACEHOLDER PARA OS ARQUIVOS QUE NÃO POSSUEM MINIATURAS==========//
-                                fileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
+                                fileElement.src = 'https://placehold.co/100?text=' + fileType;
                             }
                         } else {
                             const cloneFileElement = fileElement.cloneNode(true);
@@ -1323,7 +1323,7 @@ export async function preencherListaAnexosV2(anexos) {
                             cloneFileElement.removeAttribute('data-fancybox');
 
                             //==========CRIANDO UM PLACEHOLDER PARA OS ARQUIVOS QUE NÃO POSSUEM MINIATURAS==========//
-                            cloneFileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
+                            cloneFileElement.src = 'https://placehold.co/100?text=' + fileType;
                             fileElement = document.createElement('a');
                             fileElement.href = `${initUrl}${newAnexo}`;
                             fileElement.download = `${initUrl}${newAnexo}`;
@@ -1419,7 +1419,7 @@ export async function preencherListaAnexosV2(anexos) {
 
                 if (fileType === 'PDF') {
                     fileElement.setAttribute('data-type', 'iframe'); // Define como iframe no Fancybox
-                    fileElement.src = 'https://via.placeholder.com/150?text=PDF';
+                    fileElement.src = 'https://placehold.co/150?text=PDF';
                 } else {
                     fileElement.src = blobUrl;
                 }
@@ -1430,7 +1430,7 @@ export async function preencherListaAnexosV2(anexos) {
                 cloneFileElement.style.width = '100px';
                 cloneFileElement.style.height = '100px';
                 cloneFileElement.style.display = 'block';
-                cloneFileElement.src = 'https://via.placeholder.com/100?text=' + fileType;
+                cloneFileElement.src = 'https://placehold.co/100?text=' + fileType;
 
 
 

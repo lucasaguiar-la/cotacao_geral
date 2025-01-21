@@ -142,7 +142,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 }
 
 export function formatToBRL_V2(v, nd = 2) {
-    const log = false;
+    const log = true;
     if(log) console.log("[+++++FORMATANDO PARA BRL+++++]");
     if(log) console.log("Número de decimais => ", nd);
     
@@ -169,6 +169,8 @@ export function formatToBRL_V2(v, nd = 2) {
         if(log) console.log("Valor original => ", av);
         int = elemento.classList?.contains("integer-cell") || false;
     }
+    if (!av)  return "0,00";
+
     const vo = av; //Valor original, sem ajuste, para evitar arredondamento
     if(log) console.log("Valor original VO => ", vo);
     if(log) console.log("Valor em decimal => ", av);
@@ -666,7 +668,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 Solicitacao_de_ajuste: inputElement ? inputElement.value : null
             },
             'aprov_cot': {
-                Status_geral: 'Proposta aprovada'
+                Status_geral: !globais.pag.includes("_DP")?'Proposta aprovada':'Enviado para checagem final'
             },
             'arquivar_cot': {
                 Status_geral: 'Proposta arquivada',

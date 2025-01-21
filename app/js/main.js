@@ -182,9 +182,9 @@ async function executarProcessosParalelos() {
         await Promise.all(tarefas);
         if(!globais.pag.includes('editar_cotacao')) {
 
-            if (globais.pag == "aprovar_cotacao") {
+            if (globais.pag == "aprovar_cotacao" || globais.pag == "aprovar_cotacao_DP") {
+                
                 criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
-
             }else if(globais.pag === "confirmar_compra")
             {
                 criarBotao({page:globais.pag, removeExistingButtons: true});
@@ -342,7 +342,7 @@ async function processarDadosCotacao() {
     //const idCriterio = globais.numPDC ? `numero_de_PDC=="${globais.numPDC}"` : (globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}"` :"ID==0");
     const idCriterio =  globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}"` :"ID==0";
 
-    const aprovadoCriterio = !["editar_cotacao", "aprovar_cotacao", "ver_cotacao", "editar_cotacao_DP"].includes(globais.pag) ? 
+    const aprovadoCriterio = !["editar_cotacao", "aprovar_cotacao", "ver_cotacao", "editar_cotacao_DP", "aprovar_cotacao_DP"].includes(globais.pag) ? 
         " && Aprovado==true" : "";
     
     let cCot = `(${idCriterio} && Ativo==true${aprovadoCriterio})`;

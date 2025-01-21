@@ -35,11 +35,14 @@ export function criarBotao({page = null, removeExistingButtons = false})
         switch (page) {
             case "criar_cotacao":
             case "editar_cotacao":
+            case "criar_cotacao_DP":
+            case "editar_cotacao_DP":
             case "criar_cotacao_controladoria":
             case "editar_cotacao_controladoria":
                 configurarBotao('approve-sindico-btn adjust-btn', 'Sol. Aprov. Síndico', "solicitar_aprovacao_sindico", null, "Deseja solicitar a aprovação do síndico?");
-                if (page === "editar_cotacao" || page === "editar_cotacao_controladoria") setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
+                if (page === "editar_cotacao" || page === "editar_cotacao_controladoria" || page === "editar_cotacao_DP") setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
+            
             case "aprovar_cotacao":
                 configurarBotao('approve-btn', 'Aprovar', "aprov_cot", "Aprovar proposta", "Tem certeza que deseja APROVAR a proposta do fornecedor selecionado?");
                 setTimeout(() => criarBotao({page: "ajustar_cotacao"}), 0);
@@ -59,8 +62,6 @@ export function criarBotao({page = null, removeExistingButtons = false})
                 setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
 
-            case "criar_cotacao_DP":
-            case "editar_cotacao_DP":
             case "criar_numero_de_PDC":
                 configurarBotao('criar-pdc-btn adjust-btn', 'Criar PDC', null, null, null);
 
@@ -80,13 +81,8 @@ export function criarBotao({page = null, removeExistingButtons = false})
                         }
                     });
 
-                    if(globais.pag.includes('_DP'))
-                    {
-                        setTimeout(() => criarBotao({page: "ajustar_compra_compras", removeExistingButtons:false}), 0);
-                    }else
-                    {
-                        setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
-                    }
+                    setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
+                    
                 }else
                 {
                     newButton.onclick = () => {
@@ -173,13 +169,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
                             newButton.classList.add('disabled'); // Adiciona a classe para estilo visual
                             
                             // Adiciona o novo botão após o botão "Criar PDC"
-                            if(globais.pag.includes('_DP'))
-                            {
-                                setTimeout(() => criarBotao({page: "ajustar_compra_compras", removeExistingButtons:false}), 0);
-                            }else
-                            {
-                                setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
-                            }
+                            setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
 
                             // Oculta todas as seções, exceto a seção de parcelas
                             const allSections = document.querySelectorAll('.section');
@@ -238,7 +228,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
         }
 
         //==========SE O BOTÃO NÃO FOR UMA EXCEÇÃO, CRIA O ONCLICK PARA ABRIR UM MODAL DE CONFIRMAÇÃO==========//
-        if (!["criar_numero_de_PDC", "criar_cotacao_DP", "editar_cotacao_DP"].includes(page)) {
+        if (!["criar_numero_de_PDC"].includes(page)) {
             newButton.onclick = () => {
                 customModal({botão: this, tipo: type, titulo: title, mensagem: message});
             };

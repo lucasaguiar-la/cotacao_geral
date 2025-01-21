@@ -531,11 +531,12 @@ function getItemData(base64String) {
  * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
  */
 export async function saveTableData_V2(status = null, sepPorParc = false) {
-    console.log("<<<<<<<<<<SALVANDO COTAÇÃO>>>>>>>>>>");
-    console.log("1. status => ", status);
-    console.log("2. sepPorParc => ", sepPorParc);
+    const log = true;
+    if(log) console.log("<<<<<<<<<<SALVANDO COTAÇÃO>>>>>>>>>>");
+    if(log) console.log("1. status => ", status);
+    if(log) console.log("2. sepPorParc => ", sepPorParc);
     if (globais.cotacaoExiste) {
-        console.log("----------COTACAO EXISTE----------");
+        if(log) console.log("----------COTACAO EXISTE----------");
         if (sepPorParc === false) {
             for (const id of globais.idsCotacao) {
                 let payload = {
@@ -552,7 +553,7 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
         await saveTableData_V2(status, sepPorParc);
 
     } else {
-        console.log("----------COTACAO NÃO EXISTE----------");
+        if(log) console.log("----------COTACAO NÃO EXISTE----------");
         const PDCsToSave = sepPorParc ? await splitDataByInstallments(status) : await meshData(status);
         if (sepPorParc === true) globais.tipo = 'criar_pdc';
         for (let i = 0; i < PDCsToSave.size; i++) {
@@ -567,22 +568,22 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
                 return acc;
             }, {});
 
-            console.log("1. dadostabPrecos => ", dadostabPrecos);
-            console.log("2. dadosPDC => ", JSON.stringify(dadosPDC, null, 2));
-            console.log("3. arquivos => ", arquivos);
+            if(log) console.log("1. dadostabPrecos => ", dadostabPrecos);
+            if(log) console.log("2. dadosPDC => ", JSON.stringify(dadosPDC, null, 2));
+            if(log) console.log("3. arquivos => ", arquivos);
 
             let respPDC;
             let idNovoPDC = null;
             if (globais.tipo === 'editar_pdc') {
-                console.log("É EDIÇÃO DE PDC!");
+                if(log) console.log("É EDIÇÃO DE PDC!");
                 let payload = {
                     data: dadosPDC
                 };
 
                 respPDC = await executar_apiZoho({ tipo: "atualizar_reg", ID: globais.idPDC, corpo: payload, nomeR: globais.nomeRelPDC });
             } else {
-                console.log("É CRIAÇÃO DE PDC!");
-                console.log("DADOS DO PDC ===> ", JSON.stringify(dadosPDC, null, 2));
+                if(log) console.log("É CRIAÇÃO DE PDC!");
+                if(log) console.log("DADOS DO PDC ===> ", JSON.stringify(dadosPDC, null, 2));
                 respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
 
 
@@ -593,7 +594,7 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
                 }
 
             }
-            console.log("respPDC => ", respPDC);
+            if(log) console.log("respPDC => ", respPDC);
 
             //====================CRIA O REGISTRO DOS ARQUIVOS GALERIA================//
             const qtdFiles = sepPorParc === true ? Object.keys(arquivos).length : globais.arquivosGaleria.length;
@@ -606,7 +607,7 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
                 }
 
                 const respFilesRec = await executar_apiZoho({ tipo: "add_reg", corpo: dataList, nomeF: "laranj_arquivos_pdc" });
-
+                if(log) console.log("respFilesRec => ", JSON.stringify(respFilesRec, null, 2));
                 if (respFilesRec.result.every(item => item.code === 3000)) {
 
                     const idArquivos = respFilesRec.result.map(item => item.data.ID);
@@ -622,15 +623,15 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
 
                         const respFileUpload = await executar_apiZoho({ tipo: "subir_arq", nomeR: "laranj_arquivos_pdc_Report", ID: id, corpo: blob });
                         if (respFileUpload.code !== 3000) {
-                            console.log("Erro ao subir o arquivo, erro: ", respFileUpload);
-                            console.log("Arquivo: ", blob);
+                            if(log) console.log("Erro ao subir o arquivo, erro: ", respFileUpload);
+                            if(log) console.log("Arquivo: ", blob);
                             break;
                         }
                     }
 
                 } else {
-                    console.log("Erro ao criar o registro de arquivos, erro: ", respFilesRec);
-                    console.log("Arquivo: ", blob);
+                    if(log) console.log("Erro ao criar o registro de arquivos, erro: ", respFilesRec);
+                    if(log) console.log("Arquivo: ", blob);
                 }
             }
 
