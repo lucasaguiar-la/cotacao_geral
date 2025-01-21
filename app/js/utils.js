@@ -142,7 +142,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 }
 
 export function formatToBRL_V2(v, nd = 2) {
-    const log = true;
+    const log = false;
     if(log) console.log("[+++++FORMATANDO PARA BRL+++++]");
     if(log) console.log("Número de decimais => ", nd);
     
@@ -218,11 +218,12 @@ export function formatToBRL_V2(v, nd = 2) {
     if(log) console.log("Valor original => ", vo);
     if(log) console.log("Valor final => ", vf);
     if(log) console.log("[-----FORMATAÇÃO CONCLUÍDA-----]");
+
     if (v.innerText || v.value) {
         const target = 'value' in v ? 'value' : 'innerText';
         v[target] = vf;
         v.dataset.valor_original = vo;
-        v.addEventListener('focus', () => {console.log("[+++++FOCUS+++++]");v[target] = v.dataset.valor_original || ''});
+        v.addEventListener('focus', () => { if(log) console.log("[+++++FOCUS+++++]");v[target] = v.dataset.valor_original || ''});
         return;
     } else {
         return vf;
