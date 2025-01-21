@@ -144,8 +144,14 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 export function formatToBRL_V2(v, nd = 2) {
     const log = true;
     if(log) console.log("[+++++FORMATANDO PARA BRL+++++]");
+    if(log) console.log("Número de decimais => ", nd);
+    
+    if (v.dataset && v.dataset.valor_original) {
+        delete v.dataset.valor_original;
+    }
 
     if (!v)  return "0,00";//Se for vazio, volta 0,00
+    
 
     let av; //Apoio ao valor
     let int = false; //Flag para inteiro
@@ -171,29 +177,36 @@ export function formatToBRL_V2(v, nd = 2) {
         isNeg = true;
         av = av.toString().substring(1);
     }
+    
     if(log) console.log("Valor bruto sem sinal => ", av);
     // Ajusta o tipo (Inteiro ou decimal) e adiciona os zeros
     av = int ? av : converterStringParaDecimal(av);
-    av = av.toString().split('.')[1] && av.toString().split('.')[1].length >= nd ? av : `${av}${'0'.repeat(nd - (av.toString().split('.')[1] || '').length)}`;
     const [pi, pd] = av.toString().split('.');
 
     
     if(log) console.log("Parte inteira => ", pi);
     if(log) console.log("Parte decimal => ", pd);
+    //AJUSTA PARTE DECIMAL PARA O NUMERO DE CASAS DECIMAIS INDICADO
+    let apd;
+    if (pd && pd.length > nd) {
+        apd = pd.slice(0, nd);
+    }else{
+        apd = (pd || '') + '0'.repeat(nd - (pd || '').length);
+    }
+    if(log) console.log("Apoio decimal => ", apd);
 
     // Cria o valor final em formato de BRL
     let vf;
     if((pi === undefined && pd === undefined))
     {
-        vf = '0,00';
+        vf = `0,${apd}`;
     }else if(int)
     {
-        vf = `${pi || 0}${pd || ''}`;
+        vf = `${pi || 0}${apd || ''}`;
     }else
     {
-        vf = `${pi || 0},${(pd || '').padEnd(nd, '0')}`;
+        vf = `${pi || 0},${apd}`;
     }
-
 
     //let vf = (pi === undefined && pd === undefined) ? '0,00' : int ? `${pi || 0}${pd || ''}` : `${pi || 0},${(pd || '').slice(0, nd)}`;
     if(log) console.log("Valor final sem sinal=> ", vf);
