@@ -729,21 +729,19 @@ function criarPopupBase(conteudo) {
  */
 export function calculateTotalPrices(rowIndex) {
     const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
-    const row = table.rows[rowIndex];
+    const row = table.rows[rowIndex]; //Linha a ser calculada
     const quantityCell = row.cells[1]; //Quantidade do item
-    const quantity = converterStringParaDecimal(quantityCell.innerText); //Converte a quantidade para um número decimal
+
+    const quantity = converterStringParaDecimal(quantityCell.dataset.valor_original); //Converte a quantidade para um número decimal
 
     for (let i = ipcv; i < row.cells.length; i += 2) {
         const unitPriceCell = row.cells[i]; //Valor unitário do item
         const totalPriceCell = row.cells[i + 1]; //Valor total do item
-
         if (unitPriceCell && totalPriceCell) {
-            const unitPrice = converterStringParaDecimal(unitPriceCell.innerText); //Converte o valor unitário para um número decimal
+            const unitPrice = converterStringParaDecimal(unitPriceCell.dataset.valor_original); //Converte o valor unitário para um número decimal
             totalPriceCell.innerText = formatToBRL_V2((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
         }
-
     }
-
 }
 
 /**
@@ -803,10 +801,12 @@ function calcularTotais() {
  * - Recalcula os totais das linhas e da tab
  */
 export function handlePasteEventPriceTable(event) {
+    console.log("COLANDO VALORES");
     event.preventDefault();
 
     const clipboardData = event.clipboardData || window.clipboardData;
     const pastedData = clipboardData.getData('Text').trim();
+    console.log("pastedData: ", pastedData);
 
     const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
     const rows = table.rows;
@@ -814,6 +814,7 @@ export function handlePasteEventPriceTable(event) {
     const startCellIndex = Array.prototype.indexOf.call(event.target.parentNode.cells, event.target);
 
     const pastedRows = pastedData.split('\n').map(row => row.split('\t'));
+
 
     for (let rowIndex = 0; rowIndex < pastedRows.length; rowIndex++) {
         if (startRowIndex + rowIndex >= rows.length) {
@@ -829,18 +830,8 @@ export function handlePasteEventPriceTable(event) {
 
             const cell = cells[startCellIndex + cellIndex];
             let value = pastedRows[rowIndex][cellIndex];
-
+            console.log("Value: ", value);
             // Converte para formato apropriado baseado na classe da célula
-            if (cell.classList.contains('integer-cell')) {
-                value = parseInt(value);
-            }
-            else if (cell.classList.contains('numeric-cell')) {
-                if (cell.classList.contains('quantidade')) {
-                    value = formatToBRL_V2(value, 3);
-                }else{
-                    value = formatToBRL_V2(value);
-                }
-            }
 
             cell.innerText = value;
         }

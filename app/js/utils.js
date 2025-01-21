@@ -141,75 +141,11 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
     }
 }
 
-/**
- * Formata valores numéricos para o formato de moeda brasileira (BRL)
- * 
- * @function formatToBRL
- * @param {string|number|HTMLElement} v - Valor ou elemento HTML a ser formatado
- * @returns {string|void} String formatada em BRL ou undefined se atualizar elemento HTML
- * 
- * @description
- * Esta função realiza as seguintes operações:
- * 1. Aceita strings, números ou elementos HTML como entrada
- * 2. Converte o valor para decimal usando converterStringParaDecimal()
- * 3. Trata números negativos preservando o sinal
- * 4. Formata o valor com separador de milhares (.) e decimais (,)
- * 5. Se receber elemento HTML, atualiza seu innerText
- * 6. Se receber string/número, retorna string formatada
- * 
- * @example
- * formatToBRL("1234.56") // retorna "1.234,56"
- * formatToBRL("-1234.56") // retorna "-1.234,56"
- * formatToBRL(elementoHTML) // atualiza o texto do elemento
- */
-function formatToBRL(v) {
-    if (!v) return "0,00";
-
-    let av; //Apoio ao valor
-    let int = false; //Flag para inteiro
-    let isNeg = false; //Flag para negativo
-
-    // Ajuste para lidar com evento
-    const elemento = v.target || v;
-
-    if ((typeof elemento == "string" || typeof elemento == "number")) {
-        av = converterStringParaDecimal(elemento);
-    } else {
-        av = elemento.innerText || elemento.value;
-        int = elemento.classList?.contains("integer-cell") || false;
-    }
-
-    // Verifica se é negativo
-    if (av.toString().startsWith('-')) {
-        isNeg = true;
-        av = av.toString().substring(1);
-    }
-    av = int ? av : converterStringParaDecimal(av);
-    av = /[.,]/.test(av) || int ? av : `${av}00`;
-
-    let avc = (av.toString().split('.')[1] || '').length == 1 ? (`${av}0`).replace(/[^0-9]/g, '') : av.toString().replace(/[^0-9]/g, '');
-
-    let pi = (avc.slice(0, -2) || (int ? '' : '0')).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    let pd = avc.slice(-2);
-
-    let vf = int ? `${pi}${pd}` : `${pi},${pd}`;
-
-    // Adiciona o sinal negativo de volta se necessário
-    if (isNeg) {
-        vf = `-${vf}`;
-    }
-    if (v.innerText || v.value) {
-        const target = 'value' in v ? 'value' : 'innerText';
-        v[target] = vf;
-        return;
-    } else {
-        return vf;
-    }
-}
-
 export function formatToBRL_V2(v, nd = 2) {
-    
-    if (!v) return "0,00";//Se for vazio, volta 0,00
+    const log = true;
+    if(log) console.log("[+++++FORMATANDO PARA BRL+++++]");
+
+    if (!v)  return "0,00";//Se for vazio, volta 0,00
 
     let av; //Apoio ao valor
     let int = false; //Flag para inteiro
@@ -218,35 +154,62 @@ export function formatToBRL_V2(v, nd = 2) {
     //Busca o valor do evento e verifica se é um inteiro
     const elemento = v.target || v;
     if ((typeof elemento == "string" || typeof elemento == "number")) {
-        av = converterStringParaDecimal(elemento, nd);
+
+        if(log) console.log("Valor original => ", elemento);
+        av = converterStringParaDecimal(elemento);
     } else {
+
         av = elemento.innerText || elemento.value;
+        if(log) console.log("Valor original => ", av);
         int = elemento.classList?.contains("integer-cell") || false;
     }
-
+    const vo = av; //Valor original, sem ajuste, para evitar arredondamento
+    if(log) console.log("Valor original VO => ", vo);
+    if(log) console.log("Valor em decimal => ", av);
     // Verifica se é negativo
     if (av.toString().startsWith('-')) {
         isNeg = true;
         av = av.toString().substring(1);
     }
+    if(log) console.log("Valor bruto sem sinal => ", av);
     // Ajusta o tipo (Inteiro ou decimal) e adiciona os zeros
-    av = int ? av : converterStringParaDecimal(av, nd);
+    av = int ? av : converterStringParaDecimal(av);
     av = av.toString().split('.')[1] && av.toString().split('.')[1].length >= nd ? av : `${av}${'0'.repeat(nd - (av.toString().split('.')[1] || '').length)}`;
+    const [pi, pd] = av.toString().split('.');
 
-    let avc = (av.toString().split('.')[1] || '').length == 1 ? (`${av}0`).replace(/[^0-9]/g, '') : av.toString().replace(/[^0-9]/g, '');
-    // Separa a parte inteira e a parte decimal
-    let pi = (avc.slice(0, -nd) || (int ? '' : '0')).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    let pd = avc.slice(-nd);
+    
+    if(log) console.log("Parte inteira => ", pi);
+    if(log) console.log("Parte decimal => ", pd);
+
     // Cria o valor final em formato de BRL
-    let vf = int ? `${pi}${pd}` : `${pi},${pd}`;
+    let vf;
+    if((pi === undefined && pd === undefined))
+    {
+        vf = '0,00';
+    }else if(int)
+    {
+        vf = `${pi || 0}${pd || ''}`;
+    }else
+    {
+        vf = `${pi || 0},${(pd || '').padEnd(nd, '0')}`;
+    }
 
+
+    //let vf = (pi === undefined && pd === undefined) ? '0,00' : int ? `${pi || 0}${pd || ''}` : `${pi || 0},${(pd || '').slice(0, nd)}`;
+    if(log) console.log("Valor final sem sinal=> ", vf);
     // Adiciona o sinal negativo de volta se necessário
     if (isNeg) {
         vf = `-${vf}`;
     }
+    
+    if(log) console.log("Valor original => ", vo);
+    if(log) console.log("Valor final => ", vf);
+    if(log) console.log("[-----FORMATAÇÃO CONCLUÍDA-----]");
     if (v.innerText || v.value) {
         const target = 'value' in v ? 'value' : 'innerText';
         v[target] = vf;
+        v.dataset.valor_original = vo;
+        v.addEventListener('focus', () => {console.log("[+++++FOCUS+++++]");v[target] = v.dataset.valor_original || ''});
         return;
     } else {
         return vf;
@@ -266,23 +229,34 @@ export function formatToBRL_V2(v, nd = 2) {
  * converterStringParaDecimal("ABC123.12") // retorna 123.12
  * converterStringParaDecimal(elementoHTML) // atualiza o innerText e retorna o valor
  */
-export function converterStringParaDecimal(valor, nd = 2) {
+export function converterStringParaDecimal(valor, nd = null) {
+
+    const log = false;
+
+    if(log) console.log("[+++++CONVERTENDO STRING PARA DECIMAL+++++]");
     // Verifica se é um elemento HTML
     const isElement = valor && typeof valor === 'object' && 'innerText' in valor;
     const valorOriginal = isElement ? valor.innerText : valor;
 
     if (!valorOriginal) return 0.00;
-
+    console.log("Valor original => ", valorOriginal);
     // Remove todos os caracteres não numéricos exceto ponto e vírgula
     let numeroLimpo = valorOriginal.toString().replace(/[^\d.,\-]/g, '');
+
+    if(log) console.log("Valor limpo => ", numeroLimpo);
 
     // Trata números negativos
     const isNegative = numeroLimpo.startsWith('-');
     numeroLimpo = numeroLimpo.replace('-', '');
 
+    if(log) console.log("Valor limpo sem sinal => ", numeroLimpo);
+
     // Conta quantos pontos e vírgulas existem
     const qtdPontos = (numeroLimpo.match(/\./g) || []).length;
     const qtdVirgulas = (numeroLimpo.match(/,/g) || []).length;
+
+    if(log) console.log("Quantidade de pontos => ", qtdPontos);
+    if(log) console.log("Quantidade de vírgulas => ", qtdVirgulas);
 
     // Se tiver mais de um separador do mesmo tipo, considera como separador de milhar
     if (qtdPontos > 1 || qtdVirgulas > 1) {
@@ -300,21 +274,28 @@ export function converterStringParaDecimal(valor, nd = 2) {
         numeroLimpo = numeroLimpo.replace(',', '.');
     }
 
+    if(log) console.log("Valor limpo apenas com ponto => ", numeroLimpo);
+
     // Converte para número e fixa em nd casas decimais
     let numeroFinal = parseFloat(numeroLimpo);
-    numeroFinal = isNaN(numeroFinal) ? 0.00 : Number(numeroFinal.toFixed(nd));
+
+    if(log) console.log("Valor final sem ajuste de casas decimais => ", numeroFinal);
+
+    numeroFinal = isNaN(numeroFinal) ? 0.00 : nd !== null ? Math.trunc(numeroFinal * Math.pow(10, nd)) / Math.pow(10, nd) : numeroFinal;
+    
+    if(log) console.log("Valor final => ", numeroFinal);
 
     // Aplica o sinal negativo se necessário
     if (isNegative) {
         numeroFinal = -numeroFinal;
     }
 
+    if(log) console.log("Valor final com sinal => ", numeroFinal);
+    if(log) console.log("[------CONVERSÃO FINALIZADA------]");
+
     // Se for um elemento HTML, atualiza o innerText com o valor formatado
     if (isElement) {
-        valor.innerText = numeroFinal.toLocaleString('pt-BR', {
-            minimumFractionDigits: nd,
-            maximumFractionDigits: nd
-        });
+        valor.innerText = numeroFinal
     }
 
     return numeroFinal;
