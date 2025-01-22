@@ -182,7 +182,7 @@ async function executarProcessosParalelos() {
         await Promise.all(tarefas);
         if(!globais.pag.includes('editar_cotacao')) {
 
-            if (globais.pag == "aprovar_cotacao" || globais.pag == "aprovar_cotacao_DP") {
+            if (globais.pag.includes("aprovar_cotacao")) {
                 
                 criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
             }else if(globais.pag === "confirmar_compra")
@@ -243,6 +243,10 @@ async function executarProcessosParalelos() {
                 }
 
             }else if(globais.pag === "arquivar_cotacao")
+            {
+                criarBotao({page: globais.pag, removeExistingButtons:true});
+            }
+            else if(globais.pag === "duplicar_pdc")
             {
                 criarBotao({page: globais.pag, removeExistingButtons:true});
             }
@@ -426,20 +430,22 @@ function addNavDots() {
 
 async function searchPageParams() {
     await ZOHO.CREATOR.init()
-        .then(() => ZOHO.CREATOR.UTIL.getQueryParams())
-        .then(params => {
-            if (params) {
-                if (params.idPdc) {
-                    globais.numPDC = params.idPdc;
-                }
-                if (params.num_PDC_temp) {
-                    globais.numPDC_temp = params.num_PDC_temp;
-                }
-                if (params.pag) {
-                    globais.pag = params.pag;
-                }
+    .then(() => ZOHO.CREATOR.UTIL.getQueryParams())
+    .then(params => {
+        if (params) {
+            if (params.idPdc) {
+                globais.numPDC = params.idPdc;
             }
-        });
+            if (params.num_PDC_temp) {
+                globais.numPDC_temp = params.num_PDC_temp;
+            }
+            if (params.pag) {
+                globais.pag = params.pag;
+            }
+        }
+    });
+    console.log("pag => ", globais.pag);
+
 }
 
 /**

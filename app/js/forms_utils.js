@@ -146,9 +146,6 @@ export function preencherDadosPDC(resp) {
 
     // =====[LINHAS DE PARCELAS]=====//
     if (data.Datas && Array.isArray(data.Datas)) {
-        console.log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-        console.log("||||||||||||||||||||||PREENCHENDO CAMPOS DE DATA||||||||||||||||||||||");
-        console.log("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
         const camposData = document.getElementById('camposData');
 
         // Remove campos existentes
@@ -157,8 +154,6 @@ export function preencherDadosPDC(resp) {
         }
 
         // Marca o pagamento antecipado, caso seja true
-        console.log("data.pag_antecipado => ", data.pag_antecipado);
-        console.log("typeof data.pag_antecipado => ", typeof data.pag_antecipado);
         if (data.pag_antecipado == "true"){
             const inputPagAntecipado = camposData.querySelector('#pag_antecipado');
             inputPagAntecipado.setAttribute('checked', true);
@@ -166,7 +161,6 @@ export function preencherDadosPDC(resp) {
 
         // Adiciona campos para cada data
         const qtdParcelas = data.Datas ? data.Datas.length : 0;
-        console.log("qtdParcelas => ", qtdParcelas);
 
         data.Datas.forEach((dataObj, index) => {
             if (!dataObj.display_value) {
@@ -177,8 +171,6 @@ export function preencherDadosPDC(resp) {
 
             const [dia, mes, ano] = dataStr.split('/') ;
             const dataFormatada = dataStr !== ""? `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`: "";
-            console.log("dataObj.display_value => ", dataObj.display_value);
-            console.log("numPDC => ", numPDC);
             adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada, numParc, qtdParcelas);
         });
     }
@@ -241,7 +233,6 @@ export function preencherDadosPDC(resp) {
  * - Cria um novo campo de data para parcelas de pagamento
  */
 export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null, numParcela =  null, qtdParc = 1) {
-    console.log("CRIANDO NOVO CAMPO DE VENCIMENTO");
     //const numPDC = getNumPDC ? getNumPDC() : null;
     if(numParcela !== 1) numeroParcela++;
 
@@ -252,7 +243,6 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     //====================CRIA O RÓTULO PARA O CAMPO DE DATA====================//
     const novoLabel = document.createElement('label');
     novoLabel.innerText = `Parcela nº ${numParcela === null?numeroParcela:numParcela}:`;
-    console.log("NUMERO PARCELA: ", numParcela);
     if(numParcela !== null && numParcelaInicial === null) numParcelaInicial = parseInt(numParcela);
 
     //====================CRIA O CAMPO DE DATA====================//
@@ -276,9 +266,6 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     //====================CRIA UM CAMPO DE NÚMERO DO PDC====================//
     let novoInputNumPDC;
     if (numPDC) {
-        console.log("GERANDO PDC ----------------->")
-        console.log("qtdParc => ", qtdParc);
-        console.log("numPDC => ", numPDC);
         const camposParcelas = document.querySelectorAll('.parcela');
         const numPDCInput = camposParcelas.length > 0 ? camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]') : null;
         
@@ -1238,13 +1225,11 @@ export async function preencherListaAnexosV2(anexos) {
         enableDownload: true,
         beforeClose: function() {
             var scrollPosition = document.querySelector('.meu-body').scrollTop;
-            console.log("scrollPosition1: ", scrollPosition);
             window.sessionStorage.setItem('scrollPosition', scrollPosition);
           },
           afterClose: function() {
             var scrollPosition = window.sessionStorage.getItem('scrollPosition');
             setTimeout(function() {
-                console.log("scrollPosition2: ", scrollPosition);
                 document.body.scrollTop = parseInt(scrollPosition);
             }, 100);
           }

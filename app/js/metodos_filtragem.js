@@ -218,6 +218,10 @@ export function criarBotao({page = null, removeExistingButtons = false})
             case "suspender_pagamento":
                 configurarBotao('adjust-btn', 'Suspender', page, "Suspender Pagamento", "Tem certeza que deseja SUSPENDER o pagamento deste PDC?");
                 break;
+            
+            case "duplicar_pdc":
+                configurarBotao('adjust-btn', 'Duplicar PDC', page, null,"Tem certeza que deseja CRIAR UM NOVO PDC com estes dados?");
+                break;
 
             default:
                 if (tiposAssinatura.includes(page)) {

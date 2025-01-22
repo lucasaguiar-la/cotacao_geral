@@ -728,12 +728,16 @@ function criarPopupBase(conteudo) {
  * - Formata o valor total em BRL e exibe na célula correspondente
  */
 export function calculateTotalPrices(rowIndex) {
+    const log = true;
+    if(log) console.log("++++++++++CALCULANDO TOTAL DA LINHA++++++++++");
     const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
     const row = table.rows[rowIndex]; //Linha a ser calculada
+    if(log) console.log("row => ", row);
     const quantityCell = row.cells[1]; //Quantidade do item
-
+    if(log) console.log("quantityCell => ", quantityCell);
     const quantity = converterStringParaDecimal(quantityCell.dataset.valor_original); //Converte a quantidade para um número decimal
-
+    if(log) console.log("quantity => ", quantity);
+    
     for (let i = ipcv; i < row.cells.length; i += 2) {
         const unitPriceCell = row.cells[i]; //Valor unitário do item
         const totalPriceCell = row.cells[i + 1]; //Valor total do item
@@ -741,6 +745,7 @@ export function calculateTotalPrices(rowIndex) {
             const unitPrice = converterStringParaDecimal(unitPriceCell.dataset.valor_original); //Converte o valor unitário para um número decimal
             totalPriceCell.innerText = formatToBRL_V2((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
         }
+        if(log) console.log("totalPriceCell => ", formatToBRL_V2((quantity * unitPrice)));
     }
 }
 
@@ -1440,6 +1445,7 @@ export async function prenchTabCot(resp) {
         }
         // Adiciona os cabeçalhos dos fornecedores na ordem correta
         addHeaderForn(fornecedores);
+
         // Calcula os totais
         calcularTotais();
         atualizarOuvintesTabCot();

@@ -142,7 +142,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 }
 
 export function formatToBRL_V2(v, nd = 2) {
-    const log = true;
+    const log = false;
     if(log) console.log("[+++++FORMATANDO PARA BRL+++++]");
     if(log) console.log("Número de decimais => ", nd);
     
@@ -764,6 +764,66 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         } else if (tipo === 'remover_fornecedor' || tipo === 'remover_produto') {
             overlay.remove();
             return Promise.resolve(true);
+        }else if(tipo === 'duplicar_pdc')
+        {
+            //MODIFICA PARA QUE UMA CÓPIA SEJA CRIADA
+            globais.cotacaoExiste = false;
+
+            //CRIA UM NOVO ID TEMPORÁRIO PARA A CÓPIA E LIMPA O NUMERO DO PDC
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            globais.numPDC_temp = `${year}_${month}_${day}_${hours}_${minutes}_${seconds}`;
+            globais.numPDC = null;
+
+            //MUDA O TIPO DE SALVAMENTO
+            globais.tipo = "criar_pdc";
+
+            //LIMPA AS CÉLULAS DE QUANTIDADE E VALOR UNITÁRIO
+            const quantidadeTds = document.querySelectorAll('td.quantidade');
+            const valorUnitTds = document.querySelectorAll('td.valor-unit');
+            const totalForns = document.querySelectorAll('td.total-fornecedor');
+            [...quantidadeTds, ...valorUnitTds, ...totalForns].forEach(td => {
+                td.textContent = '';
+                if(td.dataset.valor_original) delete td.dataset.valor_original;
+                
+                // Limpar a célula do lado direito se for valor unitário
+                if(td.classList.contains('valor-unit')) {
+                    const nextTd = td.nextElementSibling;
+                    if(nextTd) {
+                        nextTd.textContent = '';
+                        if(nextTd.dataset.valor_original) delete nextTd.dataset.valor_original;
+                    }
+                }
+            });
+
+            //LIMPA OS FORNECEDORES APROVADOS
+            const elemsAprovados = document.querySelectorAll('.forn-aprovado');
+            elemsAprovados.forEach(elem => {
+                elem.classList.remove('forn-aprovado');
+            });
+
+            //LIMPA AS LINHAS DE PARCELAS
+            const divsParcela = document.querySelectorAll('div.parcela');
+            divsParcela.forEach(div => {
+                div.remove();
+            });
+            //LIMPA AS CÉLULAS DE VALOR DA CLASSIFICAÇÃO CONTÁBIL
+            const formClassificacao = document.querySelector('#form-classificacao');
+            const inputsValor = formClassificacao.querySelectorAll('input[name="Valor"]');
+            inputsValor.forEach(input => {
+                input.value = '';
+            });
+
+
+            await saveTableData_V2("Propostas criadas");
+            window.open(`${url}#Report:Laranj_sol_em_andamento`, '_top');
+            return;
         }
 
         try {

@@ -644,11 +644,6 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
     }
 }
 
-
-export async function salvarPDC() {
-
-}
-
 export async function tratarSalvamentoPDC({ acao = null }) {
     //TODOS OS DADOS//
     /**
