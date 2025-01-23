@@ -35,12 +35,10 @@ export function criarBotao({page = null, removeExistingButtons = false})
         switch (page) {
             case "criar_cotacao":
             case "editar_cotacao":
-            case "criar_cotacao_DP":
-            case "editar_cotacao_DP":
             case "criar_cotacao_controladoria":
             case "editar_cotacao_controladoria":
                 configurarBotao('approve-sindico-btn adjust-btn', 'Sol. Aprov. Síndico', "solicitar_aprovacao_sindico", null, "Deseja solicitar a aprovação do síndico?");
-                if (page === "editar_cotacao" || page === "editar_cotacao_controladoria" || page === "editar_cotacao_DP") setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
+                if (page.includes("editar_cotacao")) setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
             
             case "aprovar_cotacao":
@@ -62,6 +60,8 @@ export function criarBotao({page = null, removeExistingButtons = false})
                 setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
 
+            case "criar_cotacao_DP":
+            case "editar_cotacao_DP":
             case "criar_numero_de_PDC":
                 configurarBotao('criar-pdc-btn adjust-btn', 'Criar PDC', null, null, null);
 
@@ -80,9 +80,15 @@ export function criarBotao({page = null, removeExistingButtons = false})
                             }
                         }
                     });
+                    if(globais.pag.includes('_DP'))
+                    {
+                        setTimeout(() => criarBotao({page: "editar_cotacao", removeExistingButtons:false}), 0);
+                        
+                    }else
+                    {
 
-                    setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
-                    
+                        setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
+                    }
                 }else
                 {
                     newButton.onclick = () => {
@@ -169,8 +175,13 @@ export function criarBotao({page = null, removeExistingButtons = false})
                             newButton.classList.add('disabled'); // Adiciona a classe para estilo visual
                             
                             // Adiciona o novo botão após o botão "Criar PDC"
-                            setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
-
+                            if(globais.pag.includes('_DP'))
+                            {
+                                setTimeout(() => criarBotao({page: "editar_cotacao", removeExistingButtons:false}), 0);
+                            }else
+                            {
+                                setTimeout(() => criarBotao({page: "finalizar_provisionamento", removeExistingButtons:false}), 0);
+                            }
                             // Oculta todas as seções, exceto a seção de parcelas
                             const allSections = document.querySelectorAll('.section');
                             allSections.forEach(section => {
@@ -220,7 +231,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
                 break;
             
             case "duplicar_pdc":
-                configurarBotao('adjust-btn', 'Duplicar PDC', page, null,"Tem certeza que deseja CRIAR UM NOVO PDC com estes dados?");
+                configurarBotao('adjust-btn', 'Usar Rascunho', page, null,"Tem certeza que deseja CRIAR UM NOVO PDC com estes dados?");
                 break;
 
             default:
@@ -232,7 +243,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
         }
 
         //==========SE O BOTÃO NÃO FOR UMA EXCEÇÃO, CRIA O ONCLICK PARA ABRIR UM MODAL DE CONFIRMAÇÃO==========//
-        if (!["criar_numero_de_PDC"].includes(page)) {
+        if (!["criar_numero_de_PDC", "criar_cotacao_DP", "editar_cotacao_DP"].includes(page)) {
             newButton.onclick = () => {
                 customModal({botão: this, tipo: type, titulo: title, mensagem: message});
             };

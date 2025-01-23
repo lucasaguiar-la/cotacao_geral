@@ -744,8 +744,10 @@ export function calculateTotalPrices(rowIndex) {
         if (unitPriceCell && totalPriceCell) {
             const unitPrice = converterStringParaDecimal(unitPriceCell.dataset.valor_original); //Converte o valor unitário para um número decimal
             totalPriceCell.innerText = formatToBRL_V2((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
+            
+            if(log) console.log("totalPriceCell => ", formatToBRL_V2((quantity * unitPrice)));
         }
-        if(log) console.log("totalPriceCell => ", formatToBRL_V2((quantity * unitPrice)));
+        
     }
 }
 
