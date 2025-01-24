@@ -30,7 +30,10 @@ import {
     adicionarCampoVenc,
     setupPixValidation,
     preencherDadosPDC,
-    removerCampoVenc
+    
+    adicionarLinhaNF,
+    removerCampoVenc,
+    removerLinhaNF
 } from './forms_utils.js';
 import { CONFIG } from './config.js';
 import { criarBotao } from './metodos_filtragem.js';
@@ -118,6 +121,8 @@ async function setupListenersAndInit() {
             type: 'click'
         },
         "formas-pagamento": { handler: (elemento) => mostrarCamposPagamento(), type: 'click' },
+        "add-linha-nf": { handler: () => adicionarLinhaNF(), type: 'click' },
+        "remover-linha-nf": { handler: (elemento) => removerLinhaNF(elemento), type: 'click' },
         "add-parcela": { handler: () => adicionarCampoVenc(null, null, globais.numPDC), type: 'click' },
         "remover-parcela": { handler: (elemento) => removerCampoVenc(elemento), type: 'click' },
         "add-classificacao": { handler: () => adicionarLinhaClassificacao(), type: 'click' },

@@ -528,7 +528,8 @@ export function adicionarLinhaClassificacao() {
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
-    removeBtn.classList.add('remover-classificacao', 'close-icon', 'remove-btn');
+    removeBtn.classList.add('remover-classificacao', 'close-icon', 'remove-btn', 'transl-because-title');
+    
     removeBtn.addEventListener('click', () => removerLinhaClassificacao(removeBtn));
 
     newRowClass.appendChild(removeBtn);
@@ -556,7 +557,7 @@ export function adicionarLinhaClassificacaoBkp() {
 
     // Cria a nova linha
     const novaLinha = document.createElement('div');
-    novaLinha.classList.add('linha-classificacao');
+    novaLinha.classList.add('linha-classificacao','transl-because-title');
 
     // Função auxiliar para criar campos
     const criarCampo = ({ inputType, inputName, id = null, options = null }) => {
@@ -631,7 +632,7 @@ export function adicionarLinhaClassificacaoBkp() {
     // Cria o botão de remoção
     const botaoRemover = document.createElement('button');
     botaoRemover.type = 'button';
-    botaoRemover.classList.add('remover-classificacao', 'close-icon', 'remove-btn');
+    botaoRemover.classList.add('remover-classificacao', 'close-icon', 'remove-btn', 'transl-because-title');
     botaoRemover.addEventListener('click', () => removerLinhaClassificacao(botaoRemover));
 
     // Adiciona todos os elementos à nova linha
@@ -1447,4 +1448,40 @@ export async function preencherListaAnexosV2(anexos) {
     btnContainer.appendChild(inputFile);
     btnContainer.appendChild(botaoAdicionar);
     galleryElement.appendChild(btnContainer);
+}
+
+
+export function adicionarLinhaNF() {
+    const linhasNF = document.getElementById('linhas-nf');
+
+    const novaLinha = document.createElement('div');
+    novaLinha.classList.add('linha-nf');
+
+    const dataEmissaoInput = document.createElement('input');
+    dataEmissaoInput.type = 'date';
+    dataEmissaoInput.name = 'Data_emissao_N_Fiscal';
+
+    const numeroNFInput = document.createElement('input');
+    numeroNFInput.type = 'text';
+    numeroNFInput.classList.add('input-number');
+    numeroNFInput.name = 'Numero_N_Fiscal';
+
+    const removerButton = document.createElement('button');
+    removerButton.type = 'button';
+    removerButton.classList.add('remover-linha-nf', 'close-icon', 'remove-btn');
+    removerButton.name = 'botao_remover';
+    removerButton.addEventListener('click', removerLinhaNF);
+
+    novaLinha.appendChild(dataEmissaoInput);
+    novaLinha.appendChild(numeroNFInput);
+    novaLinha.appendChild(removerButton);
+
+    linhasNF.appendChild(novaLinha);
+}
+
+export function removerLinhaNF(event) {
+    const linha = event.target.closest('.linha-nf');
+    if (linha) {
+        linha.remove();
+    }
 }

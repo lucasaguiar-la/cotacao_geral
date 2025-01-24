@@ -333,6 +333,62 @@ function pegarDadosNF() {
     return dadosNF;
 }
 
+
+function pegarDadosNF_V2() {
+    console.log("PEGANDO DADOS DA NOTA FISCAL");
+    const formDdsNF = document.querySelector('#dados-nf');
+    const dadosNF = {};
+
+    // Obter todos os elementos do formulário, exceto os das linhas dinâmicas de NF
+    const elementosNF = formDdsNF.querySelectorAll(':scope > :not(#linhas-nf) input, :scope > :not(#linhas-nf) select, :scope > :not(#linhas-nf) textarea');
+    elementosNF.forEach(elemento => {
+        if (elemento.classList.contains('input-number')) {
+            dadosNF[elemento.name] = converterStringParaDecimal(elemento.value);
+        } else if (elemento.type == "date" && elemento.value) { // Verifica se o campo não está vazio
+            const [ano, mes, dia] = elemento.value.split('-');
+            dadosNF[elemento.name] = `${dia}/${mes}/${ano}`;
+        } else {
+            dadosNF[elemento.name] = elemento.value;
+        }
+    });
+
+    // Adicionar dados das linhas dinâmicas de NF
+    const linhasNF = document.querySelectorAll('#linhas-nf .linha-nf');
+    dadosNF.linhasNF = [];
+    linhasNF.forEach(linha => {
+        const linhaDados = {};
+        const inputs = linha.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (input.type === 'date' && input.value) {
+                const [ano, mes, dia] = input.value.split('-');
+                linhaDados[input.name] = `${dia}/${mes}/${ano}`;
+            } else {
+                linhaDados[input.name] = input.value;
+            }
+        });
+        dadosNF.linhasNF.push(linhaDados);
+    });
+
+    // Adiciona os dados dos tds usando o atributo name como chave
+    const valorOriginal = document.querySelector('#valor-original');
+    const totalDescontos = document.querySelector('#descontos-total');
+    const valorTotalPagar = document.querySelector('#valor-total-pagar');
+
+    if (valorOriginal && valorOriginal.hasAttribute('name')) {
+        dadosNF[valorOriginal.getAttribute('name')] = converterStringParaDecimal(valorOriginal.textContent || '');
+    }
+    if (totalDescontos && totalDescontos.hasAttribute('name')) {
+        dadosNF[totalDescontos.getAttribute('name')] = converterStringParaDecimal(totalDescontos.textContent || '');
+    }
+    if (valorTotalPagar && valorTotalPagar.hasAttribute('name')) {
+        dadosNF[valorTotalPagar.getAttribute('name')] = converterStringParaDecimal(valorTotalPagar.textContent || '');
+    }
+    console.log("dadosNF => ", JSON.stringify(dadosNF));
+    return dadosNF;
+}
+
+
+
 //====================================================================================//
 //====================BUSCA OS DADOS DA TABELA DE PREÇOS (COTAÇÃO)====================//
 //====================================================================================//

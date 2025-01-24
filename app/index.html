@@ -217,14 +217,6 @@
                             <input type="checkbox" name="pag_antecipado" id="pag_antecipado">
                             <label for="pag_antecipado" class="label-pag-antecipado">Pagamento de sinal</label>
                         </div>
-                        <!-- 
-                        <div class="titulos-parcela">
-                            <label for="numero_parcela">Parcela</label>
-                            <label for="Datas">Vencimento</label>
-                            <Label for="Valor">Valor</Label>
-                            <Label for="botao_remover"></Label>
-                        </div>
-                        -->
                         <div class="parcela">
                             <label name="numero_parcela">Parcela nº 1:</label>
                             <input type="date" name="Datas" placeholder="Venc. prev. (dd/mm/aaaa)" class="campo-datas" />
@@ -245,24 +237,31 @@
             </div>
         </div>
         <!--FORM DE DADOS DA NOTA FISCAL-->
-        <div class="section-header hidden">
+        <div class="section-header">
             <h2 class="titulos">DADOS DA NOTA FISCAL</h2>
             <button class="toggle-section"></button>
         </div>
-        <div class="section form-dados-nf hidden" id="section5">
+        <div class="section form-dados-nf" id="section5">
             <div class="form-container">
                 <form action="#" id="dados-nf">
-                    <div class="campos-iniciais-nf hidden">
-
-                        <div class="campo ">
-                            <label for="data-emissao-nf">Data da emissão da NF:</label>
-                            <input type="date" id="data-emissao-nf" name="Data_emissao_N_Fiscal">
+                    <!--NOVOS DOCUMENTOS-->
+                    <div id="linhas-nf">
+                        <div class="nomes-campos-nf">
+                            <label for="data-emissao-nf" class="form-dados-nf-label">Data da emissão da NF:</label>
+                            <label for="numero-nf" class="form-dados-nf-label">Número da NF:</label>
+                            <label for="" id="label-toButton" width="20px"></label>
                         </div>
-                        <div class="campo">
-                            <label for="numero-nf">Número da NF:</label>
+                        <div class="linha-nf">
+                            <input type="date" id="data-emissao-nf" name="Data_emissao_N_Fiscal">
                             <input type="text" id="numero-nf" class="input-number" name="Numero_N_Fiscal">
+                            <button type="button" class="remover-linha-nf close-icon remove-btn" name="botao_remover"></button>
                         </div>
                     </div>
+                    <div id="botoes-e-totalizadores_parcelas">
+                        <button type="button" id="adicionarCampo" class="add-linha-nf add-btn add-icon"></button>
+                    </div>
+                    <!--NOVOS DOCUMENTOS-->
+
                     <table class="campos-retencao-nf hidden">
                         <thead>
                             <tr>

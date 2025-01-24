@@ -116,7 +116,8 @@ select option[disabled] {
 .form-pagamento label, 
 .form-classificacao label,
 .form-dados-nf label,
-.campos-retencao-nf label {
+.campos-retencao-nf label,
+.form-dados-nf-label {
     font-weight: bold;
     margin-bottom: 5px;
     display: block;
@@ -144,7 +145,6 @@ select option[disabled] {
     font-family: Arial, sans-serif;
     border: 1px solid #ccc;
     box-sizing: border-box;
-    margin-bottom: 6px;
     border-radius: 4px;
     font-size: 11pt;
     padding: 5px;
@@ -735,7 +735,7 @@ button:hover {
 }
 
 /* Estilização dos campos de data */
-#camposData {
+#camposData, #linhas-nf {
     margin-top: 10px;
     display: flex;
     flex-direction: column;
@@ -743,6 +743,7 @@ button:hover {
 }
 
 .parcela,
+.linha-nf,
 .titulos-parcela,
 .campos-iniciais-nf{
     display: flex;
@@ -835,6 +836,14 @@ button:hover {
     font-size: 90%;
 }
 
+.nomes-campos-nf, .linha-nf {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 15px;
+    padding: 4px 0;
+    align-items: start;
+}
+
 /* Ajuste na classificação para remover labels repetidos */
 .linha-classificacao, .nomes-campos-classificacao {
     display: grid;
@@ -900,12 +909,8 @@ button:hover {
 /* Estilo unificado para ícones de fechar/remover */
 .close-icon {
     background: none;
-    border: none;
     color: #921414;
     cursor: pointer;
-    padding: 0;
-    margin: 0;
-    display: flex;
     align-items: center;
     justify-content: center;
     transition: color 0.2s ease;
@@ -913,6 +918,14 @@ button:hover {
 
 .close-icon:hover {
     transform: translateY(-1px);
+}
+
+.transl-because-title{
+    transform: translateY(8px);
+}
+.transl-because-title:hover{
+    transform: translateY(7px);
+    filter: brightness(0.9);
 }
 
 .close-icon::before {
