@@ -185,7 +185,7 @@ async function executarProcessosParalelos() {
             if (globais.pag.includes("aprovar_cotacao")) {
                 
                 criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
-            }else if(globais.pag === "confirmar_compra")
+            }else if(globais.pag === "confirmar_compra" || globais.pag === "arquivar_cotacao" || globais.pag === "duplicar_pdc" || globais.pag === "ver_cotacao")
             {
                 criarBotao({page:globais.pag, removeExistingButtons: true});
 
@@ -242,15 +242,7 @@ async function executarProcessosParalelos() {
                     checkboxPagamentoAntecipado.classList.add("hidden");
                 }
 
-            }else if(globais.pag === "arquivar_cotacao")
-            {
-                criarBotao({page: globais.pag, removeExistingButtons:true});
-            }
-            else if(globais.pag === "duplicar_pdc")
-            {
-                criarBotao({page: globais.pag, removeExistingButtons:true});
-            }
-            else
+            }else
             {
                 criarBotao({removeExistingButtons:true});
             }

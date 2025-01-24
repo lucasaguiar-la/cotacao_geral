@@ -643,8 +643,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         
         // Determina o payload baseado no tipo de ação
         let payload;
-
-        // Mapeia os tipos de ação para os payloads correspondentes
+        // Mapeia os tipos de ação   para os payloads correspondentes
         const payloadMap = {
             'criar_cotacao_DP':
             {
@@ -662,6 +661,9 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             },
             'solicitar_aprovacao_sindico': {
                 Status_geral: 'Aguardando aprovação de uma proposta'
+            },
+            'corrigir_erros': {
+                Status_geral: "Propostas criadas"
             },
             'ajustar_cot': {
                 Status_geral: 'Ajuste solicitado',

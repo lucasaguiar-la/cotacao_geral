@@ -839,8 +839,10 @@ export function handlePasteEventPriceTable(event) {
             let value = pastedRows[rowIndex][cellIndex];
             console.log("Value: ", value);
             // Converte para formato apropriado baseado na classe da célula
-
-            cell.innerText = value;
+            if (cell.classList.contains('numeric-cell')) {
+                cell.dataset.valor_original = converterStringParaDecimal(value);
+            }
+            cell.innerText = cell.classList.contains('quantidade')?formatToBRL_V2(value, 3):formatToBRL_V2(value);
         }
 
         calculateTotalPrices(startRowIndex + rowIndex);
@@ -1165,7 +1167,8 @@ export async function prenchTabCot(resp) {
             //QUANTIDADE//
             const quantidadeCell = newRow.insertCell(1);
             quantidadeCell.classList.add('numeric-cell', 'quantidade');
-            quantidadeCell.innerText = objProduto[0].Quantidade || '';
+            quantidadeCell.innerText = formatToBRL_V2(objProduto[0].Quantidade || '', 3);
+            quantidadeCell.dataset.valor_original = converterStringParaDecimal(objProduto[0].Quantidade || '');
             quantidadeCell.contentEditable = 'true';
             quantidadeCell.addEventListener('input', restrictNumericInput);
 
@@ -1190,7 +1193,9 @@ export async function prenchTabCot(resp) {
                 //Preenche os valores
                 if (valoresFornProd.length > 0) {
                     valorUnitarioCell.innerText = formatToBRL_V2(valoresFornProd[0].Valor_unitario || '');
+                    valorUnitarioCell.dataset.valor_original = converterStringParaDecimal(valoresFornProd[0].Valor_unitario || '');
                     valorTotalCell.innerText = formatToBRL_V2(valoresFornProd[0].Valor_total || '');
+                    valorTotalCell.dataset.valor_original = converterStringParaDecimal(valoresFornProd[0].Valor_total || '');
                 }
             });
 
@@ -1994,7 +1999,7 @@ export async function saveTableData({ tipo = null }) {
                 globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
             }
         }
-        //====================CRIA O REGISTRO DOS ARQUIVOS GALERÍA================//
+        //====================CRIA O REGISTRO DOS ARQUIVOS GALERÍA====================//
 
         const qtdFiles = globais.arquivosGaleria.length;
 

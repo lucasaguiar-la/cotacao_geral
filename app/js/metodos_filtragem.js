@@ -41,6 +41,10 @@ export function criarBotao({page = null, removeExistingButtons = false})
                 if (page.includes("editar_cotacao")) setTimeout(() => criarBotao({page: "arquivar_cotacao"}), 0);
                 break;
             
+            case "ver_cotacao":
+                configurarBotao('archive-btn', 'Pegar de volta', "corrigir_erros", null, "Deseja pegar esta solicitação novamente? Ela não estará mais disponível para aprovação do síndico até que a aprovação seja solicitada novamente");
+                break;
+
             case "aprovar_cotacao":
                 configurarBotao('approve-btn', 'Aprovar', "aprov_cot", "Aprovar proposta", "Tem certeza que deseja APROVAR a proposta do fornecedor selecionado?");
                 setTimeout(() => criarBotao({page: "ajustar_cotacao"}), 0);
