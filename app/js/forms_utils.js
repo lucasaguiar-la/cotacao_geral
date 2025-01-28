@@ -1420,10 +1420,12 @@ export async function preencherListaAnexosV2(anexos) {
 //====================ANEXOS====================//
 //==============================================//
 export function adicionarLinhaNF() {
+    const log = true;
+    if(log) console.log("++++++++++ADICIONANDO LINHA DE NOTA FISCAL++++++++++");
     const linhasNF = document.getElementById('linhas-nf');
 
     const novaLinha = document.createElement('div');
-    novaLinha.classList.add('linha-nf', 'hidden');
+    novaLinha.classList.add('linha-nf');
 
     const dataEmissaoInput = document.createElement('input');
     dataEmissaoInput.type = 'date';

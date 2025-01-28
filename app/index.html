@@ -143,98 +143,6 @@
             </table>
 
         </div>
-        <div class="section-header">
-            <h2 class="titulos">DADOS DE PAGAMENTO</h2>
-            <button class="toggle-section"></button>
-        </div>
-        <div class="section form-pagamento" id="section3">
-            <div class="form-container">
-                <form action="#" id="form-pagamento">
-                    <label>Forma de Pagamento:</label>
-                    <div class="radio-group" name="tipo-pag">
-                        <input type="radio" id="boleto" name="Forma_de_pagamento" value="Boleto"
-                            class="formas-pagamento">
-                        <label for="boleto">Boleto</label>
-                        <input type="radio" id="dep_cc" name="Forma_de_pagamento" value="Dep. em CC"
-                            class="formas-pagamento">
-                        <label for="dep_cc">Dep. em CC</label>
-                        <input type="radio" id="dep_cp" name="Forma_de_pagamento" value="Dep. em CP"
-                            class="formas-pagamento">
-                        <label for="dep_cp">Dep. em CP</label>
-                        <input type="radio" id="cheque" name="Forma_de_pagamento" value="Emissão de Cheque"
-                            class="formas-pagamento">
-                        <label for="cheque">Emissão de Cheque</label>
-                        <!--
-                        <input type="radio" id="pix" name="Forma_de_pagamento" value="Pix" class="formas-pagamento">
-                        <label for="pix">Pix</label>
-                        -->
-                    </div>
-                    <div id="campos-deposito">
-                        <div class="campo hidden">
-
-                            <label for="banco">Banco:</label>
-                            <input type="text" id="banco" name="Banco">
-                        </div>
-                        <div class="campo hidden">
-
-                            <label for="agencia">Agência:</label>
-                            <input type="text" id="agencia" name="AG">
-                        </div>
-                        <div class="campo hidden">
-
-                            <label for="conta">Número da Conta:</label>
-                            <input type="text" id="conta" name="N_Conta">
-                        </div>
-                        <div class="campo hidden">
-
-                            <label for="favorecido-deposito">Favorecido:</label>
-                            <input type="text" id="favorecido-deposito" name="Favorecido">
-                        </div>
-                    </div>
-                    <!--
-                    <div id="campos-pix" >
-                        <div class="campo hidden">
-                            <label for="tipo-pix" >Tipo de Pix:</label>
-                            <select id="tipo-pix" name="Tipo_Pix">
-                                <option name="Tipo_Pix" value="CPF">Cpf</option>
-                                <option name="Tipo_Pix" value="CNPJ">Cnpj</option>
-                                <option name="Tipo_Pix" value="Email">Email</option>
-                                <option name="Tipo_Pix" value="Telefone">Telefone</option>
-                                <option name="Tipo_Pix" value="Chave Aleatória">Chave Aleatória</option>
-                            </select>
-                        </div>
-
-                        <div class="campo hidden2">
-                            <label for="pix-chave" >Chave Pix:</label>
-                            <input type="text" id="pix-chave" name="Chave_Pix">
-                        </div>
-                    </div>
-                    -->
-                    <label for="camposData" style="padding-top: 50px;">Vencimento previsto:</label>
-                    <div id="camposData">
-                        <div class="check-pag-antecipado">
-                            <input type="checkbox" name="pag_antecipado" id="pag_antecipado">
-                            <label for="pag_antecipado" class="label-pag-antecipado">Pagamento de sinal</label>
-                        </div>
-                        <div class="parcela">
-                            <label name="numero_parcela">Parcela nº 1:</label>
-                            <input type="date" name="Datas" placeholder="Venc. prev. (dd/mm/aaaa)" class="campo-datas" />
-                            <input type="text" name="Valor" class="input-number valor-parcela campo-datas"
-                                placeholder="R$ 0,00" />
-                            <button type="button" class="remover-parcela close-icon remove-btn" name="botao_remover"></button>
-                            <input type="checkbox" name="parcela_criada" class="campo-datas hidden"/>
-                        </div>
-                    </div>
-                    <div id="botoes-e-totalizadores_parcelas">
-                        <button type="button" id="adicionarCampo" class="add-parcela add-btn add-icon"></button>
-                        <div id="totalizadores_parcelas">
-                            <label>Total restante:</label>
-                            <label id="valor-total-parcelas">0,00</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
         <!--FORM DE DADOS DA NOTA FISCAL-->
         <div class="section-header hidden">
             <h2 class="titulos">DADOS DA NOTA FISCAL</h2>
@@ -308,6 +216,99 @@
                             </tr>
                         </tbody>
                     </table>
+                </form>
+            </div>
+        </div>
+        <!--FORM DE DADOS DE PAGAMENTO-->
+        <div class="section-header">
+            <h2 class="titulos">DADOS DE PAGAMENTO</h2>
+            <button class="toggle-section"></button>
+        </div>
+        <div class="section form-pagamento" id="section3">
+            <div class="form-container">
+                <form action="#" id="form-pagamento">
+                    <label>Forma de Pagamento:</label>
+                    <div class="radio-group" name="tipo-pag">
+                        <input type="radio" id="boleto" name="Forma_de_pagamento" value="Boleto"
+                            class="formas-pagamento">
+                        <label for="boleto">Boleto</label>
+                        <input type="radio" id="dep_cc" name="Forma_de_pagamento" value="Dep. em CC"
+                            class="formas-pagamento">
+                            <label for="dep_cc">Dep. em CC</label>
+                            <input type="radio" id="dep_cp" name="Forma_de_pagamento" value="Dep. em CP"
+                            class="formas-pagamento">
+                            <label for="dep_cp">Dep. em CP</label>
+                        <input type="radio" id="cheque" name="Forma_de_pagamento" value="Emissão de Cheque"
+                            class="formas-pagamento">
+                        <label for="cheque">Emissão de Cheque</label>
+                        <!--
+                        <input type="radio" id="pix" name="Forma_de_pagamento" value="Pix" class="formas-pagamento">
+                        <label for="pix">Pix</label>
+                        -->
+                    </div>
+                    <div id="campos-deposito">
+                        <div class="campo hidden">
+
+                            <label for="banco">Banco:</label>
+                            <input type="text" id="banco" name="Banco">
+                        </div>
+                        <div class="campo hidden">
+
+                            <label for="agencia">Agência:</label>
+                            <input type="text" id="agencia" name="AG">
+                        </div>
+                        <div class="campo hidden">
+
+                            <label for="conta">Número da Conta:</label>
+                            <input type="text" id="conta" name="N_Conta">
+                        </div>
+                        <div class="campo hidden">
+
+                            <label for="favorecido-deposito">Favorecido:</label>
+                            <input type="text" id="favorecido-deposito" name="Favorecido">
+                        </div>
+                    </div>
+                    <!--
+                    <div id="campos-pix" >
+                        <div class="campo hidden">
+                            <label for="tipo-pix" >Tipo de Pix:</label>
+                            <select id="tipo-pix" name="Tipo_Pix">
+                                <option name="Tipo_Pix" value="CPF">Cpf</option>
+                                <option name="Tipo_Pix" value="CNPJ">Cnpj</option>
+                                <option name="Tipo_Pix" value="Email">Email</option>
+                                <option name="Tipo_Pix" value="Telefone">Telefone</option>
+                                <option name="Tipo_Pix" value="Chave Aleatória">Chave Aleatória</option>
+                            </select>
+                        </div>
+
+                        <div class="campo hidden2">
+                            <label for="pix-chave" >Chave Pix:</label>
+                            <input type="text" id="pix-chave" name="Chave_Pix">
+                        </div>
+                    </div>
+                    -->
+                    <label for="camposData" style="padding-top: 50px;">Vencimento previsto:</label>
+                    <div id="camposData">
+                        <div class="check-pag-antecipado">
+                            <input type="checkbox" name="pag_antecipado" id="pag_antecipado">
+                            <label for="pag_antecipado" class="label-pag-antecipado">Pagamento de sinal</label>
+                        </div>
+                        <div class="parcela">
+                            <label name="numero_parcela">Parcela nº 1:</label>
+                            <input type="date" name="Datas" placeholder="Venc. prev. (dd/mm/aaaa)" class="campo-datas" />
+                            <input type="text" name="Valor" class="input-number valor-parcela campo-datas"
+                                placeholder="R$ 0,00" />
+                            <button type="button" class="remover-parcela close-icon remove-btn" name="botao_remover"></button>
+                            <input type="checkbox" name="parcela_criada" class="campo-datas hidden"/>
+                        </div>
+                    </div>
+                    <div id="botoes-e-totalizadores_parcelas">
+                        <button type="button" id="adicionarCampo" class="add-parcela add-btn add-icon"></button>
+                        <div id="totalizadores_parcelas">
+                            <label>Total restante:</label>
+                            <label id="valor-total-parcelas">0,00</label>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
