@@ -1207,11 +1207,13 @@ export function desabilitarCampos() {
 
     if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
         camposParaManterHabilitados = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
-        botoesParaManterHabilitados = ["add-parcela", "remover-parcela"];//classe
+        botoesParaManterHabilitados = ["add-parcela", "remover-parcela", "add-linha-nf","remover-linha-nf"];//classe
         formsParaManterHabilitados = ["form-pagamento", "dados-nf", "form-classificacao"];//forms
     } else if (globais.pag === "criar_numero_de_PDC") {
         camposParaManterHabilitados = ["Num_PDC_parcela"];
     }
+
+    
 
     // Seleciona todos os elementos de input, textarea e select
     const campos = document.querySelectorAll('input, textarea, select');

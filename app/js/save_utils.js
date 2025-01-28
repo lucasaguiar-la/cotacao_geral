@@ -28,7 +28,7 @@ async function splitDataByInstallments(status = null) {
     console.log("----------BUSCANDO DADOS----------");
     const files = await getGalleryFiles();
     console.log("1. files => ", files);
-    const NFData = pegarDadosNF();
+    const NFData = pegarDadosNF_V2();
     console.log("2. NFData => ", NFData);
     console.log("----------PERCORRENDO PARCELAS----------");
     installments.forEach((installment, index) => {
@@ -67,7 +67,7 @@ async function splitDataByInstallments(status = null) {
 
 async function meshData(status = null) {
 
-    const NFData = pegarDadosNF();
+    const NFData = pegarDadosNF_V2();
     const [priceTableData, extraDataPDC] = pegarDadostabPrecos();
     const initialDataPDC = pegarDadosPDC_V2();
     const classData = pegarDadosClassificacao_V2();
@@ -335,7 +335,8 @@ function pegarDadosNF() {
 
 
 function pegarDadosNF_V2() {
-    console.log("PEGANDO DADOS DA NOTA FISCAL");
+    const log = true;
+    if(log) console.log("++++++++++PEGANDO DADOS DA NOTA FISCAL++++++++++");
     const formDdsNF = document.querySelector('#dados-nf');
     const dadosNF = {};
 
@@ -354,7 +355,7 @@ function pegarDadosNF_V2() {
 
     // Adicionar dados das linhas dinâmicas de NF
     const linhasNF = document.querySelectorAll('#linhas-nf .linha-nf');
-    dadosNF.linhasNF = [];
+    dadosNF.Dados_da_nota_fiscal1 = [];
     linhasNF.forEach(linha => {
         const linhaDados = {};
         const inputs = linha.querySelectorAll('input');
@@ -366,7 +367,7 @@ function pegarDadosNF_V2() {
                 linhaDados[input.name] = input.value;
             }
         });
-        dadosNF.linhasNF.push(linhaDados);
+        dadosNF.Dados_da_nota_fiscal1.push(linhaDados);
     });
 
     // Adiciona os dados dos tds usando o atributo name como chave
@@ -383,7 +384,10 @@ function pegarDadosNF_V2() {
     if (valorTotalPagar && valorTotalPagar.hasAttribute('name')) {
         dadosNF[valorTotalPagar.getAttribute('name')] = converterStringParaDecimal(valorTotalPagar.textContent || '');
     }
-    console.log("dadosNF => ", JSON.stringify(dadosNF));
+    if(log) console.log("dadosNF => ", JSON.stringify(dadosNF));
+
+    //throw new Error("Erro forçado, para teste");
+
     return dadosNF;
 }
 

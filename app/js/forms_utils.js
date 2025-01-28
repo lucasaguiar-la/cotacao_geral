@@ -62,6 +62,9 @@ export function mostrarCamposPagamento() {
  * - Ajusta a visibilidade dos campos conforme a forma de pagamento
  */
 export function preencherDadosPDC(resp) {
+    const log = true;
+    if(log) console.log("++++++++++PREENCHENDO DADOS DO PDC++++++++++");
+    if(log) console.log("resp => ", JSON.stringify(resp));
     globais.cotacaoExiste = true;
     const data = resp.data[0];
     globais.idPDC = data.ID;
@@ -175,22 +178,37 @@ export function preencherDadosPDC(resp) {
         });
     }
 
+    // =====[LINHAS DE NOTAS FISCAIS]=====//
+    const camposNF = document.querySelector('#linhas-nf');
+    if(data.Dados_da_nota_fiscal1)
+    {
+        const dadosNF = data.Dados_da_nota_fiscal1;
+        const linhaNF = camposNF.querySelector('.linha-nf');
+        if (linhaNF) {
+            camposNF.removeChild(linhaNF);
+        }
+        console.log(dadosNF);
+        dadosNF.forEach(NF => {
+            const [emissao = "", num = ""] = NF.display_value?.split('|SPLITKEY|') || [];
+            let dataFormatada = "";
+            if (emissao) {
+                const [dia, mes, ano] = emissao.split('/');
+                dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+            }
+            //
+            const novaLinhaNF = adicionarLinhaNF();
+            novaLinhaNF.querySelector('input[name="Data_emissao_N_Fiscal"]').value = dataFormatada;
+            novaLinhaNF.querySelector('input[name="Numero_N_Fiscal"]').value = num;
+        })
+    }
+
     // =====[SESSÃO DE RETENÇÕES]=====//
-    const inputDataEmissaoNF = document.querySelector('#data-emissao-nf');
-    const inputNumeroNF = document.querySelector('#numero-nf');
     const inputInss = document.querySelector('#inss');
     const inputIss = document.querySelector('#iss');
     const inputPisConfinsCssl = document.querySelector('#pis-confins-cssl');
     const inputDescontoComercial = document.querySelector('#desconto-comercial');
     const inputAcrescimo = document.querySelector('#acrescimo');
 
-    // Preenche os campos de retenção com os dados da resposta
-    if (data.Data_emissao_N_Fiscal) {
-        const [dia, mes, ano] = data.Data_emissao_N_Fiscal.split('/');
-        inputDataEmissaoNF.value = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-    }
-
-    if (data.Numero_N_Fiscal) inputNumeroNF.value = data.Numero_N_Fiscal;
     if (data.INSS) inputInss.value = formatToBRL_V2(data.INSS);
     if (data.ISS) inputIss.value = formatToBRL_V2(data.ISS);
     if (data.PIS_COFINS_CSSL) inputPisConfinsCssl.value = formatToBRL_V2(data.PIS_COFINS_CSSL);
@@ -208,6 +226,7 @@ export function preencherDadosPDC(resp) {
     } else {
         preencherListaAnexosV2();
     }
+
     //====================CAMPO DE APOIO, VALOR ORÇADO====================//
     globais.valor_orcado = data.Valor_orcado;
 
@@ -732,62 +751,6 @@ function preencherDadosClassificacao(classificacoes) {
     });
 }
 
-function preencherDadosClassificacaoBkp(classificacoes) {
-    const formClassificacao = document.querySelector('#form-classificacao');
-
-    // Limpa as linhas existentes
-    formClassificacao.querySelectorAll('.linha-classificacao').forEach(linha => {
-        linha.remove();
-    });
-
-    // Para cada classificação, cria uma nova linha
-    classificacoes.forEach(classificacao => {
-        // Extrai os valores do display_value
-        const [conta, centro, classe, valor, id] = classificacao.display_value.split('|SPLITKEY|');
-
-        // Adiciona uma nova linha
-        adicionarLinhaClassificacao();
-
-        // Pega a última linha adicionada
-        const ultimaLinha = formClassificacao.querySelector('.linha-classificacao:last-child');
-
-        // Preenche os campos
-        const selectConta = ultimaLinha.querySelector('input[name="Conta_a_debitar"]');
-        const selectCentro = ultimaLinha.querySelector('input[name="Centro_de_custo"]');
-        const selectClasse = ultimaLinha.querySelector('input[name="Classe_operacional"]');
-        const inputValor = ultimaLinha.querySelector('input[name="Valor"]');
-
-        // Extrai apenas o código antes do hífen para fazer o match
-        const codigoClasse = classe.split(' - ')[0].trim();
-        const codigoCentro = centro.split(' - ')[0].trim();
-
-
-
-        // Encontra e seleciona a opção correta em cada select
-        Array.from(selectCentro.options).forEach(option => {
-            if (option.text.startsWith(codigoCentro)) {
-                option.selected = true;
-            }
-        });
-
-        Array.from(selectClasse.options).forEach(option => {
-            if (option.text.startsWith(codigoClasse)) {
-                option.selected = true;
-            }
-        });
-
-        // Adiciona seleção da conta a debitar
-        Array.from(selectConta.options).forEach(option => {
-            if (option.text === conta.trim()) {
-                option.selected = true;
-            }
-        });
-
-        // Formata e define o valor
-        inputValor.value = formatToBRL_V2({ target: { value: valor } });
-    });
-}
-
 /**
  * Inicializa o formulário de classificação após carregar os dados
  * 
@@ -1207,6 +1170,9 @@ export function calcularValorTotalPagar() {
     document.getElementById('valor-total-pagar').innerText = formatToBRL_V2(valorTotalFinal);
 }
 
+//==============================================//
+//====================ANEXOS====================//
+//==============================================//
 export async function preencherListaAnexosV2(anexos) {
     const typesToView = ['JPG', 'JPEG', 'PNG', 'GIF', 'PDF'];
     await ZOHO.CREATOR.init();
@@ -1227,13 +1193,13 @@ export async function preencherListaAnexosV2(anexos) {
         beforeClose: function() {
             var scrollPosition = document.querySelector('.meu-body').scrollTop;
             window.sessionStorage.setItem('scrollPosition', scrollPosition);
-          },
-          afterClose: function() {
+        },
+        afterClose: function() {
             var scrollPosition = window.sessionStorage.getItem('scrollPosition');
             setTimeout(function() {
                 document.body.scrollTop = parseInt(scrollPosition);
             }, 100);
-          }
+        }
     };
 
     function createLoadingSpinner() {
@@ -1450,12 +1416,14 @@ export async function preencherListaAnexosV2(anexos) {
     galleryElement.appendChild(btnContainer);
 }
 
-
+//==============================================//
+//====================ANEXOS====================//
+//==============================================//
 export function adicionarLinhaNF() {
     const linhasNF = document.getElementById('linhas-nf');
 
     const novaLinha = document.createElement('div');
-    novaLinha.classList.add('linha-nf');
+    novaLinha.classList.add('linha-nf', 'hidden');
 
     const dataEmissaoInput = document.createElement('input');
     dataEmissaoInput.type = 'date';
@@ -1470,18 +1438,25 @@ export function adicionarLinhaNF() {
     removerButton.type = 'button';
     removerButton.classList.add('remover-linha-nf', 'close-icon', 'remove-btn');
     removerButton.name = 'botao_remover';
-    removerButton.addEventListener('click', removerLinhaNF);
+    removerButton.addEventListener('click', (el) => removerLinhaNF(el.target));
 
     novaLinha.appendChild(dataEmissaoInput);
     novaLinha.appendChild(numeroNFInput);
     novaLinha.appendChild(removerButton);
-
     linhasNF.appendChild(novaLinha);
+    return novaLinha;
 }
 
-export function removerLinhaNF(event) {
-    const linha = event.target.closest('.linha-nf');
-    if (linha) {
+export function removerLinhaNF(elemento) {
+    const log = false
+    if (log) console.log('++++++++++REMOVENDO LINHA NF++++++++++');
+    if (log) console.log(elemento);
+    const linha = elemento.closest('.linha-nf');
+    const linhasNF = document.querySelectorAll('.linha-nf');
+
+    if (linha && linhasNF.length > 1) {
         linha.remove();
     }
+
+    if (log) console.log('----------LINHA DE NF REMOVIDA----------');
 }

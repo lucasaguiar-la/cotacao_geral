@@ -1,7 +1,24 @@
-
-save_utils.js:77 allDataPDC =>  {"Entidade":"3938561000066182595","Tipo_de_solicitacao":"3938561000077308645","Descricao_da_compra":"Compra de mantimento para o restaurante.","Utilizacao":"","Justificativa":"","id_temp":"2025_01_06_13_46_52","Forma_de_pagamento":"Boleto","Banco":"","AG":"","N_Conta":"","Favorecido":"","pag_antecipado":"on","Datas":[{"Numero_da_parcela":1,"Vencimento_previsto":"17/01/2025","Valor":1819.2,"Num_PDC_parcela":"88076","parcela_criada":false}],"Valor":"1.819,20","":"","Vencimento_previsto":"17/01/2025","Numero_do_PDC":"88076","Perfil_responsavel":"Comprador","Beneficiario":"RIO VALE COMERCIO E ...","Valor_orcado":1819.2,"Classificacao_contabil":[{"Conta_a_debitar":"CUSTEIO","Centro_de_custo":"3938561000085009966","Classe_operacional":"3938561000085009986","Valor":1819.2}],"Data_emissao_N_Fiscal":"03/01/2025","Numero_N_Fiscal":12732,"INSS":0,"ISS":0,"PIS_COFINS_CSSL":0,"Desconto_comercial_ou_parcela":0,"Acrescimo_tarifa_bancaria":0,"Valor_original":1819.2,"Total_de_descontos":0,"Valor_total_a_pagar":1819.2}
-save_utils.js:570 1. dadostabPrecos =>  [{…}]
-save_utils.js:571 2. dadosPDC =>  {Entidade: '3938561000066182595', Tipo_de_solicitacao: '3938561000077308645', Descricao_da_compra: 'Compra de mantimento para o restaurante.', Utilizacao: '', Justificativa: '', …}
-save_utils.js:572 3. arquivos =>  {}
-save_utils.js:577 É EDIÇÃO DE PDC!
-ad5db1ce-73da-449c-ad4e-060792395570.zappsusercontent.com/appfiles/v2/ad5db1ce-73da-449c-ad4e-060792395570/1.0/a6e03bb70ff42dd5897ec0524edc5182e0c70b42545ec05f8f0fe8e3e45946c9/r2857/app/js/save_utils.js:596 respPDC =>  {code: 3000, data: {…}, message: 'Data Updated Successfully'}
+{
+    "INSS": 0,
+    "ISS": 0,
+    "PIS_COFINS_CSSL": 0,
+    "Desconto_comercial_ou_parcela": 0,
+    "Acrescimo_tarifa_bancaria": 0,
+    "linhasNF": [
+        {
+            "Data_emissao_N_Fiscal": "08/01/2025",
+            "Numero_N_Fiscal": "159788"
+        },
+        {
+            "Data_emissao_N_Fiscal": "10/01/2025",
+            "Numero_N_Fiscal": "4789165"
+        },
+        {
+            "Data_emissao_N_Fiscal": "12/01/2025",
+            "Numero_N_Fiscal": "14518591"
+        }
+    ],
+    "Valor_original": 0,
+    "Total_de_descontos": 0,
+    "Valor_total_a_pagar": 0
+}

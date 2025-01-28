@@ -10,10 +10,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.js"></script>
     <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://*.zappsusercontent.com https://*.zohostatic.com https://*.sigmausercontent.com https://*.qntrlusercontent.com data:;">
-
+    
     <!-- Incluindo o CSS do Fancybox -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.1/jquery.fancybox.min.css" />
-    
 
     <link rel="stylesheet" href="./styles/main_styles.css">
     <script type="text/javascript"
@@ -237,15 +236,15 @@
             </div>
         </div>
         <!--FORM DE DADOS DA NOTA FISCAL-->
-        <div class="section-header">
+        <div class="section-header hidden">
             <h2 class="titulos">DADOS DA NOTA FISCAL</h2>
             <button class="toggle-section"></button>
         </div>
-        <div class="section form-dados-nf" id="section5">
+        <div class="section form-dados-nf hidden" id="section5">
             <div class="form-container">
                 <form action="#" id="dados-nf">
                     <!--NOVOS DOCUMENTOS-->
-                    <div id="linhas-nf">
+                    <div id="linhas-nf" class="campos-iniciais-nf hidden">
                         <div class="nomes-campos-nf">
                             <label for="data-emissao-nf" class="form-dados-nf-label">Data da emissão da NF:</label>
                             <label for="numero-nf" class="form-dados-nf-label">Número da NF:</label>
