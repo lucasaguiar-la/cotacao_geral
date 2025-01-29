@@ -186,7 +186,6 @@ async function executarProcessosParalelos() {
         ];
         await Promise.all(tarefas);
 
-        
         if(globais.pag.includes('editar_cotacao')){
             //=====Cria o botão Sol. Aprov. Síndico=====\\
             criarBotao({page:globais.pag});

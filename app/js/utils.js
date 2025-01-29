@@ -459,9 +459,7 @@ function createEl(tag, className = '', innerHTML = '') {
  *   confirmText: 'Enviar'
  * });
  */
-export async function customModal({botao = null, tipo = null, titulo = null, mensagem,confirmText = 'Confirmar',cancelText = 'Cancelar',loadingText = 'Carregando, aguarde...'}) {
-    console.log("Entrou no customModal");
-    console.log("tipo => ", tipo);
+export async function customModal({botao = null, tipo = null, titulo = null, mensagem, confirmText = 'Confirmar', cancelText = 'Cancelar', loadingText = 'Carregando, aguarde...'}) {
     if(tipo === null){
         tipo = 'editar_pdc';
     }
@@ -501,7 +499,6 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             placeholder: 'Ex.: Produto veio quebrado, não recebido...',
             buttonClass: 'customAdjust-confirmButton'
         }
-
     };
 
     // Adiciona input se necessário
@@ -561,6 +558,8 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
     // Handlers dos botões
     const handleConfirm = async () => {
+        // Verifica se o tipo de solicitação é "SERVIÇO"
+        const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
 
         function getDates(t = null){
             console.log("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ESTÁ USANDO O GETDATES//////////////////////////////////")
@@ -681,7 +680,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 Status_geral: 'Lançado no orçamento'
             },
             'confirmar_compra': {
-                Status_geral: 'Compra realizada',
+                Status_geral: tipoSolicitacao === 'SERVIÇO' ? 'Recebimento confirmado' : 'Compra realizada',
                 pag_antecipado: false,
                 Datas: getDates(tipo)
             },
@@ -899,37 +898,24 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     });
 }
 
-/*Não está sendo utilizada ainda, estou tentando refatorar*/
-/*
-export async function customModal2({action = '', saveContentType = '',alertModal = false, title = null, message}) {
+export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = null, mensagem, confirmText = 'Confirmar', cancelText = 'Cancelar', loadingText = 'Carregando, aguarde...'})
+{
+    const log = true;
+    if(log) console.log("++++++++++CRIANDO MODAL CUSTOMIZADO++++++++++");
 
-    ///Caracteristicas de um modal customizável:
-     // - Título (caso exista)
-     // - Mensagem
-     // - Formulário (caso exista)
-     // - Botões ("Não há", "ok" ou "sim ou não")
-     // Possíveis retornos:
-     // - "sim" ou "não"
-     // - "sim" ou "não" com conteúdo do formulário
-     // - null (Alerta, mas este não tem retorno)
-    ///
-
-    //==========VARIÁVEIS DE APOIO E ELEMNTOS INICIAIS==========//
-    const confirmText = "Ok";
-    const cancelText = "Não";
-
+    //==========CRIA OS ELEMENTOS DO MODAL==========\\
     const overlay = createEl('div', 'customConfirm-overlay-div');
     const popup = createEl('div', 'customConfirm-div');
-    const messageElement = createEl('p', 'customConfirm-message', message);
+    const messageElement = createEl('p', 'customConfirm-message', mensagem);
 
-    //==========CRIA O TÍTULO, CASO EXISTA==========//
-    let titleElement;
-    if (title) {
-        titleElement = createEl('h3', 'customConfirm-title', title)
+    const loadingElement = createEl('div', 'customConfirm-loading', 
+        `<div class="customConfirm-loading-spinner"></div> ${loadingText}`);
+
+    if (titulo) {
+        popup.appendChild(createEl('h3', 'customConfirm-title', titulo));
     }
-
-    //==========CRIA INPUTS DE VALORES EM CASOS ESPECÍFICOS==========//
-    const inputConfigs = {
+    //==========DEFINE CONFIGURAÇÕES PARA CAMPO DE INPUT, CASO PRECISE==========\\
+    const inputConfig = {
         'ajustar_cot': {
             placeholder: 'Ex.: Gostaria que o valor de frete fosse alterado...',
             buttonClass: 'customAdjust-confirmButton'
@@ -942,12 +928,13 @@ export async function customModal2({action = '', saveContentType = '',alertModal
             placeholder: 'Ex.: Produto veio quebrado, não recebido...',
             buttonClass: 'customAdjust-confirmButton'
         }
-    }
+    };
 
+    //==========CRIA O ELEMENTO DE INPUT, CASO PRECISE==========\\
     let inputElement;
-    if (inputConfigs[tipo]) {
+    if (inputConfig[tipo]) {
         inputElement = createEl('textarea', 'customAdjust-textarea');
-        inputElement.placeholder = inputConfigs[tipo].placeholder;
+        inputElement.placeholder = inputConfig[tipo].placeholder;
         Object.assign(inputElement.style, {
             width: '300px',
             height: '100px',
@@ -955,36 +942,46 @@ export async function customModal2({action = '', saveContentType = '',alertModal
         });
     }
 
-    
-    //==========CRIA OS BOTÕES BASEADO NA AÇÃO (ALERT OU CONFIRM)==========//
+    //==========CRIA OS BOTÕES BASEADO NA AÇÃO (ALERT OU CONFIRM)==========\\
     const buttonContainer = createEl('div', 'customConfirm-button-container');
-    const confirmButton = createEl('button', `customConfirm-confirmButton ${inputConfigs[tipo]?.buttonClass || ''}`, confirmText);
+    const confirmButton = createEl('button', `customConfirm-confirmButton ${inputConfig[tipo]?.buttonClass || ''}`, confirmText);
     buttonContainer.append(confirmButton);
 
-    if (!alertModal === true) {
-        confirmButton.innerHTML = "Sim";
-        confirmButton.addEventListener('click', () => {clickConfirm().then((resp)=>{return resp;});});
-
-        const cancelButton = createEl('button', 'customConfirm-cancelButton', cancelText);
-        cancelButton.addEventListener('click', () => {clickCancel()});
-
+    let cancelButton;
+    if(tipoAcao === 'confirm')
+    {
+        cancelButton = createEl('button', 'customConfirm-cancelButton', cancelText);
         buttonContainer.append(cancelButton);
     }
 
-    Object.assign(buttonContainer.style, {
-        display: 'flex',
-        gap: '10px',
-        justifyContent: 'center',
-        marginTop: '20px'
-    });
+    //==========ALTERNAR VISIBILIDADE DE ELEMENTOS==========\\
+    const alternVisibEl = (show) => {
+        // Esconde/mostra o título se existir
+        const titleElement = popup.querySelector('.customConfirm-title');
+        if (titleElement) titleElement.style.display = show ? 'block' : 'none';
+        
+        // Esconde/mostra a mensagem
+        messageElement.style.display = show ? 'block' : 'none';
+        
+        // Esconde/mostra a textarea se existir
+        if (inputElement) {
+            inputElement.style.display = show ? 'block' : 'none';
+        }
+        
+        // Esconde/mostra os botões
+        buttonContainer.style.display = show ? 'flex' : 'none';
+        
+        // Esconde/mostra o loading (inverso dos outros elementos)
+        loadingElement.style.display = show ? 'none' : 'flex';
+        // Remove a mensagem de erro quando mostrar o loading
+        const errorMessage = popup.querySelector('.customConfirm-error-message');
+        if (errorMessage) {
+            errorMessage.style.display = show ? 'block' : 'none';
+        }
+    };
 
-    //==========CRIA UM MODAL DE LOADING==========//
-    const loadingElement = createEl('div', 'customConfirm-loading',
-        `<div class="customConfirm-loading-spinner"></div> Carregando...`);
-
-    //==========ADICIONANDO ELEMENTOS NO POPUP==========//
+    //==========FINALIZADA CRIAÇÃO DO MODAL E APLICA A PÁGINA PRINCIPAL==========\\
     popup.append(
-        ...(titleElement ? [titleElement] : []),
         messageElement,
         ...(inputElement ? [inputElement] : []),
         buttonContainer,
@@ -994,194 +991,42 @@ export async function customModal2({action = '', saveContentType = '',alertModal
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
 
-    async function clickConfirm()
-    {
-        if(alertModal === true)
-        {
-            overlay.remove();
-            return;
-        }
-
-        return new Promise((resolve) => {
-            executePageActions({action: action, saveContentType:saveContentType, inputElValue:inputElement?inputElement.value:null}).then(result => {
+    //==========RETORNA UMA PROMISE QUE SERÁ RESOLVIDA QUANDO O USUÁRIO INTERAGIR COM O MODAL==========\\
+    return new Promise((resolve) => {
+        confirmButton.addEventListener('click', () => {
+            tratarRespModal(acao).then(result => {
                 resolve(result);
             });
         });
-
-    }
-
-    function clickCancel()
-    {
-        overlay.remove();
-        return false;
-    }
-
-    function createEl(tag, className = '', innerHTML = '') {
-        const element = document.createElement(tag);
-        if (className) element.className = className;
-        if (innerHTML) element.innerHTML = innerHTML;
-        return element;
-    }
-
-    function toggleElements(show = false)
-    {
-        // Alterna visibilidade do título, caso exista
-        if (titleElement) titleElement.style.display = show ? 'block' : 'none';
-
-        // Alterna visibilidade da mensagem
-        messageElement.style.display = show ? 'block' : 'none';
-
-        // Alterna visibilidade do campo de input, caso exista
-        if (inputElement) {
-            inputElement.style.display = show ? 'block' : 'none';
-        }
-
-        // Alterana visibilidade dos botões
-        buttonContainer.style.display = show ? 'flex' : 'none';
-
-        // Alterana a visibilidade do modal de loading...
-        loadingElement.style.display = show ? 'none' : 'flex';
-    }
-}
-async function executePageActions({action = null, saveContentType = null, inputElValue = null})
-{   
-    const initUrl = 'https://guillaumon.zohocreatorportal.com/';
-    console.log("Chegou aqui!");
-
-    let Status_geral = '';
-    let inputValue = {};
-    let urlToOpen = `${initUrl}#Script:page.refresh`;
-    //==========SWITCH QUE VALIDA O STATU GERAL==========//
-    switch (action)
-    {
-        case 'criar_cotacao':
-        case 'editar_cotacao':
-            Status_geral = 'Propostas criadas';
-            break;
-        
-        case 'criar_cotacao_DP':
-        case 'editar_cotacao_DP':
-            Status_geral = 'Propostas criadas DP';
-            break;
-
-        case 'solicitar_aprovacao_sindico':
-            Status_geral = 'Aguardando aprovação de uma proposta';
-            break;
-        
-        case 'ajustar_cot':
-            Status_geral = 'Ajuste solicitado';
-            inputValue = {"Solicitacao_de_ajuste": inputElValue};
-            break;
-        
-        case 'aprov_cot':
-            Status_geral = 'Proposta aprovada';
-            break;
-
-        case 'arquivar_cot':
-            Status_geral = 'Proposta arquivada';
-            inputValue = {"motivo_arquivamento": inputElValue};
-            break;
-
-        case 'finalizar_provisionamento':
-            Status_geral = 'Lançado no orçamento';
-            break;
-
-        case 'confirmar_compra':
-            Status_geral = 'Compra realizada';
-            break;
-        
-        case 'confirmar_recebimento':
-            Status_geral = 'Recebimento confirmado';
-            break;
-
-        case 'solicitar_ajuste_ao_compras':
-            Status_geral = 'Ajuste Solicitado Pelo Almoxarifado';
-            inputValue = {"Solicitacao_de_ajuste": inputElValue};
-            break;
-
-        case 'enviar_p_checagem_final':
-            Status_geral = 'Enviado para checagem final';
-            break;
-
-        case 'enviar_p_assinatura':
-            Status_geral = 'Assinatura Confirmada Controladoria';
-            break;
-        
-        case 'autorizar_pagamento_sindico':
-            Status_geral = 'Assinatura Confirmada Sindico';
-            break;
-
-        case 'autorizar_pagamento_subsindico':
-            Status_geral = 'Assinatura Confirmada Sub Sindico';
-            break;
-        
-        case 'confirmar_todas_as_assinaturas':
-            Status_geral = 'Autorizado para pagamento';
-            break;
-        
-        case 'remover_fornecedor':
-            return true;
-        
-        case 'remover_produto':
-            console.log("Removendo linha de produto");
-            return true;
-
-        default:
-            break;
-    }
-
-    try
-    {
-        //==========CASO EXISTA UM SAVECONTENTTYPE, ACIONA A SAVETABLEDATA==========//
-        if(saveContentType !== '')
-        {
-            await saveTableData(saveContentType);
-        }
-    
-        if(Status_geral != '')
-        {
-            payload = {
-                Status_geral: Status_geral,
-                ...inputValue
-            };
-    
-            const resposta = await executar_apiZoho({
-                tipo: "atualizar_reg",
-                ID: globais.idPDC,
-                corpo: payload,
-                nomeR: globais.nomeRelPDC
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+                overlay.remove();
+                resolve(false);
             });
-    
-            if(resposta && resposta.code === 3000)
-            {
-                if (action == "confirmar_compra") {
-    
-                    // Obtém o valor da entidade selecionada
-                    const entidadeSelecionada = document.getElementById('entidade').value;
-                    let link_layout;
-                    // [LAYOUT]
-                    if (entidadeSelecionada == "3938561000066182591") {
-                        link_layout = `${initUrl}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/Laranj_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Laranjeiras`;
-                    }
-                    else if (entidadeSelecionada == "3938561000066182595") {
-                        link_layout = `${initUrl}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/AssociacaoServir_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Ass_Servir`;
-                    }
-                    
-                    window.open(`${link_layout}`, '_blank', 'noopener,noreferrer');
-                }
-                window.open(urlToOpen, '_top');
-    
-            }else
-            {
-                return `Ocorreu um erro ao tentar alterar o status, contate o administrador do sistema!\nErro: `;
-            }
         }
-    }catch(err)
+    });
+
+
+}
+
+async function prepararParaSalvar(acao)
+{
+    if(acao === 'salvar_cot')
     {
-        return `Ocorreu um erro inesperado, contate o administrador do sistema!\nErro: ${err}`;
+        
     }
 }
-*/
+
+
+
+
+
+
+export async function tratarRespModal()
+{
+
+}
+
 
 /**
  * Oculta todos os campos da página, exceto os especificados
