@@ -1462,3 +1462,26 @@ export function removerLinhaNF(elemento) {
 
     if (log) console.log('----------LINHA DE NF REMOVIDA----------');
 }
+
+export function mostrarCamposRetencao() {
+
+    const camposNF = document.getElementById('section5');
+    // Remove a classe 'hidden' da section-header que está acima de section5
+    const sectionHeader = camposNF.previousElementSibling;
+    if (sectionHeader && sectionHeader.classList.contains('section-header')) {
+        sectionHeader.classList.remove("hidden");
+    }
+
+    camposNF.classList.remove("hidden");
+
+    // Verifica se o tipo de solicitação é "SERVIÇO"
+    const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
+
+    if (tipoSolicitacao === "SERVIÇO") {
+
+        camposNF.querySelectorAll('*').forEach(child => child.classList.remove("hidden"));
+    }else{
+
+        camposNF.querySelector('.campos-iniciais-nf').classList.remove("hidden");
+    }
+}

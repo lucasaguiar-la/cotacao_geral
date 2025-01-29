@@ -27,10 +27,10 @@ import {
     atualizarValorOriginal,
     preencherListaAnexosV2,
     mostrarCamposPagamento,
+    mostrarCamposRetencao,
     adicionarCampoVenc,
     setupPixValidation,
     preencherDadosPDC,
-    
     adicionarLinhaNF,
     removerCampoVenc,
     removerLinhaNF
@@ -61,7 +61,6 @@ class Globais {
 }
 export const globais = new Globais();
 
-const qlt = 4;
 // Inicia o processo
 initGenericItems().catch(error => {
     console.error('Erro na inicialização:', error);
@@ -73,7 +72,7 @@ async function initGenericItems() {
         // 1. Executa searchPageParams e espera seu resultado
         await searchPageParams();
 
-        // 2. Cria a Promise do allSettled
+        // 2. Cria a Promise que busca todas as bases
         const basesPromise = Promise.allSettled([
             buscarFornecedores().then(result => { globais.baseFornecedores = result; }),
             buscarCentrosCusto().then(result => { globais.baseCentrosCusto = result; }),
@@ -89,7 +88,7 @@ async function initGenericItems() {
 
         }
 
-        // 4. Configura os ouvintes
+        // 4. Configura os ouvintes (Se a página ainda não tiver carregado, adiciona um ouvinte para aguardar carregar, senão inicia os processos)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', setupListenersAndInit);
         } else {
@@ -101,7 +100,7 @@ async function initGenericItems() {
 }
 
 async function setupListenersAndInit() {
-    // Configura os ouvintes
+    //==========CONFIGURA OS OUVINTES GERAIS==========\\
     const buttonActions = {
         "add-supplier-btn": { handler: () => addSupplierColumn(), type: 'click' },
         "add-product-btn": { handler: () => addProductRow(), type: 'click' },
@@ -165,161 +164,139 @@ async function setupListenersAndInit() {
             });
         }
     });
-
-    // Adicione esta linha
+    //==========CONFIGURA OS OUVINTES DAS BARRAS DE TÍTULO, ==========\\
+    //==========(PARA QUE AS SEÇÕES SEJAM EXPANDIDAS/RECOLHIDAS)==========\\
     setupSectionToggle();
 
-    // 3. Inicia os processos em paralelo
+    //==========INICIA O TRATAMENTO/APRESENTAÇÃO DOS DADOS==========\\
     await executarProcessosParalelos();
 }
 
 async function executarProcessosParalelos() {
 
     if (!globais.pag.includes('criar_cotacao')) { 
+        //==========TRATA TODOS OS DADOS PARA APRESENTAÇÃO E==========\\
+        //==========MODIFICAÇÃO DOS BOTÕES (VISTO QUE NÃO É UMA NOVA SOLICITAÇÃO)==========\\
         await ZOHO.CREATOR.init();
 
-        // Executa processos em paralelo
+        //=====Preenche paralelamente os dados da tab de preços e o restante do PDC=====\\
         const tarefas = [
             processarDadosPDC(),
             processarDadosCotacao()
         ];
-
         await Promise.all(tarefas);
-        if(!globais.pag.includes('editar_cotacao')) {
 
-            if (globais.pag.includes("aprovar_cotacao")) {
-                
-                criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
-            }else if(globais.pag === "confirmar_compra" || globais.pag === "arquivar_cotacao" || globais.pag === "duplicar_pdc" || globais.pag === "ver_cotacao")
-            {
-                criarBotao({page:globais.pag, removeExistingButtons: true});
-
-            } else if (globais.pag === "criar_numero_de_PDC") 
-            {
-                criarBotao({page:globais.pag});
-                //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
-                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
-                if (checkboxPagamentoAntecipado) {
-                    checkboxPagamentoAntecipado.classList.add("hidden");
-                }
-
-            }else if(globais.pag === "receber_compra")
-            {
-                criarBotao({page:globais.pag, removeExistingButtons: true});
-                //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
-                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
-                if (checkboxPagamentoAntecipado) {
-                    checkboxPagamentoAntecipado.classList.add("hidden");
-                }
-
-            }else if(globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final" )
-            {
-                const camposNF = document.getElementById('section5');
-
-                // Remove a classe 'hidden' da section-header que está acima de section5
-                const sectionHeader = camposNF.previousElementSibling;
-                if (sectionHeader && sectionHeader.classList.contains('section-header')) {
-                    sectionHeader.classList.remove("hidden");
-                }
-
-                camposNF.classList.remove("hidden");
-
-                // Verifica se o tipo de solicitação é "SERVIÇO"
-                const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
-
-                if (tipoSolicitacao === "SERVIÇO") {
-
-                    camposNF.querySelectorAll('*').forEach(child => child.classList.remove("hidden"));
-                }else{
-
-                    camposNF.querySelector('.campos-iniciais-nf').classList.remove("hidden");
-                }
-                criarBotao({page:globais.pag});
-                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
-                if (checkboxPagamentoAntecipado) {
-                    checkboxPagamentoAntecipado.classList.add("hidden");
-                }
-
-            }else if (globais.pag == "autorizar_pagamento_subsindico" || globais.pag == "autorizar_pagamento_sindico" || globais.pag == "confirmar_todas_as_assinaturas") {
-                criarBotao({page: globais.pag, removeExistingButtons: true});
-                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
-                if (checkboxPagamentoAntecipado) {
-                    checkboxPagamentoAntecipado.classList.add("hidden");
-                }
-
-            }else
-            {
-                criarBotao({removeExistingButtons:true});
-            }
-            //desabilitarTodosElementosEditaveis();
-            desabilitarCampos()
-        }
-        else 
-        {
+        
+        if(globais.pag.includes('editar_cotacao')){
+            //=====Cria o botão Sol. Aprov. Síndico=====\\
             criarBotao({page:globais.pag});
+
+        }else if (globais.pag.includes("aprovar_cotacao")) {
+                //=====Cria o botão de Aprovar Cotação=====\\
+                criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
+
+        }else if(["confirmar_compra", "arquivar_cotacao", "duplicar_pdc", "ver_cotacao"].includes(globais.pag))
+        {
+            //=====Se for qualquer outro processo que precise apenas criar botão, cria o botão correspondente=====\\
+            criarBotao({page:globais.pag, removeExistingButtons: true});
+
+        } else if ([
+            "criar_numero_de_PDC", 
+            "receber_compra", 
+            "ajustar_compra_compras", 
+            "checagem_final", 
+            "autorizar_pagamento_subsindico", 
+            "autorizar_pagamento_sindico", 
+            "confirmar_todas_as_assinaturas"
+        ].includes(globais.pag)) 
+        {
+            //=====Mostra os campos de retenção se for necessário=====\\
+            if(["ajustar_compra_compras", "checagem_final"].includes(globais.pag)){
+                mostrarCamposRetencao();
+            }
+
+            //=====Cria o botão correspondente=====\\
+            //=====Pode ou não remover os botões existentes antes de criar os novos=====\\
+            criarBotao(
+                {
+                    page:globais.pag, 
+                    removeExistingButtons:  
+                    [
+                        "receber_compra", 
+                        "autorizar_pagamento_subsindico", 
+                        "autorizar_pagamento_sindico", 
+                        "confirmar_todas_as_assinaturas"
+                    ].includes(globais.pag) ? true : false
+                }
+            );
+
+            //=====Oculta o checkbox de pagamento antecipado=====\\
+            const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+            if (checkboxPagamentoAntecipado) {
+                checkboxPagamentoAntecipado.classList.add("hidden");
+            }
+
+        }else
+        {
+            //=====Remove todos os botões=====\\
+            criarBotao({removeExistingButtons:true});
         }
+            //=====Desabilita os campos baseado no globais.pag passado=====\\
+            desabilitarCampos()
     }else
     {
+        //==========TRATA TODAS AS EXCEÇÕES DE NOVA SOLICITAÇÃO E==========\\
+        //==========ATUALIZA TODOS OS OUVINTES DA PÁGINA==========\\
+
+        //=====Cria o botão de Sol. Aprov. Síndico=====\\
         preencherListaAnexosV2();
         criarBotao({page: globais.pag});
 
-        if(globais.pag.includes("_DP"))
+        if(globais.pag.includes("_DP") || globais.pag.includes("_controladoria"))
         {
-            // Remove todos os event listeners do botão com a classe save-btn
+            //=====Atualiza o botão de Salvar para uso do DP=====\\
             const saveButton = document.querySelector('.save-btn');
             const newSaveButton = saveButton.cloneNode(true); // Clona o botão para preservar o estado
             saveButton.parentNode.replaceChild(newSaveButton, saveButton); // Substitui o botão original
 
-            // Adiciona um novo evento de clique
             newSaveButton.addEventListener('click', () => {
-                customModal({botao:newSaveButton, tipo: "criar_cotacao_DP", mensagem:"Deseja realmente salvar este registro?"});
+                customModal({botao:newSaveButton, tipo: globais.pag, mensagem:"Deseja realmente salvar este registro?"});
             });
 
-            globais.perfilResponsavel = "Depto. Pessoal";
+            if(globais.pag.includes("_DP"))
+            {
+                //=====Oculta o campo de Tipo de Solicitação=====\\
+                const tipoElement = document.querySelector('select[name="Tipo_de_solicitacao"]');
+                const tipoLabel = tipoElement.previousElementSibling;
+                if (tipoElement && tipoLabel) {
+                    tipoElement.style.display = 'none'; 
+                    tipoLabel.style.display = 'none';
+                }
 
-            const tipoElement = document.querySelector('select[name="Tipo_de_solicitacao"]');
-            const tipoLabel = tipoElement.previousElementSibling;
-            if (tipoElement && tipoLabel) {
-                tipoElement.style.display = 'none'; 
-                tipoLabel.style.display = 'none';
-            }
-
-            //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
-            const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
-            if (checkboxPagamentoAntecipado) {
-                checkboxPagamentoAntecipado.classList.add("hidden");
+                globais.perfilResponsavel = "Depto. Pessoal";
+            }else 
+            {
+                globais.perfilResponsavel = "Controladoria";
             }
             
-
-        }else if(globais.pag.includes("controladoria"))
-        {
-            // Remove todos os event listeners do botão com a classe save-btn
-            const saveButton = document.querySelector('.save-btn');
-            const newSaveButton = saveButton.cloneNode(true); // Clona o botão para preservar o estado
-            saveButton.parentNode.replaceChild(newSaveButton, saveButton); // Substitui o botão original
-
-            // Adiciona um novo evento de clique
-            newSaveButton.addEventListener('click', () => {
-                customModal({botao:newSaveButton, tipo: "criar_cotacao_controladoria", mensagem:"Deseja realmente salvar este registro?"});
-            });
-            globais.perfilResponsavel = "Controladoria";
-
-            //OCULTANDO CHECKBOX DE PAGAMENTO ANTECIPADO//
+            //=====Oculta o checkbox de pagamento antecipado=====\\
             const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
             if (checkboxPagamentoAntecipado) {
                 checkboxPagamentoAntecipado.classList.add("hidden");
             }
+
         }else
         {
             globais.perfilResponsavel = "Comprador";
         }
     }
+
+    //==========MOSTRA A PÁGINA E ATUALIZA TODOS OS VALORES E OUVINTES==========\\
     document.body.classList.remove('hidden');
     atualizarOuvintesTabCot();
     atualizarValorOrcado();
     atualizarValorTotalParcelas();
     atualizarValorTotalClassificacoes();
-
 }
 
 async function processarDadosPDC() {
