@@ -902,6 +902,13 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
 {
     const log = true;
     if(log) console.log("++++++++++CRIANDO MODAL CUSTOMIZADO++++++++++");
+    if(log) console.log("+++ACAO => ", acao);
+    if(log) console.log("+++TIPO DE ACAO => ", tipoAcao);
+    if(log) console.log("+++TITULO => ", titulo);
+    if(log) console.log("+++MENSAGEM => ", mensagem);
+    if(log) console.log("+++CONFIRM TEXT => ", confirmText);
+    if(log) console.log("+++CANCEL TEXT => ", cancelText);
+    if(log) console.log("+++LOADING TEXT => ", loadingText);
 
     //==========CRIA OS ELEMENTOS DO MODAL==========\\
     const overlay = createEl('div', 'customConfirm-overlay-div');
@@ -932,15 +939,17 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
 
     //==========CRIA O ELEMENTO DE INPUT, CASO PRECISE==========\\
     let inputElement;
-    if (inputConfig[tipo]) {
+    if (inputConfig[acao]) {
         inputElement = createEl('textarea', 'customAdjust-textarea');
-        inputElement.placeholder = inputConfig[tipo].placeholder;
+        inputElement.placeholder = inputConfig[acao].placeholder;
         Object.assign(inputElement.style, {
             width: '300px',
             height: '100px',
             resize: 'none',
         });
+        if(log) console.log("Input criado!");
     }
+    if(log) console.log("Passou do input!");
 
     //==========CRIA OS BOTÕES BASEADO NA AÇÃO (ALERT OU CONFIRM)==========\\
     const buttonContainer = createEl('div', 'customConfirm-button-container');
@@ -994,7 +1003,11 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
     //==========RETORNA UMA PROMISE QUE SERÁ RESOLVIDA QUANDO O USUÁRIO INTERAGIR COM O MODAL==========\\
     return new Promise((resolve) => {
         confirmButton.addEventListener('click', () => {
-            tratarRespModal(acao).then(result => {
+            alternVisibEl(false);
+            tratarRespModal({acao:acao, infoInserida:inputElement ? inputElement.value : null}).then(result => {
+                if (result === true) {
+                    overlay.remove();
+                }
                 resolve(result);
             });
         });
@@ -1005,28 +1018,38 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
             });
         }
     });
-
-
 }
 
-async function prepararParaSalvar(acao)
+
+export async function tratarRespModal({acao, infoInserida = null})
 {
-    if(acao === 'salvar_cot')
+    if(['salvar_cot', 'criar_cotacao', 'editar_cot', 'solicitar_aprovacao_sindico', 'corrigir_erros', 'ajustar_cot'].includes(acao))
     {
-        
+        await prepararParaSalvar(acao, infoInserida);
+    }
+    return true;
+}
+
+async function prepararParaSalvar(acao, infoInserida = null)
+{
+    const paramExtra = {};
+    const url = 'https://guillaumon.zohocreatorportal.com/';
+    if(['salvar_cot', 'criar_cotacao', 'editar_cot', 'corrigir_erros'].includes(acao))
+    {
+        await saveTableData_V2({status:"Propostas criadas", sepPorParc: false});
+        window.open(`${url}#Script:page.refresh`, '_top');
+    }else if(['solicitar_aprovacao_sindico'].includes(acao))
+    {
+        await saveTableData_V2({status:"Aguardando aprovação de uma proposta", sepPorParc: false});
+        window.open(`${url}#Script:page.refresh`, '_top');
+    }else if(['ajustar_cot'].includes(acao))
+    {
+        if(infoInserida) paramExtra.Solicitacao_de_ajuste = infoInserida;
+
+        await saveTableData_V2({status:"Ajuste solicitado", sepPorParc: false, paramsExtraPDC: paramExtra});
+        window.open(`${url}#Script:page.refresh`, '_top');
     }
 }
-
-
-
-
-
-
-export async function tratarRespModal()
-{
-
-}
-
 
 /**
  * Oculta todos os campos da página, exceto os especificados
@@ -1050,6 +1073,10 @@ export function desabilitarCampos() {
     let formsParaManterHabilitados = [];
     let aTagsParaManterHabilitados = [];
 
+    if(globais.pag === 'editar_cotacao')
+    {
+        return;
+    }
     if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
         camposParaManterHabilitados = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
         botoesParaManterHabilitados = ["add-parcela", "remover-parcela", "add-linha-nf","remover-linha-nf"];//classe

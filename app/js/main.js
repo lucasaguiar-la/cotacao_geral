@@ -14,8 +14,9 @@ import {
 import {
     desabilitarCampos,
     executar_apiZoho,
-    customModal,
-    formatToBRL_V2
+    customModal_V2,
+    formatToBRL_V2,
+    customModal
 } from './utils.js'
 import {
     atualizarValorTotalClassificacoes,
@@ -113,8 +114,9 @@ async function setupListenersAndInit() {
             type: 'click'
         },
         "save-btn": { 
-            handler: (elemento) => customModal({ 
+            handler: (elemento) => customModal_V2({ 
                 botao: elemento, 
+                acao: 'salvar_cot',
                 mensagem: 'Deseja realmente salvar esta cotação?' 
             }),
             type: 'click'
@@ -190,16 +192,15 @@ async function executarProcessosParalelos() {
             //=====Cria o botão Sol. Aprov. Síndico=====\\
             criarBotao({page:globais.pag});
 
-        }else if (globais.pag.includes("aprovar_cotacao")) {
-                //=====Cria o botão de Aprovar Cotação=====\\
-                criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
+        }else if (globais.pag.includes("aprovar_cotacao")){
+            //=====Cria o botão de Aprovar Cotação=====\\
+            criarBotao({page: "aprovar_cotacao", removeExistingButtons:true});
 
-        }else if(["confirmar_compra", "arquivar_cotacao", "duplicar_pdc", "ver_cotacao"].includes(globais.pag))
-        {
+        }else if(["confirmar_compra", "arquivar_cotacao", "duplicar_pdc", "ver_cotacao"].includes(globais.pag)){
             //=====Se for qualquer outro processo que precise apenas criar botão, cria o botão correspondente=====\\
             criarBotao({page:globais.pag, removeExistingButtons: true});
 
-        } else if ([
+        } else if([
             "criar_numero_de_PDC", 
             "receber_compra", 
             "ajustar_compra_compras", 
@@ -207,8 +208,7 @@ async function executarProcessosParalelos() {
             "autorizar_pagamento_subsindico", 
             "autorizar_pagamento_sindico", 
             "confirmar_todas_as_assinaturas"
-        ].includes(globais.pag)) 
-        {
+        ].includes(globais.pag)){
             //=====Mostra os campos de retenção se for necessário=====\\
             if(["ajustar_compra_compras", "checagem_final"].includes(globais.pag)){
                 mostrarCamposRetencao();
@@ -233,6 +233,7 @@ async function executarProcessosParalelos() {
             const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
             if (checkboxPagamentoAntecipado) {
                 checkboxPagamentoAntecipado.classList.add("hidden");
+
             }
 
         }else
@@ -240,8 +241,9 @@ async function executarProcessosParalelos() {
             //=====Remove todos os botões=====\\
             criarBotao({removeExistingButtons:true});
         }
-            //=====Desabilita os campos baseado no globais.pag passado=====\\
-            desabilitarCampos()
+
+        //=====Desabilita os campos baseado no globais.pag passado=====\\
+        desabilitarCampos();
     }else
     {
         //==========TRATA TODAS AS EXCEÇÕES DE NOVA SOLICITAÇÃO E==========\\
@@ -253,6 +255,7 @@ async function executarProcessosParalelos() {
 
         if(globais.pag.includes("_DP") || globais.pag.includes("_controladoria"))
         {
+            /*
             //=====Atualiza o botão de Salvar para uso do DP=====\\
             const saveButton = document.querySelector('.save-btn');
             const newSaveButton = saveButton.cloneNode(true); // Clona o botão para preservar o estado
@@ -261,6 +264,7 @@ async function executarProcessosParalelos() {
             newSaveButton.addEventListener('click', () => {
                 customModal({botao:newSaveButton, tipo: globais.pag, mensagem:"Deseja realmente salvar este registro?"});
             });
+            */
 
             if(globais.pag.includes("_DP"))
             {
@@ -273,6 +277,7 @@ async function executarProcessosParalelos() {
                 }
 
                 globais.perfilResponsavel = "Depto. Pessoal";
+                
             }else 
             {
                 globais.perfilResponsavel = "Controladoria";

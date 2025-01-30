@@ -1,5 +1,5 @@
 import {globais} from './main.js';
-import { customModal } from './utils.js';
+import { customModal, customModal_V2 } from './utils.js';
 
 export function criarBotao({page = null, removeExistingButtons = false})
 {
@@ -249,7 +249,8 @@ export function criarBotao({page = null, removeExistingButtons = false})
         //==========SE O BOTÃO NÃO FOR UMA EXCEÇÃO, CRIA O ONCLICK PARA ABRIR UM MODAL DE CONFIRMAÇÃO==========//
         if (!["criar_numero_de_PDC", "criar_cotacao_DP", "editar_cotacao_DP"].includes(page)) {
             newButton.onclick = () => {
-                customModal({botão: this, tipo: type, titulo: title, mensagem: message});
+                customModal_V2({acao:type, titulo: title, mensagem: message});
+                //customModal({botão: this, tipo: type, titulo: title, mensagem: message});
             };
         }
 

@@ -590,7 +590,7 @@ function getItemData(base64String) {
  * @description
  * Esta função é responsável por salvar os dados da tab. Se uma cotação já existe, ela limpa a cotação antiga e salva a nova. Caso contrário, cria uma nova cotação.
  */
-export async function saveTableData_V2(status = null, sepPorParc = false) {
+export async function saveTableData_V2({status = null, sepPorParc = false, paramsExtraPDC = {}}) {
     const log = true;
     if(log) console.log("<<<<<<<<<<SALVANDO COTAÇÃO>>>>>>>>>>");
     if(log) console.log("1. status => ", status);
@@ -610,7 +610,7 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
         } else {
             globais.cotacaoExiste = false;
         }
-        await saveTableData_V2(status, sepPorParc);
+        await saveTableData_V2({status, sepPorParc, paramsExtraPDC});
 
     } else {
         if(log) console.log("----------COTACAO NÃO EXISTE----------");
@@ -622,7 +622,10 @@ export async function saveTableData_V2(status = null, sepPorParc = false) {
             const chave = Array.from(PDCsToSave.keys())[i];
             const pdcData = PDCsToSave.get(chave);
             const dadostabPrecos = pdcData.priceTableData;
-            const dadosPDC = pdcData.PDCsData;
+            const dadosPDC = {
+                ...pdcData.PDCsData,
+                ...paramsExtraPDC
+            };
             const arquivos = Object.keys(pdcData.Files).reduce((acc, curr) => {
                 if (pdcData.Files[curr].data) acc[curr] = pdcData.Files[curr];
                 return acc;
