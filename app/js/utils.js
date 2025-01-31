@@ -644,48 +644,14 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         let payload;
         // Mapeia os tipos de ação   para os payloads correspondentes
         const payloadMap = {
-            'criar_cotacao_DP':
-            {
-                Status_geral: 'Propostas criadas DP'
-            },
-            'editar_cotacao_DP':
-            {
-                Status_geral: 'Propostas criadas DP'
-            },
-            "criar_cotacao_controladoria":{
-                Status_geral: 'Propostas criadas controladoria'
-            },
-            "editar_cotacao_controladoria":{
-                Status_geral: 'Propostas criadas controladoria'
-            },
-            'solicitar_aprovacao_sindico': {
-                Status_geral: 'Aguardando aprovação de uma proposta'
-            },
-            'corrigir_erros': {
-                Status_geral: "Propostas criadas"
-            },
-            'ajustar_cot': {
-                Status_geral: 'Ajuste solicitado',
-                Solicitacao_de_ajuste: inputElement ? inputElement.value : null
-            },
-            'aprov_cot': {
-                Status_geral: !globais.pag.includes("_DP")?'Proposta aprovada':'Enviado para checagem final'
-            },
-            'arquivar_cot': {
-                Status_geral: 'Proposta arquivada',
-                motivo_arquivamento: inputElement ? inputElement.value : null
-            },
-            'finalizar_provisionamento':
-            {
-                Status_geral: 'Lançado no orçamento'
-            },
             'confirmar_compra': {
                 Status_geral: tipoSolicitacao === 'SERVIÇO' ? 'Recebimento confirmado' : 'Compra realizada',
                 pag_antecipado: false,
                 Datas: getDates(tipo)
             },
             'confirmar_recebimento': {
-                Status_geral: 'Separado em parcelas'
+                Status_geral: 'Separado em parcelas',
+
                 /*Função splitar PDC*/
             },
             'solicitar_ajuste_ao_compras': {
@@ -1023,32 +989,103 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
 
 export async function tratarRespModal({acao, infoInserida = null})
 {
-    if(['salvar_cot', 'criar_cotacao', 'editar_cot', 'solicitar_aprovacao_sindico', 'corrigir_erros', 'ajustar_cot'].includes(acao))
+    const log = false;
+    if(log) console.log("++++++++++TRATANDO RESPOSTA POSITIVA DO MODAL++++++++++");
+    if(log) console.log("acao => ", acao);
+    if(log) console.log("infoInserida => ", infoInserida);
+    
+    if(
+        [
+            'salvar_cot', 
+            'criar_cotacao', 
+            'editar_cot', 
+            'solicitar_aprovacao_sindico', 
+            'corrigir_erros', 
+            'ajustar_cot', 
+            'aprov_cot', 
+            'arquivar_cot',
+            'finalizar_provisionamento',
+            'confirmar_compra'
+        ].includes(acao))
     {
         await prepararParaSalvar(acao, infoInserida);
     }
+    if(log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
     return true;
 }
 
 async function prepararParaSalvar(acao, infoInserida = null)
 {
+
+    const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
+    
+    const log = false;
+    if(log) console.log("++++++++++PREPARANDO PARA SALVAR++++++++++");
+    if(log) console.log("acao => ", acao);
+    if(log) console.log("infoInserida => ", infoInserida);
+
     const paramExtra = {};
     const url = 'https://guillaumon.zohocreatorportal.com/';
     if(['salvar_cot', 'criar_cotacao', 'editar_cot', 'corrigir_erros'].includes(acao))
     {
-        await saveTableData_V2({status:"Propostas criadas", sepPorParc: false});
+        let stts = globais.pag === "criar_numero_de_PDC"?null:"Propostas criadas";
+        await saveTableData_V2({status:stts});
         window.open(`${url}#Script:page.refresh`, '_top');
+
     }else if(['solicitar_aprovacao_sindico'].includes(acao))
     {
-        await saveTableData_V2({status:"Aguardando aprovação de uma proposta", sepPorParc: false});
+        await saveTableData_V2({status:"Aguardando aprovação de uma proposta"});
         window.open(`${url}#Script:page.refresh`, '_top');
+
     }else if(['ajustar_cot'].includes(acao))
     {
         if(infoInserida) paramExtra.Solicitacao_de_ajuste = infoInserida;
 
-        await saveTableData_V2({status:"Ajuste solicitado", sepPorParc: false, paramsExtraPDC: paramExtra});
+        await saveTableData_V2({status:"Ajuste solicitado", paramsExtraPDC: paramExtra});
         window.open(`${url}#Script:page.refresh`, '_top');
+
+    }else if(['aprov_cot'].includes(acao))
+    {
+        await saveTableData_V2({status:!globais.pag.includes("_DP")?'Proposta aprovada':'Enviado para checagem final'});
+        window.open(`${url}#Script:page.refresh`, '_top');
+
+    }else if(['arquivar_cot'].includes(acao)){
+        await saveTableData_V2({status:"Proposta arquivada"});
+        window.open(`${url}#Script:page.refresh`, '_top');
+
+    }else if(['finalizar_provisionamento'].includes(acao)){
+        await saveTableData_V2({status:"Lançado no orçamento"});
+        window.open(`${url}#Script:page.refresh`, '_top');
+
+    }else if(['confirmar_compra'].includes(acao)){
+                paramExtra.pag_antecipado = false;
+        await saveTableData_V2({
+            status:tipoSolicitacao === 'SERVIÇO' ? 'Recebimento confirmado' : 'Compra realizada', 
+            sepPorParc: tipoSolicitacao === 'SERVIÇO'?true:false, 
+            paramsExtraPDC: paramExtra
+        });
+
+        //await saveTableData_V2({status: "Separado em parcelas", sepPorParc: false});
+        // Obtém o valor da entidade selecionada
+        const entidadeSelecionada = document.getElementById('entidade').value;
+    
+        let link_layout;
+        // [LAYOUT]
+        if(entidadeSelecionada == "3938561000066182591")
+        {
+            link_layout= `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/Laranj_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Laranjeiras`;
+        }
+        else if(entidadeSelecionada == "3938561000066182595")
+        {
+            link_layout= `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/AssociacaoServir_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Ass_Servir`;
+        }
+
+        window.open(`${link_layout}`, '_blank', 'noopener,noreferrer');
+        window.open(`${url}#Script:page.refresh`, '_top');
+        
     }
+
+    if(log) console.log("----------PROCESSO DE SALVAMENTO CONCLUÍDO----------");
 }
 
 /**

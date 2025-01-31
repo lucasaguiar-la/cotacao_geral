@@ -607,15 +607,20 @@ export async function saveTableData_V2({status = null, sepPorParc = false, param
                 await executar_apiZoho({ tipo: "atualizar_reg", ID: id, corpo: payload });
             }
             globais.cotacaoExiste = false;
+
         } else {
             globais.cotacaoExiste = false;
+
         }
         await saveTableData_V2({status, sepPorParc, paramsExtraPDC});
 
     } else {
         if(log) console.log("----------COTACAO NÃO EXISTE----------");
         const PDCsToSave = sepPorParc ? await splitDataByInstallments(status) : await meshData(status);
+
+        const apoioTipoAnt = globais.tipo;
         if (sepPorParc === true) globais.tipo = 'criar_pdc';
+    
         for (let i = 0; i < PDCsToSave.size; i++) {
 
             //====================CRIA O REGISTRO DO PDC====================//
@@ -649,8 +654,7 @@ export async function saveTableData_V2({status = null, sepPorParc = false, param
                 if(log) console.log("DADOS DO PDC ===> ", JSON.stringify(dadosPDC, null, 2));
                 respPDC = await executar_apiZoho({ tipo: "add_reg", corpo: JSON.stringify(dadosPDC, null, 2), nomeF: globais.nomeFormPDC });
 
-
-                // Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
+                //Verifica se a resposta foi bem-sucedida e se globais.idPDC é null
                 if (respPDC.code === 3000) {
                     if (globais.idPDC === null) globais.idPDC = respPDC.data.ID; // Preenche globais.idPDC com o ID retornado
                     idNovoPDC = respPDC.data.ID;
@@ -702,6 +706,7 @@ export async function saveTableData_V2({status = null, sepPorParc = false, param
             const json = JSON.stringify(dadostabPrecos, null, 2);
             let respCot = await executar_apiZoho({ tipo: "add_reg", corpo: json });
 
+            globais.tipo = apoioTipoAnt;
             globais.cotacaoExiste = true;
         }
     }
@@ -728,6 +733,5 @@ export async function tratarSalvamentoPDC({ acao = null }) {
      * Duplicar anexos (Compra recebida)
      * Alterar Status
      */
-
 
 }

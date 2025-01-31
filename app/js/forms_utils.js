@@ -174,7 +174,7 @@ export function preencherDadosPDC(resp) {
 
             const [dia, mes, ano] = dataStr.split('/') ;
             const dataFormatada = dataStr !== ""? `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`: "";
-            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada, numParc, qtdParcelas);
+            adicionarCampoVenc(dataFormatada, valor, numPDC, parcCriada, numParc);
         });
     }
 
@@ -251,9 +251,17 @@ export function preencherDadosPDC(resp) {
  * @description
  * - Cria um novo campo de data para parcelas de pagamento
  */
-export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null, numParcela =  null, qtdParc = 1) {
-    //const numPDC = getNumPDC ? getNumPDC() : null;
+export function adicionarCampoVenc(data = null, valor = null, numPDC = null, parcCriada = null, numParcela =  null) {
+    const log = false;
+    if(log) console.log("++++++++++ADICIONANDO LINHAS DE PARCELAS++++++++++");
+
     if(numParcela !== 1) numeroParcela++;
+    if(log) console.log("numParcela => ", numParcela);
+    if(log) console.log("data => ", data);
+    if(log) console.log("valor => ", valor);
+    if(log) console.log("numPDC => ", numPDC);
+    if(log) console.log("parcCriada => ", parcCriada);
+    if(log) console.log("numParcela => ", numParcela);
 
     //====================CRIA UM NOVO CONTAINER PARA O CAMPO DE DATA E O BOTÃO DE REMOVER====================//
     const novoCampo = document.createElement('div');
@@ -287,22 +295,13 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
     if (numPDC) {
         const camposParcelas = document.querySelectorAll('.parcela');
         const numPDCInput = camposParcelas.length > 0 ? camposParcelas[0].querySelector('input[name="Num_PDC_parcela"]') : null;
-        
-        if (camposParcelas.length === 1 && !numPDCInput.value.includes('/') && qtdParc > 1) {
-            numPDCInput.value = `${numPDC}/01`;
-        }
 
         novoInputNumPDC = document.createElement('input');
         novoInputNumPDC.type = 'text';
         novoInputNumPDC.name = 'Num_PDC_parcela';
         novoInputNumPDC.classList.add('campo-datas', "num-pdc");
         // Verifica se numPDC já possui a parte /NN
-
-        if (!numPDC.includes('/') && qtdParc > 1) {
-            novoInputNumPDC.value = `${numPDC}/${String(numeroParcela).padStart(2, '0')}`;
-        } else {
-            novoInputNumPDC.value = numPDC; // Mantém o valor original se já tiver a parte /NN
-        }
+        novoInputNumPDC.value = numPDC;
 
         novoInputNumPDC.addEventListener('change', () => {
             /*Verifica se o numero do PDC possui o / , caso possua, verifica a quantidade de caracteres depois da barra, caso tenha apenas 1 caractere, adiciona um zero a esquerda*/
@@ -347,6 +346,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
 
     //====================ATUALIZA OS RÓTULOS DE PARCELA PARA MANTER A SEQUÊNCIA CORRETA====================//
     atualizarLabels();
+    if(log) console.log("----------LINHA DE PARCELA CRIADA----------");
 }
 
 /**
