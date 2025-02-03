@@ -728,7 +728,7 @@ function criarPopupBase(conteudo) {
  * - Formata o valor total em BRL e exibe na célula correspondente
  */
 export function calculateTotalPrices(rowIndex) {
-    const log = true;
+    const log = false;
     if(log) console.log("++++++++++CALCULANDO TOTAL DA LINHA++++++++++");
     const table = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
     const row = table.rows[rowIndex]; //Linha a ser calculada
