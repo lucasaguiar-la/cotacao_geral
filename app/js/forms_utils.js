@@ -69,6 +69,7 @@ export function preencherDadosPDC(resp) {
     const data = resp.data[0];
     globais.idPDC = data.ID;
     globais.numPDC = data.Numero_do_PDC;
+    globais.perfilResponsavel = data.Perfil_responsavel
     if(data.Perfil_responsavel)
     {
         globais.perfilResponsavel = data.Perfil_responsavel
@@ -328,10 +329,7 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
 
     //====================ADICIONA A FUNÇÃO DE REMOVER AO BOTÃO DE REMOVER====================//
     removerButton.addEventListener('click', function () {
-        novoCampo.remove();
-        numeroParcela--;
-        atualizarValorTotalParcelas();
-        atualizarLabels();
+        removerCampoVenc(this);
     });
     //====================ADICIONA O CAMPO DE DATA, O RÓTULO E O BOTÃO DE REMOVER AO CONTAINER====================//
     novoCampo.appendChild(novoLabel);
@@ -359,18 +357,28 @@ export function adicionarCampoVenc(data = null, valor = null, numPDC = null, par
  * - Cria um novo campo de data para parcelas de pagamento
  */
 export function removerCampoVenc(elemento) {
+    const log = true;
+    if(log) console.log("++++++++++REMOVENDO LINHA DE PARCELA++++++++++");
     const parentElement = elemento.parentElement;
     const parentClass = parentElement.className;
+    if(log) console.log("parentElement => ", parentElement);
+    if(log) console.log("parentClass => ", parentClass);
 
     const elementosSimilares = document.getElementsByClassName(parentClass);
+    if(log) console.log("elementosSimilares => ", elementosSimilares);
+    if(log) console.log("elementosSimilares.length => ", elementosSimilares.length);
+
     if (elementosSimilares.length > 1) {
+        if(log) console.log("----------LINHA DE PARCELA REMOVIDA----------");
 
         parentElement.remove();
         numeroParcela--;
 
         atualizarLabels();
         atualizarValorTotalParcelas();
+        return;
     }
+    if(log) console.log("----------LINHA NÃO PODE SER REMOVIDA POR SER A ÚLTIMA----------");
 }
 
 /**

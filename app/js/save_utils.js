@@ -22,7 +22,10 @@ async function splitDataByInstallments(status = null) {
     if(log) console.log("advInstallment => ", advInstallment);
 
     let installments = [];
-    if (globais.pag === "confirmar_compra" && reqType != "SERVIÇO" && advInstallment === true) {
+    console.log("pag => ", globais.pag);
+    console.log("reqType => ", reqType);
+    console.log("advInstallment => ", advInstallment);
+    if ((["confirmar_compra"].includes(globais.pag) && reqType != "SERVIÇO") || (["criar_numero_de_PDC"].includes(globais.pag) && globais.perfilResponsavel.includes("Depto. Pessoal")) && advInstallment === true) {
         installments = [document.querySelectorAll('.parcela')[0]];
     } else {
         installments = document.querySelectorAll('.parcela');

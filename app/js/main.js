@@ -77,7 +77,7 @@ async function initGenericItems() {
         const basesPromise = Promise.allSettled([
             buscarFornecedores().then(result => { globais.baseFornecedores = result; }),
             buscarCentrosCusto().then(result => { globais.baseCentrosCusto = result; }),
-            buscarClassesOperacionais().then(result => { globais.baseClassesOperacionais = result; adicionarLinhaClassificacao(); })
+            buscarClassesOperacionais().then(result => { globais.baseClassesOperacionais = result; adicionarLinhaClassificacao();})
         ]);
 
         // 3. Se não estiver na página criar_cotacao, aguarda as bases carregarem
@@ -86,7 +86,13 @@ async function initGenericItems() {
         } else {
             // Se estiver na página criar_cotacao, executa em background
             void basesPromise.catch(console.error);
-
+            if(globais.pag.includes('_DP'))
+            {
+                const parcelaCriada = document.querySelector('input[name="parcela_criada"]');
+                if (parcelaCriada) {
+                    parcelaCriada.setAttribute('checked', 'checked');
+                }
+            }
         }
 
         // 4. Configura os ouvintes (Se a página ainda não tiver carregado, adiciona um ouvinte para aguardar carregar, senão inicia os processos)
@@ -191,6 +197,26 @@ async function executarProcessosParalelos() {
         if(globais.pag.includes('editar_cotacao')){
             //=====Cria o botão Sol. Aprov. Síndico=====\\
             criarBotao({page:globais.pag});
+            if(globais.perfilResponsavel.includes("Depto. Pessoal") || globais.perfilResponsavel.includes("Controladoria"))
+            {
+
+                if(globais.perfilResponsavel.includes("Depto. Pessoal"))
+                {
+                    //=====Oculta o campo de Tipo de Solicitação=====\\
+                    const tipoElement = document.querySelector('select[name="Tipo_de_solicitacao"]');
+                    const tipoLabel = tipoElement.previousElementSibling;
+                    if (tipoElement && tipoLabel) {
+                        tipoElement.style.display = 'none'; 
+                        tipoLabel.style.display = 'none';
+                    }
+                }
+
+                //=====Oculta o checkbox de pagamento antecipado=====\\
+                const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
+                if (checkboxPagamentoAntecipado) {
+                    checkboxPagamentoAntecipado.classList.add("hidden");
+                }
+            }
 
         }else if (globais.pag.includes("aprovar_cotacao")){
             //=====Cria o botão de Aprovar Cotação=====\\
@@ -253,20 +279,10 @@ async function executarProcessosParalelos() {
         preencherListaAnexosV2();
         criarBotao({page: globais.pag});
 
-        if(globais.pag.includes("_DP") || globais.pag.includes("_controladoria"))
+
+        if(globais.perfilResponsavel.includes("Depto. Pessoal") || globais.perfilResponsavel.includes("Controladoria"))
         {
-            /*
-            //=====Atualiza o botão de Salvar para uso do DP=====\\
-            const saveButton = document.querySelector('.save-btn');
-            const newSaveButton = saveButton.cloneNode(true); // Clona o botão para preservar o estado
-            saveButton.parentNode.replaceChild(newSaveButton, saveButton); // Substitui o botão original
-
-            newSaveButton.addEventListener('click', () => {
-                customModal({botao:newSaveButton, tipo: globais.pag, mensagem:"Deseja realmente salvar este registro?"});
-            });
-            */
-
-            if(globais.pag.includes("_DP"))
+            if(globais.perfilResponsavel.includes("Depto. Pessoal"))
             {
                 //=====Oculta o campo de Tipo de Solicitação=====\\
                 const tipoElement = document.querySelector('select[name="Tipo_de_solicitacao"]');
@@ -275,14 +291,8 @@ async function executarProcessosParalelos() {
                     tipoElement.style.display = 'none'; 
                     tipoLabel.style.display = 'none';
                 }
-
-                globais.perfilResponsavel = "Depto. Pessoal";
-                
-            }else 
-            {
-                globais.perfilResponsavel = "Controladoria";
             }
-            
+
             //=====Oculta o checkbox de pagamento antecipado=====\\
             const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
             if (checkboxPagamentoAntecipado) {

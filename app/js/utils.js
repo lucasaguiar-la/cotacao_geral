@@ -769,7 +769,6 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 input.value = '';
             });
 
-
             await saveTableData_V2("Propostas criadas");
             window.open(`${url}#Report:Laranj_sol_em_andamento`, '_top');
             return;
@@ -1022,28 +1021,77 @@ async function prepararParaSalvar(acao, infoInserida = null)
         corrigir_erros: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
         solicitar_aprovacao_sindico: { status: "Aguardando aprovação de uma proposta" },
         ajustar_cot: { status: "Ajuste solicitado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
-        aprov_cot: { status: !globais.pag.includes("_DP") ? "Proposta aprovada" : "Enviado para checagem final" },
+        aprov_cot: { status: "Proposta aprovada"},
         arquivar_cot: { status: "Proposta arquivada" },
-        finalizar_provisionamento: { status: "Lançado no orçamento" },
+        finalizar_provisionamento: { 
+            status: globais.perfilResponsavel.includes("Depto. Pessoal")?"Separado em parcelas":"Lançado no orçamento"
+        },
         confirmar_compra: {
             status: tipoSolicitacao === 'SERVIÇO' || pgtoAnt? 'Recebimento confirmado' : 'Compra realizada',
             sepPorParc: tipoSolicitacao === 'SERVIÇO' || pgtoAnt,
             paramsExtraPDC: { pag_antecipado: false}
         },
-        confirmar_recebimento: { status: "Recebimento confirmado", sepPorParc: true },
+        confirmar_recebimento: { status: "Recebimento confirmado", sepPorParc: true},
         solicitar_ajuste_ao_compras: { status: "Recebimento confirmado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
         enviar_p_checagem_final: { status: "Enviado para checagem final" },
         enviar_p_assinatura: { status: "Assinatura Confirmada Controladoria" },
         autorizar_pagamento_sindico: { status: "Assinatura Confirmada Sindico" },
         autorizar_pagamento_subsindico: { status: "Assinatura Confirmada Sub Sindico" },
-        confirmar_todas_as_assinaturas: { status: "Autorizado para pagamento" }
+        confirmar_todas_as_assinaturas: {status: "Autorizado para pagamento"}
     };
 
     if (acao in statusMap) {
         const params = statusMap[acao];
         await saveTableData_V2(params);
 
-        if (acao === 'confirmar_compra') {
+        if(acao.includes("finalizar_provisionamento"))
+        {
+            if(globais.perfilResponsavel.includes("Depto. Pessoal"))
+            {
+                document.getElementById('pag_antecipado').setAttribute('checked', 'checked');
+                await saveTableData_V2({status:"Enviado para checagem final", sepPorParc: true});
+                //=====REMOVE ALGUNS DADOS DO PDC E FAZ A COPIA DAS PARCELAS=====\\
+                //CRIA UM NOVO ID TEMPORÁRIO PARA A CÓPIA E LIMPA O NUMERO DO PDC
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+
+                globais.numPDC_temp = `${year}_${month}_${day}_${hours}_${minutes}_${seconds}`;
+                globais.numPDC = null;
+
+                //LIMPA AS CÉLULAS DE QUANTIDADE E VALOR UNITÁRIO
+                const valorUnitTds = document.querySelectorAll('td.valor-unit');
+                const totalForns = document.querySelectorAll('td.total-fornecedor');
+                [...valorUnitTds, ...totalForns].forEach(td => {
+                    td.textContent = '';
+                    if(td.dataset.valor_original) delete td.dataset.valor_original;
+                    
+                    // Limpar a célula do lado direito se for valor unitário
+                    if(td.classList.contains('valor-unit')) {
+                        const nextTd = td.nextElementSibling;
+                        if(nextTd) {
+                            nextTd.textContent = '';
+                            if(nextTd.dataset.valor_original) delete nextTd.dataset.valor_original;
+                        }
+                    }
+                });
+
+                //LIMPA AS CÉLULAS DE VALOR DA CLASSIFICAÇÃO CONTÁBIL
+                const formClassificacao = document.querySelector('#form-classificacao');
+                const inputsValor = formClassificacao.querySelectorAll('input[name="Valor"]');
+                inputsValor.forEach(input => {
+                    input.value = '';
+                });
+                document.getElementById('pag_antecipado').removeAttribute('checked');
+
+                await saveTableData_V2({ status: "Propostas criadas", sepPorParc:true,paramExtra:{ pag_antecipado: false}});
+
+            }
+        }else if (acao === 'confirmar_compra') {
             if(tipoSolicitacao === 'SERVIÇO')
             {
                 await saveTableData_V2({ status: "Separado em parcelas"});
@@ -1102,6 +1150,7 @@ export function desabilitarCampos() {
         formsParaManterHabilitados = ["form-pagamento", "dados-nf", "form-classificacao"];//forms
     } else if (globais.pag === "criar_numero_de_PDC") {
         camposParaManterHabilitados = ["Num_PDC_parcela"];
+        botoesParaManterHabilitados = ["add-parcela", "remover-parcela"];
     }
 
     
