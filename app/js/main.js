@@ -131,12 +131,9 @@ async function setupListenersAndInit() {
         "valor-classificacao": { handler: (elemento) => { formatToBRL_V2(elemento); atualizarValorTotalClassificacoes();}, type: 'blur' },
         "campos-ret-desc":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL_V2(elemento);}, type: 'blur'},
         "campos-ret-acr":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL_V2(elemento);}, type: 'blur'},
-        "": { handler: (elemento) => handleEnterKeyNavigation(elemento), type: 'keydown' }
+        "": { handler: (elemento) => handleEnterKeyNavigation(elemento), type: 'keydown' },
+        "": { handler: () => setupPixValidation(), type: 'DOMContentLoaded' }
     };
-
-    /*
-    "": { handler: () => setupPixValidation(), type: 'DOMContentLoaded' }
-    */
 
     Object.entries(buttonActions).forEach(([className, config]) => {
         if (className === '') {

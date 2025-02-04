@@ -364,8 +364,6 @@ function pegarDadosNF_V2() {
     return dadosNF;
 }
 
-
-
 //====================================================================================//
 //====================BUSCA OS DADOS DA TABELA DE PREÇOS (COTAÇÃO)====================//
 //====================================================================================//
@@ -598,10 +596,11 @@ export async function saveTableData_V2({status = null, sepPorParc = false, param
         if(log) console.log("=> COTACAO NÃO EXISTE <=");
 
         const PDCsToSave = sepPorParc ? await splitDataByInstallments(status) : await meshData(status);
-
+        if(log) console.log("PDCsToSave => ");
+        console.log(JSON.stringify(Object.fromEntries(PDCsToSave), null, 2));
+        
         const apoioTipoAnt = globais.tipo;
         if (sepPorParc === true) globais.tipo = 'criar_pdc';
-    
         for (let i = 0; i < PDCsToSave.size; i++) {
 
             //====================CRIA O REGISTRO DO PDC====================//

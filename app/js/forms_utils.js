@@ -146,6 +146,12 @@ export function preencherDadosPDC(resp) {
         if (data.AG) inputAgencia.value = data.AG;
         if (data.N_Conta) inputConta.value = data.N_Conta;
         if (data.Favorecido) inputFavorecidoDeposito.value = data.Favorecido;
+    }else if(data.Forma_de_pagamento === 'Pix'){
+        const inputTipoPix = formPagamento.querySelector('#tipo-pix');
+        const inputPixChave = formPagamento.querySelector('#pix-chave');
+
+        if(data.Tipo_de_chave_pix) inputTipoPix.value = data.Tipo_de_chave_pix;
+        if(data.Chave_pix) inputPixChave.value = data.Chave_pix;
     }
 
     // =====[LINHAS DE PARCELAS]=====//
