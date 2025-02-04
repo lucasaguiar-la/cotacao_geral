@@ -86,13 +86,6 @@ async function initGenericItems() {
         } else {
             // Se estiver na página criar_cotacao, executa em background
             void basesPromise.catch(console.error);
-            if(globais.pag.includes('_DP'))
-            {
-                const parcelaCriada = document.querySelector('input[name="parcela_criada"]');
-                if (parcelaCriada) {
-                    parcelaCriada.setAttribute('checked', 'checked');
-                }
-            }
         }
 
         // 4. Configura os ouvintes (Se a página ainda não tiver carregado, adiciona um ouvinte para aguardar carregar, senão inicia os processos)
@@ -209,6 +202,20 @@ async function executarProcessosParalelos() {
                         tipoElement.style.display = 'none'; 
                         tipoLabel.style.display = 'none';
                     }
+
+                    //=====Remove todos os botões de classe remover-parcela e add-parcela=====\\
+                    const parcelasElements = document.querySelectorAll('.remover-parcela, .add-parcela');
+                    if (parcelasElements) {
+                        parcelasElements.forEach(el => el.remove());
+                    }
+
+                    //=====Desabilita os campos de nome Num_PDC_parcela e adiciona o cursor: not-allowed=====\\
+                    const numPDCParcelaElements = document.querySelectorAll('input[name="Num_PDC_parcela"]');
+                    numPDCParcelaElements.forEach(element => {
+                        element.setAttribute('disabled', 'true');
+                        element.style.cursor = 'not-allowed';
+                    });
+
                 }
 
                 //=====Oculta o checkbox de pagamento antecipado=====\\
@@ -279,10 +286,9 @@ async function executarProcessosParalelos() {
         preencherListaAnexosV2();
         criarBotao({page: globais.pag});
 
-
-        if(globais.perfilResponsavel.includes("Depto. Pessoal") || globais.perfilResponsavel.includes("Controladoria"))
+        if(globais.pag.includes('_DP') || globais.pag.includes("_controladoria"))
         {
-            if(globais.perfilResponsavel.includes("Depto. Pessoal"))
+            if(globais.pag.includes('_DP'))
             {
                 //=====Oculta o campo de Tipo de Solicitação=====\\
                 const tipoElement = document.querySelector('select[name="Tipo_de_solicitacao"]');
@@ -298,6 +304,8 @@ async function executarProcessosParalelos() {
             if (checkboxPagamentoAntecipado) {
                 checkboxPagamentoAntecipado.classList.add("hidden");
             }
+
+            globais.perfilResponsavel = "Depto. Pessoal";
 
         }else
         {

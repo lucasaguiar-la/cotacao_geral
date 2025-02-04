@@ -1005,7 +1005,7 @@ export async function tratarRespModal({acao, infoInserida = null})
 async function prepararParaSalvar(acao, infoInserida = null)
 {
     const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
-    
+    const parcelaCriada = document.getElementsByName('parcela_criada')[0].checked;
     const log = false;
     if(log) console.log("++++++++++PREPARANDO PARA SALVAR++++++++++");
     if(log) console.log("acao => ", acao);
@@ -1021,10 +1021,18 @@ async function prepararParaSalvar(acao, infoInserida = null)
         corrigir_erros: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
         solicitar_aprovacao_sindico: { status: "Aguardando aprovação de uma proposta" },
         ajustar_cot: { status: "Ajuste solicitado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
-        aprov_cot: { status: "Proposta aprovada"},
+        aprov_cot: { 
+            status: 
+                globais.perfilResponsavel.includes("Depto. Pessoal") && 
+                parcelaCriada?"Enviado para checagem final":
+                "Proposta aprovada" 
+            },
         arquivar_cot: { status: "Proposta arquivada" },
         finalizar_provisionamento: { 
-            status: globais.perfilResponsavel.includes("Depto. Pessoal")?"Separado em parcelas":"Lançado no orçamento"
+            status: 
+            globais.perfilResponsavel.includes("Depto. Pessoal") && 
+            !parcelaCriada?"Separado em parcelas":
+            "Lançado no orçamento"
         },
         confirmar_compra: {
             status: tipoSolicitacao === 'SERVIÇO' || pgtoAnt? 'Recebimento confirmado' : 'Compra realizada',
@@ -1042,6 +1050,7 @@ async function prepararParaSalvar(acao, infoInserida = null)
 
     if (acao in statusMap) {
         const params = statusMap[acao];
+
         await saveTableData_V2(params);
 
         if(acao.includes("finalizar_provisionamento"))
@@ -1152,8 +1161,6 @@ export function desabilitarCampos() {
         camposParaManterHabilitados = ["Num_PDC_parcela"];
         botoesParaManterHabilitados = ["add-parcela", "remover-parcela"];
     }
-
-    
 
     // Seleciona todos os elementos de input, textarea e select
     const campos = document.querySelectorAll('input, textarea, select');
