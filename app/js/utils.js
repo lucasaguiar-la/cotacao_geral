@@ -993,9 +993,13 @@ export async function tratarRespModal({acao, infoInserida = null})
             'enviar_p_assinatura',
             'autorizar_pagamento_sindico',
             'autorizar_pagamento_subsindico',
-            'confirmar_todas_as_assinaturas'
+            'confirmar_todas_as_assinaturas',
+            "lancar_pdc_ahreas", 
+            "confirmar_pag_ahreas"
         ].includes(acao))
     {
+        const valido = validateFields(acao);
+        if(!valido) return false;
         await prepararParaSalvar(acao, infoInserida);
     }
     if(log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
@@ -1010,6 +1014,19 @@ async function prepararParaSalvar(acao, infoInserida = null)
     if(log) console.log("++++++++++PREPARANDO PARA SALVAR++++++++++");
     if(log) console.log("acao => ", acao);
     if(log) console.log("infoInserida => ", infoInserida);
+    let alcada_temp = null;
+    if(acao === "autorizar_pagamento_subsindico")
+    {
+        let crit = `(ID!=0)`;
+        
+        const resp = await executar_apiZoho({
+            tipo: "busc_reg", 
+            criterios: crit, 
+            nomeR: "ADM_Alcadas_temporarias_cadastradas"
+        });
+        console.log(JSON.stringify(resp));
+        throw new error("Teste");
+    }
 
     const paramExtra = {};
     const url = 'https://guillaumon.zohocreatorportal.com/';
@@ -1043,9 +1060,11 @@ async function prepararParaSalvar(acao, infoInserida = null)
         solicitar_ajuste_ao_compras: { status: "Recebimento confirmado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
         enviar_p_checagem_final: { status: "Enviado para checagem final" },
         enviar_p_assinatura: { status: "Assinatura Confirmada Controladoria" },
+        autorizar_pagamento_subsindico: { status: "Autorizado para pagamento" },
         autorizar_pagamento_sindico: { status: "Assinatura Confirmada Sindico" },
-        autorizar_pagamento_subsindico: { status: "Assinatura Confirmada Sub Sindico" },
-        confirmar_todas_as_assinaturas: {status: "Autorizado para pagamento"}
+        confirmar_todas_as_assinaturas: {status: "Autorizado para pagamento"},
+        lancar_pdc_ahreas: {paramsExtraPDC:{Status_Guillaumon: "Lançado no ahreas"}},
+        confirmar_pag_ahreas: {status: "Pagamento realizado", paramsExtraPDC:{Status_Guillaumon: "Pagamento confirmado"}}
     };
 
     if (acao in statusMap) {
@@ -1222,8 +1241,10 @@ export function desabilitarCampos() {
         const temClasseVisivel = aTagsParaManterHabilitados.some(classe => elemento.classList.contains(classe));
         if (temClasseVisivel) {
             elemento.style.cursor = 'pointer'; // Altera o cursor para indicar que é clicável
+            elemento.style.removeProperty('pointer-events');
         } else {
             elemento.style.cursor = 'not-allowed'; // Altera o cursor para indicar que não é clicável
+            elemento.style.pointerEvents = 'none';
         }
     });
 
@@ -1245,6 +1266,7 @@ export function desabilitarCampos() {
 export function validateFields(action) {
     let all = {};
     let atLeastOne = {};
+    let otherFormats = {};
 
     switch (action) {
         case 'solicitar_aprovacao_sindico':
@@ -1254,43 +1276,106 @@ export function validateFields(action) {
                 'Descricao_da_compra': 'name',
                 'Utilizacao': 'name',
                 'id_forn': 'dataset',
-                'tipo-pag': 'name',
-                'Datas': 'name',
+
                 'Valor': 'name',
                 'Conta_a_debitar': 'name',
                 'Centro_de_custo': 'name',
                 'Classe_operacional': 'name',
-                'Valor': 'name',
+                'Valor': 'name'
             };
             atLeastOne = {
                 'supplier-checkbox': 'class',
             };
+
+            otherFormats = {
+                'tipo-pag': 'name',
+                'parcela': 'class'
+            }
+
+
+
             break;
         case '':
             break;
         default:
             break;
     }
-
+    //=====All values are required=====\\
     for (let [key, value] of Object.entries(all)) {
+        console.log("key: ", key, "value: ", value);
         if (value === 'name') {
             const campos = document.querySelectorAll(`[name="${key}"]`);
             if ([...campos].some(campo => campo.value.trim() === '')) {
+                throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
         } else if (value === 'dataset') {
             if (!document.querySelector(`[data-${key}]`)) {
+                throw new Error(`O campo "${key}" deve ser preenchido.`);
+                return false;
+            }
+        }
+    }
+    //=====At least one value is required=====\\
+    for (let [key, value] of Object.entries(atLeastOne)) {
+        console.log("key: ", key, "value: ", value);
+        if (value === 'class') {
+            const elements = document.querySelectorAll(`.${key}`);
+            if (![...elements].some(element => element.checked || element.value.trim() !== '')) {
+                throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
         }
     }
 
-    for (let [key, value] of Object.entries(atLeastOne)) {
-        if (value === 'class') {
-            const elements = document.querySelectorAll(`.${key}`);
-            if (![...elements].some(element => element.checked || element.value.trim() !== '')) {
+    for (let [key, value] of Object.entries(otherFormats)) {
+        console.log("key: ", key, "value: ", value);
+
+        const campos = document.querySelectorAll(`[${value}="${key}"]`);
+        if(["tipo-pag"].includes(key))
+        {
+            const opcaoMarcada = campos[0].querySelector('input:checked');
+            if (!opcaoMarcada) {
+                throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
+            
+            if (["Dep. em"].some(valor => opcaoMarcada.value.includes(valor))) {
+                // Verificar se todos os inputs estão preenchidos
+                const inputs = campos[0].querySelectorAll('input');
+                if (![...inputs].every(input => input.value.trim() !== '')) {
+                    throw new Error(`Os campos de depósito devem ser preenchidos.`);
+                    return false;
+                }
+            }
+            
+            if(["Pix"].some(valor => opcaoMarcada.value.includes(valor)))
+            {
+                // Verificar se todos os inputs do tipo text dentro do elemento #campos-pix estão preenchidos
+                const inputs = document.querySelectorAll('#campos-pix input[type="text"]');
+                if (![...inputs].every(input => input.value.trim() !== '')) {
+                    throw new Error(`Os campos de pix devem ser preenchidos.`);
+                    return false;
+                }
+                // Verificar se o select do tipo de pix está preenchido
+                const select = document.querySelector('#campos-pix select[name="Tipo_de_chave_pix"]');
+                if (select.value === '') {
+                    throw new Error(`O tipo de pix deve ser selecionado.`);
+                    return false;
+                }
+            }
+        }
+
+        if(["parcela"].includes(key))
+        {
+            campos.forEach(campo => {
+                
+                const inputs = [...campo.querySelectorAll('input')].filter(input => input.name !== 'parcela_criada');
+                if (![...inputs].some(input => input.value.trim() !== '')) {
+                    throw new Error(`O campo "${key}" deve ser preenchido.`);
+                    return false;
+                }
+            });
         }
     }
 

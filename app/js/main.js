@@ -237,10 +237,12 @@ async function executarProcessosParalelos() {
             "checagem_final", 
             "autorizar_pagamento_subsindico", 
             "autorizar_pagamento_sindico", 
-            "confirmar_todas_as_assinaturas"
+            "confirmar_todas_as_assinaturas",
+            "lancar_pdc_ahreas", 
+            "confirmar_pag_ahreas"
         ].includes(globais.pag)){
             //=====Mostra os campos de retenção se for necessário=====\\
-            if(["ajustar_compra_compras", "checagem_final"].includes(globais.pag)){
+            if(["ajustar_compra_compras", "checagem_final", "lancar_pdc_ahreas", "confirmar_pag_ahreas"].includes(globais.pag)){
                 mostrarCamposRetencao();
             }
 
@@ -254,7 +256,9 @@ async function executarProcessosParalelos() {
                         "receber_compra", 
                         "autorizar_pagamento_subsindico", 
                         "autorizar_pagamento_sindico", 
-                        "confirmar_todas_as_assinaturas"
+                        "confirmar_todas_as_assinaturas",
+                        "lancar_pdc_ahreas", 
+                        "confirmar_pag_ahreas"
                     ].includes(globais.pag) ? true : false
                 }
             );
@@ -266,7 +270,9 @@ async function executarProcessosParalelos() {
 
             }
 
-        }else
+        }
+        
+        else
         {
             //=====Remove todos os botões=====\\
             criarBotao({removeExistingButtons:true});
@@ -294,6 +300,14 @@ async function executarProcessosParalelos() {
                     tipoElement.style.display = 'none'; 
                     tipoLabel.style.display = 'none';
                 }
+
+                globais.perfilResponsavel = "Depto. Pessoal";
+
+            }else
+            {
+
+                globais.perfilResponsavel = "Controladoria";
+                
             }
 
             //=====Oculta o checkbox de pagamento antecipado=====\\
@@ -301,8 +315,6 @@ async function executarProcessosParalelos() {
             if (checkboxPagamentoAntecipado) {
                 checkboxPagamentoAntecipado.classList.add("hidden");
             }
-
-            globais.perfilResponsavel = "Depto. Pessoal";
 
         }else
         {

@@ -237,7 +237,14 @@ export function criarBotao({page = null, removeExistingButtons = false})
             case "duplicar_pdc":
                 configurarBotao('adjust-btn', 'Usar Rascunho', page, null,"Tem certeza que deseja CRIAR UM NOVO PDC com estes dados?");
                 break;
+            case "lancar_pdc_ahreas":
+                configurarBotao('adjust-btn', 'Marcar como lanç. ahreas', page, null,"Tem certeza que deseja MARCAR O PDC COMO LANÇADO?");
 
+                break;
+            case "lancar_pdc_ahreas":
+                configurarBotao('adjust-btn', 'Marcar como pag. confirmado', page, null,"Tem certeza que deseja MARCAR O PDC COMO PAGO?");
+                
+                break;
             default:
                 if (tiposAssinatura.includes(page)) {
                     configurarBotao('approve-btn', 'Autorizar', page, "Autorizar Pagamento", "Tem certeza que deseja AUTORIZAR o pagamento deste PDC?");
