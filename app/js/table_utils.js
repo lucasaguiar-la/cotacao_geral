@@ -744,6 +744,7 @@ export function calculateTotalPrices(rowIndex) {
         if (unitPriceCell && totalPriceCell) {
             const unitPrice = converterStringParaDecimal(unitPriceCell.dataset.valor_original); //Converte o valor unitário para um número decimal
             totalPriceCell.innerText = formatToBRL_V2((quantity * unitPrice)); //Calcula o valor total e formata para o padrão brasileiro
+            totalPriceCell.dataset.valor_original = (quantity * unitPrice);
             
             if(log) console.log("totalPriceCell => ", formatToBRL_V2((quantity * unitPrice)));
         }
@@ -979,10 +980,10 @@ export function atualizarOuvintesTabCot() {
                         formatToBRL_V2(celula, 3);
 
                         if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
-                            const valorAtual = converterStringParaDecimal(event.target.dataset.valorOriginal) || 0; // Obtém o valor original
+                            const valorAtual = converterStringParaDecimal(event.target.dataset.valor_original) || 0; // Obtém o valor original
                             const novoValor = converterStringParaDecimal(event.target.innerText) || 0; // Obtém o novo valor
                             if (novoValor > valorAtual) {
-                                event.target.innerText = event.target.dataset.valorOriginal; // Reverte para o valor original
+                                event.target.innerText = event.target.dataset.valor_original; // Reverte para o valor original
                                 // Exibe modal de aviso com apenas um botão de OK
                                 showAlertModal('Quantidade de itens não pode ser aumentada!');
                             }
@@ -996,8 +997,8 @@ export function atualizarOuvintesTabCot() {
 
                     celula.addEventListener('focus', (event) => {
                         // Armazena o valor atual quando a célula é focada, se ainda não estiver armazenado
-                        if (!event.target.dataset.valorOriginal) {
-                            event.target.dataset.valorOriginal = event.target.innerText;
+                        if (!event.target.dataset.valor_original) {
+                            event.target.dataset.valor_original = event.target.innerText;
                         }
                     });
 
@@ -1006,8 +1007,8 @@ export function atualizarOuvintesTabCot() {
                 } else if (j > 2) { // Colunas de valores após a unidade
                     celula.addEventListener('focus', (event) => {
                         // Armazena o valor atual quando a célula é focada, se ainda não estiver armazenado
-                        if (!event.target.dataset.valorOriginal) {
-                            event.target.dataset.valorOriginal = event.target.innerText;
+                        if (!event.target.dataset.valor_original) {
+                            event.target.dataset.valor_original = event.target.innerText;
                         }
                     });
 
@@ -1018,10 +1019,10 @@ export function atualizarOuvintesTabCot() {
                         if (celula.classList.contains('valor-unit') && (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final")) {
                             // Adiciona um listener para reverter alterações
 
-                            const valorAtual = converterStringParaDecimal(event.target.dataset.valorOriginal) || 0; // Obtém o valor original
+                            const valorAtual = converterStringParaDecimal(event.target.dataset.valor_original) || 0; // Obtém o valor original
                             const novoValor = converterStringParaDecimal(event.target.innerText) || 0; // Obtém o novo valor
                             if (novoValor > valorAtual + vlrTolerancia) {
-                                event.target.innerText = event.target.dataset.valorOriginal; // Reverte para o valor original
+                                event.target.innerText = event.target.dataset.valor_original; // Reverte para o valor original
                                 // Exibe modal de aviso com apenas um botão de OK
                                 showAlertModal(`Este valor não pode ser maior que o valor atual + tolerância de ${formatToBRL_V2(vlrTolerancia)}!`);
                             }

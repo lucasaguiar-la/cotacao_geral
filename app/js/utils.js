@@ -244,7 +244,7 @@ export function formatToBRL_V2(v, nd = 2) {
  */
 export function converterStringParaDecimal(valor, nd = null) {
 
-    const log = false;
+    const log = true;
 
     if(log) console.log("[+++++CONVERTENDO STRING PARA DECIMAL+++++]");
     // Verifica se é um elemento HTML
@@ -288,12 +288,23 @@ export function converterStringParaDecimal(valor, nd = null) {
 
     if(log) console.log("Valor limpo apenas com ponto => ", numeroLimpo);
 
+    let [pi, pd] = numeroLimpo.toString().split('.');
+
+    // Ajusta a quantidade de casas decimais
+    if (nd !== null) {
+        pd = pd ? pd.slice(0, nd) : '0'.repeat(nd);
+    }
+
+    if(log) console.log("Parte inteira => ", pi);
+    if(log) console.log("Parte decimal => ", pd);
     // Converte para número e fixa em nd casas decimais
-    let numeroFinal = parseFloat(numeroLimpo);
+    const numConcat = (pi || '0') + '.' + pd;
+    if(log) console.log("Numero concatenado => ", numConcat);
+    let numeroFinal = parseFloat(numConcat);
 
-    if(log) console.log("Valor final sem ajuste de casas decimais => ", numeroFinal);
+    //if(log) console.log("Valor final sem ajuste de casas decimais => ", numeroFinal);
 
-    numeroFinal = isNaN(numeroFinal) ? 0.00 : nd !== null ? Math.trunc(numeroFinal * Math.pow(10, nd)) / Math.pow(10, nd) : numeroFinal;
+    //numeroFinal = isNaN(numeroFinal) ? 0.00 : nd !== null ? Math.floor(numeroFinal * 10**nd) / 10**nd : numeroFinal;
     
     if(log) console.log("Valor final => ", numeroFinal);
 
@@ -806,6 +817,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     
                     window.open(`${link_layout}`, '_blank', 'noopener,noreferrer');
                 }
+
                 // Opcional: recarregar a página ou atualizar a interface
                 window.open(`${url}#Script:page.refresh`, '_top');
             } else {
@@ -998,8 +1010,8 @@ export async function tratarRespModal({acao, infoInserida = null})
             "confirmar_pag_ahreas"
         ].includes(acao))
     {
-        const valido = validateFields(acao);
-        if(!valido) return false;
+        //const valido = validateFields(acao);
+        //if(!valido) return false;
         await prepararParaSalvar(acao, infoInserida);
     }
     if(log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
@@ -1015,6 +1027,7 @@ async function prepararParaSalvar(acao, infoInserida = null)
     if(log) console.log("acao => ", acao);
     if(log) console.log("infoInserida => ", infoInserida);
     let alcada_temp = null;
+    /*
     if(acao === "autorizar_pagamento_subsindico")
     {
         let crit = `(ID!=0)`;
@@ -1024,9 +1037,8 @@ async function prepararParaSalvar(acao, infoInserida = null)
             criterios: crit, 
             nomeR: "ADM_Alcadas_temporarias_cadastradas"
         });
-        console.log(JSON.stringify(resp));
-        throw new error("Teste");
     }
+        */
 
     const paramExtra = {};
     const url = 'https://guillaumon.zohocreatorportal.com/';
@@ -1276,12 +1288,8 @@ export function validateFields(action) {
                 'Descricao_da_compra': 'name',
                 'Utilizacao': 'name',
                 'id_forn': 'dataset',
-
-                'Valor': 'name',
-                'Conta_a_debitar': 'name',
-                'Centro_de_custo': 'name',
-                'Classe_operacional': 'name',
-                'Valor': 'name'
+                'quantidade': 'class',
+                'valor-unit': 'class',
             };
             atLeastOne = {
                 'supplier-checkbox': 'class',
@@ -1300,20 +1308,38 @@ export function validateFields(action) {
         default:
             break;
     }
+
     //=====All values are required=====\\
     for (let [key, value] of Object.entries(all)) {
         console.log("key: ", key, "value: ", value);
-        if (value === 'name') {
-            const campos = document.querySelectorAll(`[name="${key}"]`);
-            if ([...campos].some(campo => campo.value.trim() === '')) {
-                throw new Error(`O campo "${key}" deve ser preenchido.`);
-                return false;
-            }
-        } else if (value === 'dataset') {
+
+        if (value === 'dataset') {
             if (!document.querySelector(`[data-${key}]`)) {
                 throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
+        }else 
+        {
+            let campos;
+            if(['name'].includes(value))//Busca por atributos
+            {
+                campos = document.querySelectorAll(`[${value}="${key}"]`);
+            }else if(['class'].includes(value))//busca por classe (Aparentemente não é um atributo)
+            {
+                campos = document.querySelectorAll(`.${key}`);
+            }
+            
+            campos.forEach(campo => {
+                console.log("campo: ", campo);
+                console.log("campo.innerText: ", campo.innerText);
+                console.log("campo.value: ", campo.value);
+
+                if(campo.innerText === '' && (campo.value === undefined || campo.value === ''))
+                {
+                    throw new Error(`O campo "${key}" deve ser preenchido.`);
+                    return false;
+                }
+            })
         }
     }
     //=====At least one value is required=====\\
@@ -1332,9 +1358,16 @@ export function validateFields(action) {
         console.log("key: ", key, "value: ", value);
 
         const campos = document.querySelectorAll(`[${value}="${key}"]`);
+        campos.forEach(campo => {
+            console.log("campo: ", campo);
+            console.log("campo.innerText: ", campo.innerText);
+            console.log("campo.value: ", campo.value);
+        })
+
         if(["tipo-pag"].includes(key))
         {
             const opcaoMarcada = campos[0].querySelector('input:checked');
+            console.log("opcaoMarcada: ", opcaoMarcada);
             if (!opcaoMarcada) {
                 throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
@@ -1378,6 +1411,7 @@ export function validateFields(action) {
             });
         }
     }
+    throw new Error(`TODOS OS CAMPOS ESTÃO PREENCHIDOS`);
 
     return true;
 }

@@ -359,8 +359,6 @@ function pegarDadosNF_V2() {
     }
     if(log) console.log("dadosNF => ", JSON.stringify(dadosNF));
 
-    //throw new Error("Erro forçado, para teste");
-
     return dadosNF;
 }
 
@@ -424,7 +422,7 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
         const linha = corpoTab[i];
         const idProduto = linha.dataset.id_produto;
         const produto = linha.cells[0]?.innerText || '';
-        const quantidade = converterStringParaDecimal(linha.cells[1]?.innerText || '0', qtdCssDecimais);
+        const quantidade = converterStringParaDecimal(linha.cells[1]?.dataset.valor_original || '0', qtdCssDecimais);
         const unidade = linha.cells[2]?.innerText || '';
 
         if (fornecedores.length > 0) {
@@ -437,8 +435,8 @@ function pegarDadostabPrecos(currTempPDC = null, currPDC = null, qtdParc = 1) {
                 const valorDesconto = descontos[j];
                 const valorTotalGeral = totalGeral[j];
 
-                const valorUnitario = converterStringParaDecimal((linha.cells[indicePrecoUnitario]?.innerText) || '0', qtdCssDecimais);
-                const valorTotal = converterStringParaDecimal((linha.cells[indicePrecoTotal]?.innerText) || '0', qtdCssDecimais);
+                const valorUnitario = converterStringParaDecimal((linha.cells[indicePrecoUnitario]?.dataset.valor_original) || '0', qtdCssDecimais);
+                const valorTotal = converterStringParaDecimal((linha.cells[indicePrecoTotal]?.dataset.valor_original) || '0', qtdCssDecimais);
 
                 const condicaoPagamento = linhasDetalhes[j].cells[1]?.innerText || '';
                 const observacao = linhasDetalhes[j].cells[2]?.innerText || '';
