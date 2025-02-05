@@ -107,8 +107,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
             return Array.from(baseApoio.values());
         }
 
-        async function subirArquivos()
-        {
+        async function subirArquivos() {
             const config = {
                 appName: globais.nomeApp,
                 reportName: nomeR,
@@ -122,7 +121,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 
         // Funções solicitadas conforme tipo
         if (tipo === "add_reg") {
-            
+
             return await criar_reg(corpo);
         } else if (tipo === "atualizar_reg") {
 
@@ -133,7 +132,7 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
         } else if (tipo === "busc_reg_recursivo") {
 
             return await buscarRecursivamente(nomeR, criterios);
-        }else if(tipo === "subir_arq"){
+        } else if (tipo === "subir_arq") {
             return await subirArquivos();
         }
     } catch (err) {
@@ -143,15 +142,15 @@ export async function executar_apiZoho({ tipo = null, criterios = null, ID = nul
 
 export function formatToBRL_V2(v, nd = 2) {
     const log = false;
-    if(log) console.log("[+++++FORMATANDO PARA BRL+++++]");
-    if(log) console.log("Número de decimais => ", nd);
-    
+    if (log) console.log("[+++++FORMATANDO PARA BRL+++++]");
+    if (log) console.log("Número de decimais => ", nd);
+
     if (v.dataset && v.dataset.valor_original) {
         delete v.dataset.valor_original;
     }
 
-    if (!v)  return "0,00";//Se for vazio, volta 0,00
-    
+    if (!v) return "0,00";//Se for vazio, volta 0,00
+
 
     let av; //Apoio ao valor
     let int = false; //Flag para inteiro
@@ -166,63 +165,60 @@ export function formatToBRL_V2(v, nd = 2) {
         av = elemento.innerText || elemento.value;
         int = elemento.classList?.contains("integer-cell") || false;
     }
-    if (!av)  return "0,00";
+    if (!av) return "0,00";
 
     const vo = av; //Valor original, sem ajuste, para evitar arredondamento
-    if(log) console.log("Valor original VO => ", vo);
-    if(log) console.log("Valor em decimal => ", av);
+    if (log) console.log("Valor original VO => ", vo);
+    if (log) console.log("Valor em decimal => ", av);
     // Verifica se é negativo
     if (av.toString().startsWith('-')) {
         isNeg = true;
         av = av.toString().substring(1);
     }
-    
-    if(log) console.log("Valor bruto sem sinal => ", av);
+
+    if (log) console.log("Valor bruto sem sinal => ", av);
     // Ajusta o tipo (Inteiro ou decimal) e adiciona os zeros
     av = int ? av : converterStringParaDecimal(av);
     const [pi, pd] = av.toString().split('.');
 
-    
-    if(log) console.log("Parte inteira => ", pi);
-    if(log) console.log("Parte decimal => ", pd);
+
+    if (log) console.log("Parte inteira => ", pi);
+    if (log) console.log("Parte decimal => ", pd);
     //AJUSTA PARTE DECIMAL PARA O NUMERO DE CASAS DECIMAIS INDICADO
     let apd;
     if (pd && pd.length > nd) {
         apd = pd.slice(0, nd);
-    }else{
+    } else {
         apd = (pd || '') + '0'.repeat(nd - (pd || '').length);
     }
-    if(log) console.log("Apoio decimal => ", apd);
+    if (log) console.log("Apoio decimal => ", apd);
 
     // Cria o valor final em formato de BRL
     let vf;
-    if((pi === undefined && pd === undefined))
-    {
+    if ((pi === undefined && pd === undefined)) {
         vf = `0,${apd}`;
-    }else if(int)
-    {
+    } else if (int) {
         vf = `${pi || 0}${apd || ''}`;
-    }else
-    {
+    } else {
         vf = `${pi || 0},${apd}`;
     }
 
     //let vf = (pi === undefined && pd === undefined) ? '0,00' : int ? `${pi || 0}${pd || ''}` : `${pi || 0},${(pd || '').slice(0, nd)}`;
-    if(log) console.log("Valor final sem sinal=> ", vf);
+    if (log) console.log("Valor final sem sinal=> ", vf);
     // Adiciona o sinal negativo de volta se necessário
     if (isNeg) {
         vf = `-${vf}`;
     }
-    
-    if(log) console.log("Valor original => ", vo);
-    if(log) console.log("Valor final => ", vf);
-    if(log) console.log("[-----FORMATAÇÃO CONCLUÍDA-----]");
+
+    if (log) console.log("Valor original => ", vo);
+    if (log) console.log("Valor final => ", vf);
+    if (log) console.log("[-----FORMATAÇÃO CONCLUÍDA-----]");
 
     if (v.innerText || v.value) {
         const target = 'value' in v ? 'value' : 'innerText';
         v[target] = vf;
         v.dataset.valor_original = vo;
-        v.addEventListener('focus', () => { if(log) console.log("[+++++FOCUS+++++]");v[target] = v.dataset.valor_original || ''});
+        v.addEventListener('focus', () => { if (log) console.log("[+++++FOCUS+++++]"); v[target] = v.dataset.valor_original || '' });
         return;
     } else {
         return vf;
@@ -244,9 +240,9 @@ export function formatToBRL_V2(v, nd = 2) {
  */
 export function converterStringParaDecimal(valor, nd = null) {
 
-    const log = true;
+    const log = false;
 
-    if(log) console.log("[+++++CONVERTENDO STRING PARA DECIMAL+++++]");
+    if (log) console.log("[+++++CONVERTENDO STRING PARA DECIMAL+++++]");
     // Verifica se é um elemento HTML
     const isElement = valor && typeof valor === 'object' && 'innerText' in valor;
     const valorOriginal = isElement ? valor.innerText : valor;
@@ -255,20 +251,20 @@ export function converterStringParaDecimal(valor, nd = null) {
     // Remove todos os caracteres não numéricos exceto ponto e vírgula
     let numeroLimpo = valorOriginal.toString().replace(/[^\d.,\-]/g, '');
 
-    if(log) console.log("Valor limpo => ", numeroLimpo);
+    if (log) console.log("Valor limpo => ", numeroLimpo);
 
     // Trata números negativos
     const isNegative = numeroLimpo.startsWith('-');
     numeroLimpo = numeroLimpo.replace('-', '');
 
-    if(log) console.log("Valor limpo sem sinal => ", numeroLimpo);
+    if (log) console.log("Valor limpo sem sinal => ", numeroLimpo);
 
     // Conta quantos pontos e vírgulas existem
     const qtdPontos = (numeroLimpo.match(/\./g) || []).length;
     const qtdVirgulas = (numeroLimpo.match(/,/g) || []).length;
 
-    if(log) console.log("Quantidade de pontos => ", qtdPontos);
-    if(log) console.log("Quantidade de vírgulas => ", qtdVirgulas);
+    if (log) console.log("Quantidade de pontos => ", qtdPontos);
+    if (log) console.log("Quantidade de vírgulas => ", qtdVirgulas);
 
     // Se tiver mais de um separador do mesmo tipo, considera como separador de milhar
     if (qtdPontos > 1 || qtdVirgulas > 1) {
@@ -286,7 +282,7 @@ export function converterStringParaDecimal(valor, nd = null) {
         numeroLimpo = numeroLimpo.replace(',', '.');
     }
 
-    if(log) console.log("Valor limpo apenas com ponto => ", numeroLimpo);
+    if (log) console.log("Valor limpo apenas com ponto => ", numeroLimpo);
 
     let [pi, pd] = numeroLimpo.toString().split('.');
 
@@ -295,26 +291,26 @@ export function converterStringParaDecimal(valor, nd = null) {
         pd = pd ? pd.slice(0, nd) : '0'.repeat(nd);
     }
 
-    if(log) console.log("Parte inteira => ", pi);
-    if(log) console.log("Parte decimal => ", pd);
+    if (log) console.log("Parte inteira => ", pi);
+    if (log) console.log("Parte decimal => ", pd);
     // Converte para número e fixa em nd casas decimais
     const numConcat = (pi || '0') + '.' + pd;
-    if(log) console.log("Numero concatenado => ", numConcat);
+    if (log) console.log("Numero concatenado => ", numConcat);
     let numeroFinal = parseFloat(numConcat);
 
     //if(log) console.log("Valor final sem ajuste de casas decimais => ", numeroFinal);
 
     //numeroFinal = isNaN(numeroFinal) ? 0.00 : nd !== null ? Math.floor(numeroFinal * 10**nd) / 10**nd : numeroFinal;
-    
-    if(log) console.log("Valor final => ", numeroFinal);
+
+    if (log) console.log("Valor final => ", numeroFinal);
 
     // Aplica o sinal negativo se necessário
     if (isNegative) {
         numeroFinal = -numeroFinal;
     }
 
-    if(log) console.log("Valor final com sinal => ", numeroFinal);
-    if(log) console.log("[------CONVERSÃO FINALIZADA------]");
+    if (log) console.log("Valor final com sinal => ", numeroFinal);
+    if (log) console.log("[------CONVERSÃO FINALIZADA------]");
 
     // Se for um elemento HTML, atualiza o innerText com o valor formatado
     if (isElement) {
@@ -466,8 +462,8 @@ function createEl(tag, className = '', innerHTML = '') {
  *   confirmText: 'Enviar'
  * });
  */
-export async function customModal({botao = null, tipo = null, titulo = null, mensagem, confirmText = 'Confirmar', cancelText = 'Cancelar', loadingText = 'Carregando, aguarde...'}) {
-    if(tipo === null){
+export async function customModal({ botao = null, tipo = null, titulo = null, mensagem, confirmText = 'Confirmar', cancelText = 'Cancelar', loadingText = 'Carregando, aguarde...' }) {
+    if (tipo === null) {
         tipo = 'editar_pdc';
     }
 
@@ -484,7 +480,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     const popup = createEl('div', 'customConfirm-div');
     const messageElement = createEl('p', 'customConfirm-message', mensagem);
     // Cria o elemento de loading
-    const loadingElement = createEl('div', 'customConfirm-loading', 
+    const loadingElement = createEl('div', 'customConfirm-loading',
         `<div class="customConfirm-loading-spinner"></div> ${loadingText}`);
 
     // Adiciona título se fornecido
@@ -541,18 +537,18 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         // Esconde/mostra o título se existir
         const titleElement = popup.querySelector('.customConfirm-title');
         if (titleElement) titleElement.style.display = show ? 'block' : 'none';
-        
+
         // Esconde/mostra a mensagem
         messageElement.style.display = show ? 'block' : 'none';
-        
+
         // Esconde/mostra a textarea se existir
         if (inputElement) {
             inputElement.style.display = show ? 'block' : 'none';
         }
-        
+
         // Esconde/mostra os botões
         buttonContainer.style.display = show ? 'flex' : 'none';
-        
+
         // Esconde/mostra o loading (inverso dos outros elementos)
         loadingElement.style.display = show ? 'none' : 'flex';
 
@@ -568,7 +564,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         // Verifica se o tipo de solicitação é "SERVIÇO"
         const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
 
-        function getDates(t = null){
+        function getDates(t = null) {
             console.log("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ESTÁ USANDO O GETDATES//////////////////////////////////")
             let listDatas = [];
             const formDdsDetalhes = document.querySelector('#form-pagamento');
@@ -580,31 +576,27 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
                 const dataInput = parcela.querySelector('input[type="date"]');
                 const valorInput = parcela.querySelector('input[name="Valor"]');
                 const numPDC = parcela.querySelector('input[name="Num_PDC_parcela"]');
-                
+
                 const dadosParcela = {};
-                if(numParc?.textContent)
-                {
+                if (numParc?.textContent) {
                     dadosParcela.Numero_da_parcela = parseInt(numParc.textContent.match(/\d+/)[0])
                 }
-                if(pgtoAnt && indiceParcela === 0 && t === "confirmar_compra")
-                {
+                if (pgtoAnt && indiceParcela === 0 && t === "confirmar_compra") {
                     dadosParcela.parcela_criada = true
-                }else
-                {
+                } else {
                     dadosParcela.parcela_criada = false
                 }
-                if(dataInput?.value){
+                if (dataInput?.value) {
                     const [ano, mes, dia] = dataInput.value.split('-');
                     dadosParcela.Vencimento_previsto = `${dia}/${mes}/${ano}`
                 }
-                if(valorInput?.value){
+                if (valorInput?.value) {
                     dadosParcela.Valor = converterStringParaDecimal(valorInput.value)
                 }
-                if(numPDC?.value)
-                {
+                if (numPDC?.value) {
                     dadosParcela.Num_PDC_parcela = numPDC.value
                 }
-                
+
                 listDatas.push(dadosParcela);
                 indiceParcela++;
             })
@@ -621,7 +613,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             const errorMessage = createEl('p', 'customConfirm-error-message', "Preencha o campo de observação...");
             // Inserir após o inputElement ao invés de antes
             inputElement.insertAdjacentElement('afterend', errorMessage);
-            
+
             // Aplicar estilos mantendo o textarea centralizado
             Object.assign(inputElement.style, {
                 width: '300px',
@@ -646,7 +638,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
         const url = 'https://guillaumon.zohocreatorportal.com/';
         toggleElements(false);
-        
+
         // Determina o payload baseado no tipo de ação
         let payload;
         // Mapeia os tipos de ação   para os payloads correspondentes
@@ -656,7 +648,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             },
             'enviar_p_assinatura':
             {
-                Status_geral:'Assinatura Confirmada Controladoria'
+                Status_geral: 'Assinatura Confirmada Controladoria'
             },
             'autorizar_pagamento_sindico': {
                 Status_geral: 'Assinatura Confirmada Sindico'
@@ -675,35 +667,31 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             // Verifica se o tipo é valido//
             ////{Ação:seprara por parcela}////
             const tiposValidos = {
-                "criar_cotacao_DP":false,
-                "editar_cotacao_DP":false,
-                "criar_cotacao_controladoria":false,
-                "editar_cotacao_controladoria":false,
-                "solicitar_aprovacao_sindico":false,
-                "finalizar_provisionamento":false,
-                "enviar_p_checagem_final":false,
-                "enviar_p_assinatura":false,
-                "confirmar_compra": pgtoAnt?true:false,
+                "criar_cotacao_DP": false,
+                "editar_cotacao_DP": false,
+                "criar_cotacao_controladoria": false,
+                "editar_cotacao_controladoria": false,
+                "solicitar_aprovacao_sindico": false,
+                "finalizar_provisionamento": false,
+                "enviar_p_checagem_final": false,
+                "enviar_p_assinatura": false,
+                "confirmar_compra": pgtoAnt ? true : false,
                 "confirmar_recebimento": true
             };
 
-            if (Object.keys(tiposValidos).includes(tipo)) 
-            {
+            if (Object.keys(tiposValidos).includes(tipo)) {
                 let status = null;
-                if(tipo === "confirmar_recebimento")
-                {
+                if (tipo === "confirmar_recebimento") {
                     status = "Recebimento confirmado";
-                }else if(tipo === "criar_cotacao_controladoria" || tipo === "editar_cotacao_controladoria")
-                {
+                } else if (tipo === "criar_cotacao_controladoria" || tipo === "editar_cotacao_controladoria") {
                     status = "Propostas criadas controladoria";
-                }else if(tipo === "confirmar_compra")
-                {
+                } else if (tipo === "confirmar_compra") {
                     status = "Enviado para checagem final";
                 }
                 await saveTableData_V2(status, tiposValidos[tipo]);
             }
 
-            payload = { data: [{ ...payloadMap[tipo]}] };
+            payload = { data: [{ ...payloadMap[tipo] }] };
             //payload = { data: [{ ...payloadMap[tipo], Datas: getDates(tipo) }] };
 
         } else if (tipo === 'salvar_cot' || tipo === 'editar_pdc') {
@@ -724,8 +712,7 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
         } else if (tipo === 'remover_fornecedor' || tipo === 'remover_produto') {
             overlay.remove();
             return Promise.resolve(true);
-        }else if(tipo === 'duplicar_pdc')
-        {
+        } else if (tipo === 'duplicar_pdc') {
             //MODIFICA PARA QUE UMA CÓPIA SEJA CRIADA
             globais.cotacaoExiste = false;
 
@@ -750,14 +737,14 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             const totalForns = document.querySelectorAll('td.total-fornecedor');
             [...quantidadeTds, ...valorUnitTds, ...totalForns].forEach(td => {
                 td.textContent = '';
-                if(td.dataset.valor_original) delete td.dataset.valor_original;
-                
+                if (td.dataset.valor_original) delete td.dataset.valor_original;
+
                 // Limpar a célula do lado direito se for valor unitário
-                if(td.classList.contains('valor-unit')) {
+                if (td.classList.contains('valor-unit')) {
                     const nextTd = td.nextElementSibling;
-                    if(nextTd) {
+                    if (nextTd) {
                         nextTd.textContent = '';
-                        if(nextTd.dataset.valor_original) delete nextTd.dataset.valor_original;
+                        if (nextTd.dataset.valor_original) delete nextTd.dataset.valor_original;
                     }
                 }
             });
@@ -787,9 +774,9 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
 
         try {
             console.log("PAYLOAD => ", JSON.stringify(payload));
-            const resposta = await executar_apiZoho({ 
-                tipo: "atualizar_reg", 
-                ID: globais.idPDC, 
+            const resposta = await executar_apiZoho({
+                tipo: "atualizar_reg",
+                ID: globais.idPDC,
                 corpo: payload,
                 nomeR: globais.nomeRelPDC
             });
@@ -798,23 +785,20 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
             // Fecha o modal após sucesso
             if (resposta && resposta.code === 3000) {
                 overlay.remove();
-                if(tipo == "confirmar_compra")
-                {
+                if (tipo == "confirmar_compra") {
 
                     // Obtém o valor da entidade selecionada
                     const entidadeSelecionada = document.getElementById('entidade').value;
-    
+
                     let link_layout;
                     // [LAYOUT]
-                    if(entidadeSelecionada == "3938561000066182591")
-                    {
-                        link_layout= `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/Laranj_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Laranjeiras`;
+                    if (entidadeSelecionada == "3938561000066182591") {
+                        link_layout = `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/Laranj_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Laranjeiras`;
                     }
-                    else if(entidadeSelecionada == "3938561000066182595")
-                    {
-                        link_layout= `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/AssociacaoServir_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Ass_Servir`;
+                    else if (entidadeSelecionada == "3938561000066182595") {
+                        link_layout = `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/AssociacaoServir_layout_impressao_pedido?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_Ass_Servir`;
                     }
-    
+
                     window.open(`${link_layout}`, '_blank', 'noopener,noreferrer');
                 }
 
@@ -857,24 +841,23 @@ export async function customModal({botao = null, tipo = null, titulo = null, men
     });
 }
 
-export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = null, mensagem, confirmText = 'Confirmar', cancelText = 'Cancelar', loadingText = 'Carregando, aguarde...'})
-{
+export async function customModal_V2({ acao = null, tipoAcao = 'confirm', titulo = null, mensagem, confirmText = 'Confirmar', cancelText = 'Cancelar', loadingText = 'Carregando, aguarde...' }) {
     const log = true;
-    if(log) console.log("++++++++++CRIANDO MODAL CUSTOMIZADO++++++++++");
-    if(log) console.log("+++ACAO => ", acao);
-    if(log) console.log("+++TIPO DE ACAO => ", tipoAcao);
-    if(log) console.log("+++TITULO => ", titulo);
-    if(log) console.log("+++MENSAGEM => ", mensagem);
-    if(log) console.log("+++CONFIRM TEXT => ", confirmText);
-    if(log) console.log("+++CANCEL TEXT => ", cancelText);
-    if(log) console.log("+++LOADING TEXT => ", loadingText);
+    if (log) console.log("++++++++++CRIANDO MODAL CUSTOMIZADO++++++++++");
+    if (log) console.log("+++ACAO => ", acao);
+    if (log) console.log("+++TIPO DE ACAO => ", tipoAcao);
+    if (log) console.log("+++TITULO => ", titulo);
+    if (log) console.log("+++MENSAGEM => ", mensagem);
+    if (log) console.log("+++CONFIRM TEXT => ", confirmText);
+    if (log) console.log("+++CANCEL TEXT => ", cancelText);
+    if (log) console.log("+++LOADING TEXT => ", loadingText);
 
     //==========CRIA OS ELEMENTOS DO MODAL==========\\
     const overlay = createEl('div', 'customConfirm-overlay-div');
     const popup = createEl('div', 'customConfirm-div');
     const messageElement = createEl('p', 'customConfirm-message', mensagem);
 
-    const loadingElement = createEl('div', 'customConfirm-loading', 
+    const loadingElement = createEl('div', 'customConfirm-loading',
         `<div class="customConfirm-loading-spinner"></div> ${loadingText}`);
 
     if (titulo) {
@@ -906,9 +889,9 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
             height: '100px',
             resize: 'none',
         });
-        if(log) console.log("Input criado!");
+        if (log) console.log("Input criado!");
     }
-    if(log) console.log("Passou do input!");
+    if (log) console.log("Passou do input!");
 
     //==========CRIA OS BOTÕES BASEADO NA AÇÃO (ALERT OU CONFIRM)==========\\
     const buttonContainer = createEl('div', 'customConfirm-button-container');
@@ -916,8 +899,7 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
     buttonContainer.append(confirmButton);
 
     let cancelButton;
-    if(tipoAcao === 'confirm')
-    {
+    if (tipoAcao === 'confirm') {
         cancelButton = createEl('button', 'customConfirm-cancelButton', cancelText);
         buttonContainer.append(cancelButton);
     }
@@ -927,18 +909,18 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
         // Esconde/mostra o título se existir
         const titleElement = popup.querySelector('.customConfirm-title');
         if (titleElement) titleElement.style.display = show ? 'block' : 'none';
-        
+
         // Esconde/mostra a mensagem
         messageElement.style.display = show ? 'block' : 'none';
-        
+
         // Esconde/mostra a textarea se existir
         if (inputElement) {
             inputElement.style.display = show ? 'block' : 'none';
         }
-        
+
         // Esconde/mostra os botões
         buttonContainer.style.display = show ? 'flex' : 'none';
-        
+
         // Esconde/mostra o loading (inverso dos outros elementos)
         loadingElement.style.display = show ? 'none' : 'flex';
         // Remove a mensagem de erro quando mostrar o loading
@@ -963,7 +945,7 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
     return new Promise((resolve) => {
         confirmButton.addEventListener('click', () => {
             alternVisibEl(false);
-            tratarRespModal({acao:acao, infoInserida:inputElement ? inputElement.value : null}).then(result => {
+            tratarRespModal({ acao: acao, infoInserida: inputElement ? inputElement.value : null }).then(result => {
                 if (result === true) {
                     overlay.remove();
                 }
@@ -980,22 +962,21 @@ export async function customModal_V2({acao = null,tipoAcao= 'confirm', titulo = 
 }
 
 
-export async function tratarRespModal({acao, infoInserida = null})
-{
+export async function tratarRespModal({ acao, infoInserida = null }) {
     const log = false;
-    if(log) console.log("++++++++++TRATANDO RESPOSTA POSITIVA DO MODAL++++++++++");
-    if(log) console.log("acao => ", acao);
-    if(log) console.log("infoInserida => ", infoInserida);
-    
-    if(
+    if (log) console.log("++++++++++TRATANDO RESPOSTA POSITIVA DO MODAL++++++++++");
+    if (log) console.log("acao => ", acao);
+    if (log) console.log("infoInserida => ", infoInserida);
+
+    if (
         [
-            'salvar_cot', 
-            'criar_cotacao', 
-            'editar_cot', 
-            'solicitar_aprovacao_sindico', 
-            'corrigir_erros', 
-            'ajustar_cot', 
-            'aprov_cot', 
+            'salvar_cot',
+            'criar_cotacao',
+            'editar_cot',
+            'solicitar_aprovacao_sindico',
+            'corrigir_erros',
+            'ajustar_cot',
+            'aprov_cot',
             'arquivar_cot',
             'finalizar_provisionamento',
             'confirmar_compra',
@@ -1006,26 +987,24 @@ export async function tratarRespModal({acao, infoInserida = null})
             'autorizar_pagamento_sindico',
             'autorizar_pagamento_subsindico',
             'confirmar_todas_as_assinaturas',
-            "lancar_pdc_ahreas", 
+            "lancar_pdc_ahreas",
             "confirmar_pag_ahreas"
-        ].includes(acao))
-    {
-        //const valido = validateFields(acao);
-        //if(!valido) return false;
+        ].includes(acao)) {
+        const valido = validateFields(acao);
+        if (!valido) return false;
         await prepararParaSalvar(acao, infoInserida);
     }
-    if(log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
+    if (log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
     return true;
 }
 
-async function prepararParaSalvar(acao, infoInserida = null)
-{
+async function prepararParaSalvar(acao, infoInserida = null) {
     const tipoSolicitacao = document.querySelector('select[name="Tipo_de_solicitacao"]').options[document.querySelector('select[name="Tipo_de_solicitacao"]').selectedIndex].text;
     const parcelaCriada = document.getElementsByName('parcela_criada')[0].checked;
     const log = false;
-    if(log) console.log("++++++++++PREPARANDO PARA SALVAR++++++++++");
-    if(log) console.log("acao => ", acao);
-    if(log) console.log("infoInserida => ", infoInserida);
+    if (log) console.log("++++++++++PREPARANDO PARA SALVAR++++++++++");
+    if (log) console.log("acao => ", acao);
+    if (log) console.log("infoInserida => ", infoInserida);
     let alcada_temp = null;
     /*
     if(acao === "autorizar_pagamento_subsindico")
@@ -1050,33 +1029,33 @@ async function prepararParaSalvar(acao, infoInserida = null)
         corrigir_erros: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
         solicitar_aprovacao_sindico: { status: "Aguardando aprovação de uma proposta" },
         ajustar_cot: { status: "Ajuste solicitado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
-        aprov_cot: { 
-            status: 
-                globais.perfilResponsavel.includes("Depto. Pessoal") && 
-                parcelaCriada?"Enviado para checagem final":
-                "Proposta aprovada" 
-            },
+        aprov_cot: {
+            status:
+                globais.perfilResponsavel.includes("Depto. Pessoal") &&
+                    parcelaCriada ? "Enviado para checagem final" :
+                    "Proposta aprovada"
+        },
         arquivar_cot: { status: "Proposta arquivada" },
-        finalizar_provisionamento: { 
-            status: 
-            globais.perfilResponsavel.includes("Depto. Pessoal") && 
-            !parcelaCriada?"Separado em parcelas":
-            "Lançado no orçamento"
+        finalizar_provisionamento: {
+            status:
+                globais.perfilResponsavel.includes("Depto. Pessoal") &&
+                    !parcelaCriada ? "Separado em parcelas" :
+                    "Lançado no orçamento"
         },
         confirmar_compra: {
-            status: tipoSolicitacao === 'SERVIÇO' || pgtoAnt? 'Recebimento confirmado' : 'Compra realizada',
+            status: tipoSolicitacao === 'SERVIÇO' || pgtoAnt ? 'Recebimento confirmado' : 'Compra realizada',
             sepPorParc: tipoSolicitacao === 'SERVIÇO' || pgtoAnt,
-            paramsExtraPDC: { pag_antecipado: false}
+            paramsExtraPDC: { pag_antecipado: false }
         },
-        confirmar_recebimento: { status: "Recebimento confirmado", sepPorParc: true},
+        confirmar_recebimento: { status: "Recebimento confirmado", sepPorParc: true },
         solicitar_ajuste_ao_compras: { status: "Recebimento confirmado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
         enviar_p_checagem_final: { status: "Enviado para checagem final" },
         enviar_p_assinatura: { status: "Assinatura Confirmada Controladoria" },
         autorizar_pagamento_subsindico: { status: "Autorizado para pagamento" },
         autorizar_pagamento_sindico: { status: "Assinatura Confirmada Sindico" },
-        confirmar_todas_as_assinaturas: {status: "Autorizado para pagamento"},
-        lancar_pdc_ahreas: {paramsExtraPDC:{Status_Guillaumon: "Lançado no ahreas"}},
-        confirmar_pag_ahreas: {status: "Pagamento realizado", paramsExtraPDC:{Status_Guillaumon: "Pagamento confirmado"}}
+        confirmar_todas_as_assinaturas: { status: "Autorizado para pagamento" },
+        lancar_pdc_ahreas: { paramsExtraPDC: { Status_Guillaumon: "Lançado no ahreas" } },
+        confirmar_pag_ahreas: { status: "Pagamento realizado", paramsExtraPDC: { Status_Guillaumon: "Pagamento confirmado" } }
     };
 
     if (acao in statusMap) {
@@ -1084,12 +1063,10 @@ async function prepararParaSalvar(acao, infoInserida = null)
 
         await saveTableData_V2(params);
 
-        if(acao.includes("finalizar_provisionamento"))
-        {
-            if(globais.perfilResponsavel.includes("Depto. Pessoal"))
-            {
+        if (acao.includes("finalizar_provisionamento")) {
+            if (globais.perfilResponsavel.includes("Depto. Pessoal")) {
                 document.getElementById('pag_antecipado').setAttribute('checked', 'checked');
-                await saveTableData_V2({status:"Enviado para checagem final", sepPorParc: true});
+                await saveTableData_V2({ status: "Enviado para checagem final", sepPorParc: true });
                 //=====REMOVE ALGUNS DADOS DO PDC E FAZ A COPIA DAS PARCELAS=====\\
                 //CRIA UM NOVO ID TEMPORÁRIO PARA A CÓPIA E LIMPA O NUMERO DO PDC
                 const now = new Date();
@@ -1108,14 +1085,14 @@ async function prepararParaSalvar(acao, infoInserida = null)
                 const totalForns = document.querySelectorAll('td.total-fornecedor');
                 [...valorUnitTds, ...totalForns].forEach(td => {
                     td.textContent = '';
-                    if(td.dataset.valor_original) delete td.dataset.valor_original;
-                    
+                    if (td.dataset.valor_original) delete td.dataset.valor_original;
+
                     // Limpar a célula do lado direito se for valor unitário
-                    if(td.classList.contains('valor-unit')) {
+                    if (td.classList.contains('valor-unit')) {
                         const nextTd = td.nextElementSibling;
-                        if(nextTd) {
+                        if (nextTd) {
                             nextTd.textContent = '';
-                            if(nextTd.dataset.valor_original) delete nextTd.dataset.valor_original;
+                            if (nextTd.dataset.valor_original) delete nextTd.dataset.valor_original;
                         }
                     }
                 });
@@ -1128,16 +1105,14 @@ async function prepararParaSalvar(acao, infoInserida = null)
                 });
                 document.getElementById('pag_antecipado').removeAttribute('checked');
 
-                await saveTableData_V2({ status: "Propostas criadas", sepPorParc:true,paramExtra:{ pag_antecipado: false}});
+                await saveTableData_V2({ status: "Propostas criadas", sepPorParc: true, paramExtra: { pag_antecipado: false } });
 
             }
-        }else if (acao === 'confirmar_compra') {
-            if(tipoSolicitacao === 'SERVIÇO')
-            {
-                await saveTableData_V2({ status: "Separado em parcelas"});
-            }else if(pgtoAnt)
-            {
-                await saveTableData_V2({ status: "Compra realizada", paramExtra:{ pag_antecipado: false }});
+        } else if (acao === 'confirmar_compra') {
+            if (tipoSolicitacao === 'SERVIÇO') {
+                await saveTableData_V2({ status: "Separado em parcelas" });
+            } else if (pgtoAnt) {
+                await saveTableData_V2({ status: "Compra realizada", paramExtra: { pag_antecipado: false } });
             }
 
             const entidadeSelecionada = document.getElementById('entidade').value;
@@ -1150,12 +1125,12 @@ async function prepararParaSalvar(acao, infoInserida = null)
                 const link_layout = `${url}guillaumon/app-envio-de-notas-boletos-guillaumon/pdf/${layoutName}?ID_entry=${globais.idPDC}&id_pdc=${globais.idPDC}&zc_PdfSize=A4&zc_FileName=${globais.numPDC}_${layoutName.split('_')[0]}`;
                 window.open(link_layout, '_blank', 'noopener,noreferrer');
             }
-        }else if(acao === 'confirmar_recebimento'){
-            await saveTableData_V2({ status: "Separado em parcelas"});
+        } else if (acao === 'confirmar_recebimento') {
+            await saveTableData_V2({ status: "Separado em parcelas" });
         }
         window.open(`${url}#Script:page.refresh`, '_top');
     }
-    if(log) console.log("----------PROCESSO DE SALVAMENTO CONCLUÍDO----------");
+    if (log) console.log("----------PROCESSO DE SALVAMENTO CONCLUÍDO----------");
 }
 
 /**
@@ -1180,13 +1155,12 @@ export function desabilitarCampos() {
     let formsParaManterHabilitados = [];
     let aTagsParaManterHabilitados = [];
 
-    if(globais.pag === 'editar_cotacao')
-    {
+    if (globais.pag === 'editar_cotacao') {
         return;
     }
     if (globais.pag === "ajustar_compra_compras" || globais.pag === "checagem_final") {
         camposParaManterHabilitados = ["Entidade", "Datas", "Valor", "quantidade", "valor-unit"];//name
-        botoesParaManterHabilitados = ["add-parcela", "remover-parcela", "add-linha-nf","remover-linha-nf"];//classe
+        botoesParaManterHabilitados = ["add-parcela", "remover-parcela", "add-linha-nf", "remover-linha-nf"];//classe
         formsParaManterHabilitados = ["form-pagamento", "dados-nf", "form-classificacao"];//forms
     } else if (globais.pag === "criar_numero_de_PDC") {
         camposParaManterHabilitados = ["Num_PDC_parcela"];
@@ -1247,7 +1221,7 @@ export function desabilitarCampos() {
     });
 
     // Seleciona todos os elementos a tag
-    const elementosComHref =  document.querySelectorAll('a');
+    const elementosComHref = document.querySelectorAll('a');
     elementosComHref.forEach(elemento => {
         // Verifica se o elemento deve ser mantido visível
         const temClasseVisivel = aTagsParaManterHabilitados.some(classe => elemento.classList.contains(classe));
@@ -1290,6 +1264,7 @@ export function validateFields(action) {
                 'id_forn': 'dataset',
                 'quantidade': 'class',
                 'valor-unit': 'class',
+                'dp-field-input': 'class'
             };
             atLeastOne = {
                 'supplier-checkbox': 'class',
@@ -1309,6 +1284,33 @@ export function validateFields(action) {
             break;
     }
 
+    function validateField(field) {
+        if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
+            // Verifica o valor do campo
+            if (field.value === '') {
+                throw new Error(`O campo "${field.name}" deve ser preenchido.`);
+            }
+
+        } else if (field.tagName === 'SELECT') {
+            // Verifica se o campo select tem um valor selecionado
+            const selectedOption = field.options[field.selectedIndex];
+            if (selectedOption.classList.contains('invalid')) {
+                throw new Error(`O campo "${field.name}" deve ser preenchido.`);
+            }
+
+        } else if (field.tagName === 'TD') {
+            // Verifica o texto do campo TD
+            if (field.innerText === '') {
+                throw new Error(`O campo "${field.name}" deve ser preenchido.`);
+            }
+
+        } else {
+            // Se o campo não for reconhecido, lança um erro
+            throw new Error(`Tipo de campo não reconhecido: ${field.tagName}`);
+
+        }
+    }
+
     //=====All values are required=====\\
     for (let [key, value] of Object.entries(all)) {
         console.log("key: ", key, "value: ", value);
@@ -1318,27 +1320,22 @@ export function validateFields(action) {
                 throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
-        }else 
-        {
+        } else {
             let campos;
-            if(['name'].includes(value))//Busca por atributos
+            if (['name'].includes(value))//Busca por atributos
             {
                 campos = document.querySelectorAll(`[${value}="${key}"]`);
-            }else if(['class'].includes(value))//busca por classe (Aparentemente não é um atributo)
+            } else if (['class'].includes(value))//busca por classe (Aparentemente não é um atributo)
             {
                 campos = document.querySelectorAll(`.${key}`);
             }
-            
+
             campos.forEach(campo => {
                 console.log("campo: ", campo);
                 console.log("campo.innerText: ", campo.innerText);
                 console.log("campo.value: ", campo.value);
 
-                if(campo.innerText === '' && (campo.value === undefined || campo.value === ''))
-                {
-                    throw new Error(`O campo "${key}" deve ser preenchido.`);
-                    return false;
-                }
+                validateField(campo);
             })
         }
     }
@@ -1364,15 +1361,14 @@ export function validateFields(action) {
             console.log("campo.value: ", campo.value);
         })
 
-        if(["tipo-pag"].includes(key))
-        {
+        if (["tipo-pag"].includes(key)) {
             const opcaoMarcada = campos[0].querySelector('input:checked');
             console.log("opcaoMarcada: ", opcaoMarcada);
             if (!opcaoMarcada) {
                 throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
-            
+
             if (["Dep. em"].some(valor => opcaoMarcada.value.includes(valor))) {
                 // Verificar se todos os inputs estão preenchidos
                 const inputs = campos[0].querySelectorAll('input');
@@ -1381,9 +1377,8 @@ export function validateFields(action) {
                     return false;
                 }
             }
-            
-            if(["Pix"].some(valor => opcaoMarcada.value.includes(valor)))
-            {
+
+            if (["Pix"].some(valor => opcaoMarcada.value.includes(valor))) {
                 // Verificar se todos os inputs do tipo text dentro do elemento #campos-pix estão preenchidos
                 const inputs = document.querySelectorAll('#campos-pix input[type="text"]');
                 if (![...inputs].every(input => input.value.trim() !== '')) {
@@ -1399,10 +1394,9 @@ export function validateFields(action) {
             }
         }
 
-        if(["parcela"].includes(key))
-        {
+        if (["parcela"].includes(key)) {
             campos.forEach(campo => {
-                
+
                 const inputs = [...campo.querySelectorAll('input')].filter(input => input.name !== 'parcela_criada');
                 if (![...inputs].some(input => input.value.trim() !== '')) {
                     throw new Error(`O campo "${key}" deve ser preenchido.`);
