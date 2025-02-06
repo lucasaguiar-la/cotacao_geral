@@ -876,6 +876,10 @@ export async function customModal_V2({ acao = null, tipoAcao = 'confirm', titulo
         'solicitar_ajuste_ao_compras': {
             placeholder: 'Ex.: Produto veio quebrado, não recebido...',
             buttonClass: 'customAdjust-confirmButton'
+        },
+        'lancar_pdc_ahreas': {
+            placeholder: 'Número do lançamento no ahreas, Ex.: 9712345...',
+            buttonClass: 'customAdjust-confirmButton'
         }
     };
 
@@ -990,8 +994,8 @@ export async function tratarRespModal({ acao, infoInserida = null }) {
             "lancar_pdc_ahreas",
             "confirmar_pag_ahreas"
         ].includes(acao)) {
-        const valido = validateFields(acao);
-        if (!valido) return false;
+        //const valido = validateFields(acao);
+        //if (!valido) return false;
         await prepararParaSalvar(acao, infoInserida);
     }
     if (log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
@@ -1006,6 +1010,7 @@ async function prepararParaSalvar(acao, infoInserida = null) {
     if (log) console.log("acao => ", acao);
     if (log) console.log("infoInserida => ", infoInserida);
     let alcada_temp = null;
+
     /*
     if(acao === "autorizar_pagamento_subsindico")
     {
@@ -1017,7 +1022,7 @@ async function prepararParaSalvar(acao, infoInserida = null) {
             nomeR: "ADM_Alcadas_temporarias_cadastradas"
         });
     }
-        */
+    */
 
     const paramExtra = {};
     const url = 'https://guillaumon.zohocreatorportal.com/';
@@ -1054,8 +1059,8 @@ async function prepararParaSalvar(acao, infoInserida = null) {
         autorizar_pagamento_subsindico: { status: "Autorizado para pagamento" },
         autorizar_pagamento_sindico: { status: "Assinatura Confirmada Sindico" },
         confirmar_todas_as_assinaturas: { status: "Autorizado para pagamento" },
-        lancar_pdc_ahreas: { paramsExtraPDC: { Status_Guillaumon: "Lançado no ahreas" } },
-        confirmar_pag_ahreas: { status: "Pagamento realizado", paramsExtraPDC: { Status_Guillaumon: "Pagamento confirmado" } }
+        lancar_pdc_ahreas: { paramsExtraPDC: { Status_Guillaumon: "Lançado no ahreas", num_lanc_ahreas : infoInserida} },
+        confirmar_pag_ahreas: { status: "Pagamento realizado", paramsExtraPDC: {Status_Guillaumon: "Pagamento confirmado"}}
     };
 
     if (acao in statusMap) {

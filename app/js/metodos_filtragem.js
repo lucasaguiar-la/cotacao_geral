@@ -241,7 +241,7 @@ export function criarBotao({page = null, removeExistingButtons = false})
                 configurarBotao('adjust-btn', 'Marcar como lanç. ahreas', page, null,"Tem certeza que deseja MARCAR O PDC COMO LANÇADO?");
 
                 break;
-            case "lancar_pdc_ahreas":
+            case "confirmar_pag_ahreas":
                 configurarBotao('adjust-btn', 'Marcar como pag. confirmado', page, null,"Tem certeza que deseja MARCAR O PDC COMO PAGO?");
                 
                 break;
