@@ -266,5 +266,3 @@ export function criarBotao({page = null, removeExistingButtons = false})
 
     }
 }
-
-

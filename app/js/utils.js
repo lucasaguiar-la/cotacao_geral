@@ -1170,6 +1170,7 @@ export function desabilitarCampos() {
     } else if (globais.pag === "criar_numero_de_PDC") {
         camposParaManterHabilitados = ["Num_PDC_parcela"];
         botoesParaManterHabilitados = ["add-parcela", "remover-parcela"];
+        formsParaManterHabilitados = ["form-classificacao"];
     }
 
     // Seleciona todos os elementos de input, textarea e select

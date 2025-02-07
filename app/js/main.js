@@ -242,8 +242,9 @@ async function executarProcessosParalelos() {
             "confirmar_pag_ahreas"
         ].includes(globais.pag)){
             //=====Mostra os campos de retenção se for necessário=====\\
-            if(["ajustar_compra_compras", "checagem_final", "lancar_pdc_ahreas", "confirmar_pag_ahreas"].includes(globais.pag)){
+            if (["ajustar_compra_compras", "checagem_final", "lancar_pdc_ahreas", "confirmar_pag_ahreas"].includes(globais.pag)) {
                 mostrarCamposRetencao();
+
             }
 
             //=====Cria o botão correspondente=====\\
@@ -270,12 +271,34 @@ async function executarProcessosParalelos() {
 
             }
 
-        }
-        
-        else
+            //=====COLAPSA SEÇÕES PARA A TRIAGEM=====\\
+            if(["lancar_pdc_ahreas", "confirmar_pag_ahreas"].includes(globais.pag))
+            {
+                const allSections = document.querySelectorAll('.section');
+                const sectionsToCollapse = ["tabela-cotacoes"];
+                allSections.forEach(section => {
+                    const header = section.previousElementSibling;
+                    const sectionClasses = Array.from(section.classList);
+
+                    if (sectionsToCollapse.some(className => sectionClasses.includes(className))) {
+                        section.classList.add('collapsed');
+
+                        if (header && header.classList.contains('section-header')) {
+                            header.classList.add('collapsed');
+                        }
+                    }
+
+                });
+            }
+
+        }else
         {
             //=====Remove todos os botões=====\\
             criarBotao({removeExistingButtons:true});
+            if (["ver_PDC_c_ret"].includes(globais.pag)) {
+                mostrarCamposRetencao();
+                
+            }
         }
 
         //=====Desabilita os campos baseado no globais.pag passado=====\\
