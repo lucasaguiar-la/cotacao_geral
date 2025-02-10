@@ -996,8 +996,8 @@ export async function tratarRespModal({ acao, infoInserida = null }) {
             "confirmar_pag_ahreas",
             "suspender_pagamento"
         ].includes(acao)) {
-        //const valido = validateFields(acao);
-        //if (!valido) return false;
+        const valido = validateFields(acao);
+        if (!valido) return false;
         await prepararParaSalvar(acao, infoInserida);
     }
     if (log) console.log("----------RESPOSTA TRATADA, RETORNANDO TRUE----------");
@@ -1301,10 +1301,24 @@ export function validateFields(action) {
     }
 
     function validateField(field) {
+        const errorMessage = document.createElement('span');
+        errorMessage.id = 'error-message';
+        errorMessage.textContent = 'Este campo é obrigatório';
+        errorMessage.style.color = 'red';
+
         if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
             // Verifica o valor do campo
             if (field.value === '') {
-                throw new Error(`O campo "${field.name}" deve ser preenchido.`);
+                field.addEventListener('input', () => errorMessage.remove());
+                field.parentNode.appendChild(errorMessage);
+                field.parentNode.style.display = 'grid';
+                
+                field.focus();
+
+                const overlayElement = document.querySelector(".customConfirm-overlay-div");
+                if (overlayElement) {
+                    overlayElement.remove();
+                }
             }
 
         } else if (field.tagName === 'SELECT') {
@@ -1329,21 +1343,21 @@ export function validateFields(action) {
 
     //=====All values are required=====\\
     for (let [key, value] of Object.entries(all)) {
-        console.log("key: ", key, "value: ", value);
-
         if (value === 'dataset') {
             if (!document.querySelector(`[data-${key}]`)) {
-                throw new Error(`O campo "${key}" deve ser preenchido.`);
-                return false;
+                alert(`O campo "${key}" deve ser preenchido.`);
+                document.getElementsByClassName("customConfirm-overlay-div").remove();
             }
         } else {
             let campos;
             if (['name'].includes(value))//Busca por atributos
             {
                 campos = document.querySelectorAll(`[${value}="${key}"]`);
+
             } else if (['class'].includes(value))//busca por classe (Aparentemente não é um atributo)
             {
                 campos = document.querySelectorAll(`.${key}`);
+
             }
 
             campos.forEach(campo => {
@@ -1355,6 +1369,7 @@ export function validateFields(action) {
             })
         }
     }
+
     //=====At least one value is required=====\\
     for (let [key, value] of Object.entries(atLeastOne)) {
         console.log("key: ", key, "value: ", value);
@@ -1367,6 +1382,7 @@ export function validateFields(action) {
         }
     }
 
+    //=====Other formats=====\\
     for (let [key, value] of Object.entries(otherFormats)) {
         console.log("key: ", key, "value: ", value);
 
@@ -1380,14 +1396,23 @@ export function validateFields(action) {
         if (["tipo-pag"].includes(key)) {
             const opcaoMarcada = campos[0].querySelector('input:checked');
             console.log("opcaoMarcada: ", opcaoMarcada);
+            console.log("opcaoMarcada.value: ", opcaoMarcada.value);
             if (!opcaoMarcada) {
                 throw new Error(`O campo "${key}" deve ser preenchido.`);
                 return false;
             }
 
-            if (["Dep. em"].some(valor => opcaoMarcada.value.includes(valor))) {
+            if (opcaoMarcada.value.includes("Dep. em")) {
                 // Verificar se todos os inputs estão preenchidos
-                const inputs = campos[0].querySelectorAll('input');
+                const inputs = document.getElementById('campos-deposito').querySelectorAll('input');
+                inputs.forEach(input => {
+                    console.log("input: ", input);
+                    if(input.value.trim() === '') {
+                        throw new Error(`Os campos de depósito devem ser preenchidos.`);
+                        return false;
+                    }
+                })
+
                 if (![...inputs].every(input => input.value.trim() !== '')) {
                     throw new Error(`Os campos de depósito devem ser preenchidos.`);
                     return false;
@@ -1421,6 +1446,7 @@ export function validateFields(action) {
             });
         }
     }
+
     throw new Error(`TODOS OS CAMPOS ESTÃO PREENCHIDOS`);
 
     return true;
