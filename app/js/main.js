@@ -32,9 +32,10 @@ import {
     adicionarCampoVenc,
     setupPixValidation,
     preencherDadosPDC,
+    formatarCPFouCNPJ,
     adicionarLinhaNF,
     removerCampoVenc,
-    removerLinhaNF
+    removerLinhaNF,
 } from './forms_utils.js';
 import { CONFIG } from './config.js';
 import { criarBotao } from './metodos_filtragem.js';
@@ -131,9 +132,11 @@ async function setupListenersAndInit() {
         "valor-classificacao": { handler: (elemento) => { formatToBRL_V2(elemento); atualizarValorTotalClassificacoes();}, type: 'blur' },
         "campos-ret-desc":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL_V2(elemento);}, type: 'blur'},
         "campos-ret-acr":{handler: (elemento) => {calcularValorTotalPagar(); formatToBRL_V2(elemento);}, type: 'blur'},
+        
         "": { handler: (elemento) => handleEnterKeyNavigation(elemento), type: 'keydown' },
         "": { handler: () => setupPixValidation(), type: 'DOMContentLoaded' }
     };
+    //"cpf_cnpj_favorecido": { handler: (elemento) => formatarCPFouCNPJ(elemento), type: 'blur' },
 
     Object.entries(buttonActions).forEach(([className, config]) => {
         if (className === '') {
@@ -184,7 +187,7 @@ async function executarProcessosParalelos() {
         ];
         await Promise.all(tarefas);
 
-        if(globais.pag.includes('editar_cotacao')){
+        if(globais.pag.includes('editar_cotacao') || globais.pag.includes('ajustar_cotacao_DP')){
             //=====Cria o botão Sol. Aprov. Síndico=====\\
             criarBotao({page:globais.pag});
             if(globais.perfilResponsavel.includes("Depto. Pessoal") || globais.perfilResponsavel.includes("Controladoria"))
@@ -264,12 +267,13 @@ async function executarProcessosParalelos() {
                 }
             );
 
+            /*
             //=====Oculta o checkbox de pagamento antecipado=====\\
             const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
             if (checkboxPagamentoAntecipado) {
                 checkboxPagamentoAntecipado.classList.add("hidden");
-
             }
+                */
 
             //=====COLAPSA SEÇÕES PARA A TRIAGEM=====\\
             if(["lancar_pdc_ahreas", "confirmar_pag_ahreas"].includes(globais.pag))
@@ -297,6 +301,7 @@ async function executarProcessosParalelos() {
             criarBotao({removeExistingButtons:true});
             if (["ver_PDC_c_ret"].includes(globais.pag)) {
                 mostrarCamposRetencao();
+                criarBotao({page: globais.pag});
                 
             }
         }
@@ -328,7 +333,6 @@ async function executarProcessosParalelos() {
 
             }else
             {
-
                 globais.perfilResponsavel = "Controladoria";
                 
             }
@@ -337,11 +341,13 @@ async function executarProcessosParalelos() {
             const checkboxPagamentoAntecipado = document.getElementsByClassName('check-pag-antecipado')[0];
             if (checkboxPagamentoAntecipado) {
                 checkboxPagamentoAntecipado.classList.add("hidden");
+
             }
 
         }else
         {
             globais.perfilResponsavel = "Comprador";
+
         }
     }
 
@@ -351,6 +357,7 @@ async function executarProcessosParalelos() {
     atualizarValorOrcado();
     atualizarValorTotalParcelas();
     atualizarValorTotalClassificacoes();
+
 }
 
 async function processarDadosPDC() {
@@ -374,7 +381,7 @@ async function processarDadosCotacao() {
     //const idCriterio = globais.numPDC ? `numero_de_PDC=="${globais.numPDC}"` : (globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}"` :"ID==0");
     const idCriterio =  globais.numPDC_temp ?`num_PDC_temp=="${globais.numPDC_temp}"` :"ID==0";
 
-    const aprovadoCriterio = !["editar_cotacao", "aprovar_cotacao", "ver_cotacao", "editar_cotacao_DP", "aprovar_cotacao_DP"].includes(globais.pag) ? 
+    const aprovadoCriterio = !["editar_cotacao", "aprovar_cotacao", "ver_cotacao", "editar_cotacao_DP", "ajustar_cotacao_DP","aprovar_cotacao_DP"].includes(globais.pag) ? 
         " && Aprovado==true" : "";
     
     let cCot = `(${idCriterio} && Ativo==true${aprovadoCriterio})`;

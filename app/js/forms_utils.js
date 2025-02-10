@@ -141,11 +141,16 @@ export function preencherDadosPDC(resp) {
         const inputAgencia = formPagamento.querySelector('#agencia');
         const inputConta = formPagamento.querySelector('#conta');
         const inputFavorecidoDeposito = formPagamento.querySelector('#favorecido-deposito');
+        const inputCPF_CNPJ_favorecido = formPagamento.querySelector('#cpf_cnpj_favorecido');
+        
+        
 
         if (data.Banco) inputBanco.value = data.Banco;
         if (data.AG) inputAgencia.value = data.AG;
         if (data.N_Conta) inputConta.value = data.N_Conta;
         if (data.Favorecido) inputFavorecidoDeposito.value = data.Favorecido;
+        if (data.CPF_CNPJ_do_favorecido) inputCPF_CNPJ_favorecido.value = data.CPF_CNPJ_do_favorecido;
+
     }else if(data.Forma_de_pagamento === 'Pix'){
         const inputTipoPix = formPagamento.querySelector('#tipo-pix');
         const inputPixChave = formPagamento.querySelector('#pix-chave');
@@ -1499,3 +1504,116 @@ export function mostrarCamposRetencao() {
         camposNF.querySelector('.campos-iniciais-nf').classList.remove("hidden");
     }
 }
+
+export function formatarCPFouCNPJ(elemento) {
+    const valor = elemento.value.replace(/\D/g, '');
+    let mensagemErro = '';
+
+    if (valor.length === 11) {
+        if (validarCPF(valor)) {
+            elemento.value = valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else {
+            mensagemErro = 'CPF inválido!';
+        }
+    } else if (valor.length === 14) {
+        if (validarCNPJ(valor)) {
+            elemento.value = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        } else {
+            mensagemErro = 'CNPJ inválido!';
+        }
+    } else {
+        mensagemErro = 'CPF ou CNPJ inválido!';
+    }
+
+    const errorElementId = elemento.id + '-error';
+    let errorElement = document.getElementById(errorElementId);
+
+    if (mensagemErro) {
+        if (!errorElement) {
+            errorElement = document.createElement('span');
+            errorElement.id = errorElementId;
+            errorElement.style.color = 'red';
+            elemento.parentNode.insertBefore(errorElement, elemento.nextSibling);
+        }
+        errorElement.textContent = mensagemErro;
+        elemento.value = '';
+    } else if (errorElement) {
+        errorElement.textContent = '';
+    }
+}
+
+function validarCPF(cpf) {
+    let soma = 0;
+    let resto;
+
+    if (cpf === "00000000000") return false;
+
+    for (let i = 1; i <= 9; i++) {
+        soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    }
+    resto = (soma * 10) % 11;
+
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+    soma = 0;
+    for (let i = 1; i <= 10; i++) {
+        soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    }
+    resto = (soma * 10) % 11;
+
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    return resto === parseInt(cpf.substring(10, 11));
+}
+
+function validarCNPJ(cnpj) {
+    const log = true;
+    if (log) console.log("++++++++++VALIDANDO CNPJ++++++++++");
+    if (log) console.log("cnpj: " + cnpj);
+
+    let tamanho = cnpj.length - 2;
+    let numeros = cnpj.substring(0, tamanho);
+    let digitos = cnpj.substring(tamanho);
+    let soma = 0;
+    let pos = tamanho - 7;
+
+    if(log) console.log("tamanho: " + tamanho);
+    if(log) console.log("numeros: " + numeros);
+    if(log) console.log("digitos: " + digitos);
+    if(log) console.log("soma: " + soma);
+    if(log) console.log("pos: " + pos);
+
+    for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
+    }
+
+    if(log) console.log("soma: " + soma);
+    if(log) console.log("pos: " + pos);
+
+    let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if(log) console.log("resultado: " + resultado);
+    if (resultado.toString() != digitos.charAt(0)) return false;
+
+    tamanho = tamanho + 1;
+    numeros = cnpj.substring(0, tamanho);
+    soma = 0;
+    pos = tamanho - 7;
+    if(log) console.log("numeros: " + numeros);
+    if(log) console.log("soma: " + soma);
+    if(log) console.log("pos: " + pos);
+
+    for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
+    }
+
+    if(log) console.log("soma: " + soma);
+    if(log) console.log("pos: " + pos);
+
+    resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if(log) console.log("resultado: " + resultado);
+    
+    return resultado === digitos.charAt(1);
+}
+

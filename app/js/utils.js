@@ -987,12 +987,14 @@ export async function tratarRespModal({ acao, infoInserida = null }) {
             'confirmar_recebimento',
             'solicitar_ajuste_ao_compras',
             'enviar_p_checagem_final',
+            'tratar_control',
             'enviar_p_assinatura',
             'autorizar_pagamento_sindico',
             'autorizar_pagamento_subsindico',
             'confirmar_todas_as_assinaturas',
             "lancar_pdc_ahreas",
-            "confirmar_pag_ahreas"
+            "confirmar_pag_ahreas",
+            "suspender_pagamento"
         ].includes(acao)) {
         //const valido = validateFields(acao);
         //if (!valido) return false;
@@ -1028,7 +1030,13 @@ async function prepararParaSalvar(acao, infoInserida = null) {
     const url = 'https://guillaumon.zohocreatorportal.com/';
     const pgtoAnt = document.getElementById('pag_antecipado').checked;
     const statusMap = {
-        salvar_cot: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
+        salvar_cot: { 
+            status: globais.pag === "criar_numero_de_PDC" ? 
+                null : 
+                globais.pag === "ajustar_compra_compras"?
+                    "Recebimento confirmado":
+                    "Propostas criadas" 
+        },
         criar_cotacao: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
         editar_cot: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
         corrigir_erros: { status: globais.pag === "criar_numero_de_PDC" ? null : "Propostas criadas" },
@@ -1053,14 +1061,16 @@ async function prepararParaSalvar(acao, infoInserida = null) {
             paramsExtraPDC: { pag_antecipado: false }
         },
         confirmar_recebimento: { status: "Recebimento confirmado", sepPorParc: true },
-        solicitar_ajuste_ao_compras: { status: "Recebimento confirmado", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
-        enviar_p_checagem_final: { status: "Enviado para checagem final" },
+        solicitar_ajuste_ao_compras: { status: "Ajuste solicitado pós checagem", paramsExtraPDC: { Solicitacao_de_ajuste: infoInserida } },
+        enviar_p_checagem_final: { status: "Enviado para checagem final"},
+        tratar_control: { paramsExtraPDC: {Status_controladoria: "Tratado" } },
         enviar_p_assinatura: { status: "Assinatura Confirmada Controladoria" },
         autorizar_pagamento_subsindico: { status: "Autorizado para pagamento" },
         autorizar_pagamento_sindico: { status: "Assinatura Confirmada Sindico" },
         confirmar_todas_as_assinaturas: { status: "Autorizado para pagamento" },
         lancar_pdc_ahreas: { paramsExtraPDC: { Status_Guillaumon: "Lançado no ahreas", num_lanc_ahreas : infoInserida} },
-        confirmar_pag_ahreas: { status: "Pagamento realizado", paramsExtraPDC: {Status_Guillaumon: "Pagamento confirmado"}}
+        confirmar_pag_ahreas: { status: "Pagamento realizado", paramsExtraPDC: {Status_Guillaumon: "Pagamento confirmado"}},
+        suspender_pagamento:{ status: "Pagamento suspenso"}
     };
 
     if (acao in statusMap) {
